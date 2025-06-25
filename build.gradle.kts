@@ -1,12 +1,37 @@
 plugins {
 	kotlin("jvm") version "1.9.25"
 	kotlin("plugin.spring") version "1.9.25"
+	kotlin("plugin.jpa") version "1.9.0"
 	id("org.springframework.boot") version "3.5.0"
 	id("io.spring.dependency-management") version "1.1.7"
 }
 
-group = "dev.ian"
-version = "0.0.1-SNAPSHOT"
+allprojects {
+	group = "dev.ian"
+	version = "1.0-SNAPSHOT"
+
+	repositories {
+		mavenCentral()
+	}
+}
+
+subprojects {
+	apply(plugin = "kotlin")
+	apply(plugin = "kotlin-spring")
+	apply(plugin = "kotlin-jpa")
+	apply(plugin = "org.springframework.boot")
+	apply(plugin = "io.spring.dependency-management")
+
+	dependencies {
+		implementation("org.springframework.boot:spring-boot-starter-web")
+		implementation("org.jetbrains.kotlin:kotlin-reflect")
+		implementation("org.jetbrains.kotlin:kotlin-stdlib")
+		implementation("org.springframework.boot:spring-boot-starter-security")
+		implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+		runtimeOnly("com.h2database:h2")
+		testImplementation("org.springframework.boot:spring-boot-starter-test")
+	}
+}
 
 java {
 	toolchain {
@@ -21,7 +46,6 @@ repositories {
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
-	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-web-services")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
@@ -36,4 +60,12 @@ kotlin {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+}
+
+task("runMapa") {
+	dependsOn(":mapa:bootRun")
+}
+
+task("runInternalTool") {
+	dependsOn(":internal-tool:bootRun")
 }
