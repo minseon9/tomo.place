@@ -6,19 +6,14 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
 
 @Configuration(proxyBeanMethods = false)
-class MyDataSourceConfiguration {
-
+class DataSourceConfig {
     @Bean
     @Primary
     @ConfigurationProperties("app.datasource")
-    fun dataSourceProperties(): DataSourceProperties {
-        return DataSourceProperties()
-    }
+    fun dataSourceProperties(): DataSourceProperties = DataSourceProperties()
 
     @Bean
     @ConfigurationProperties("app.datasource.configuration")
-    fun dataSource(properties: DataSourceProperties): HikariDataSource {
-        return properties.initializeDataSourceBuilder().type(HikariDataSource::class.java).build()
-    }
-
+    fun dataSource(properties: DataSourceProperties): HikariDataSource =
+        properties.initializeDataSourceBuilder().type(HikariDataSource::class.java).build()
 }
