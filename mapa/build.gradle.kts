@@ -4,6 +4,7 @@ plugins {
 
 dependencies {
     implementation(project(":member"))
+    implementation(project(":auth"))
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-security")
     developmentOnly("org.springframework.boot:spring-boot-devtools")

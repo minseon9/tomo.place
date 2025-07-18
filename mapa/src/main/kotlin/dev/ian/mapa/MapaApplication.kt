@@ -8,4 +8,4 @@ class MapaApplication
 
 fun main(args: Array<String>) {
     runApplication<MapaApplication>(*args)
-} 
+}
