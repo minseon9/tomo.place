@@ -10,7 +10,13 @@ class MemberDomainService(
     private val memberRepository: MemberRepository,
     private val passwordEncoder: PasswordEncoder,
 ) {
-    fun signUp(
+    fun findByEmail(email: String): MemberEntity? {
+        val member = memberRepository.findByEmail(email) ?: return null
+
+        return member
+    }
+
+    fun createMember(
         email: String,
         rawPassword: String,
         name: String,

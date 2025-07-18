@@ -51,7 +51,8 @@ class MemberEntity(
             require(password.length >= 8) { "비밀번호는 8자 이상이어야 합니다." }
             require(username.isNotBlank()) { "이름은 필수입니다." }
 
-            return MemberEntity(email = email, password = password, username = username)
+            // FIXME: 이메일 인증 같은 프로세스가 없어서 우선 ACTIVATED로 생성
+            return MemberEntity(email = email, password = password, username = username, status = MemberStatus.ACTIVATED)
         }
     }
 }
