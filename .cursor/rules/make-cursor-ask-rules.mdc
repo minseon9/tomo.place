@@ -1,0 +1,13 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+[Task Description ]
+
+1. Accurately understand the requested task and fully comprehend all provided context information.
+2. Before proceeding, establish a concrete action plan to accomplish the requested task.
+3. If you determine that the information is insufficient or the context is lacking, do not make assumptions or continue with only the information you currently have.
+4. If additional information or context is needed, or if there is any uncertainty or incorrect information, always ask the user clearly and confirm.
+5. Actively request any necessary information and always check the user's responses or any additional context provided.
+6. When you believe all necessary context has been provided, always confirm with the user that the context is sufficient. 
