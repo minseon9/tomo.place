@@ -4,8 +4,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class MapaApplication
+class TomoApplication
 
 fun main(args: Array<String>) {
-    runApplication<MapaApplication>(*args)
+    runApplication<TomoApplication>(*args)
 }
