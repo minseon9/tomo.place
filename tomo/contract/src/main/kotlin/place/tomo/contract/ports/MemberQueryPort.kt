@@ -4,6 +4,8 @@ import place.tomo.contract.dtos.MemberInfoDTO
 
 interface MemberQueryPort {
     fun findByEmail(email: String): MemberInfoDTO?
+    
+    fun findById(id: Long): MemberInfoDTO?
 
     fun createMember(
         email: String,

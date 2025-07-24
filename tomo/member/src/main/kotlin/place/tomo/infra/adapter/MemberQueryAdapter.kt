@@ -19,6 +19,17 @@ class MemberQueryAdapter(
             name = member.username,
         )
     }
+    
+    override fun findById(id: Long): MemberInfoDTO? {
+        val member = memberService.findById(id) ?: return null
+
+        return MemberInfoDTO(
+            id = member.id,
+            email = member.email,
+            password = member.password,
+            name = member.username,
+        )
+    }
 
     override fun createMember(
         email: String,

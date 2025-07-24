@@ -11,9 +11,11 @@ class MemberDomainService(
     private val passwordEncoder: PasswordEncoder,
 ) {
     fun findByEmail(email: String): MemberEntity? {
-        val member = memberRepository.findByEmail(email) ?: return null
-
-        return member
+        return memberRepository.findByEmail(email)
+    }
+    
+    fun findById(id: Long): MemberEntity? {
+        return memberRepository.findById(id).orElse(null)
     }
 
     fun createMember(
