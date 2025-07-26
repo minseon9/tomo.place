@@ -1,8 +1,6 @@
-package place.tomo.common.web.argumentresolvers
+package place.tomo.common.resolvers.usercontext
 
-import dev.ian.mapa.contract.ports.MemberQueryPort
-import dev.ian.mapa.user.UserContext
-import dev.ian.mapa.web.annotations.CurrentUser
+import place.tomo.contract.ports.UserQueryPort
 import org.springframework.core.MethodParameter
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
@@ -14,7 +12,7 @@ import org.springframework.web.method.support.ModelAndViewContainer
 
 @Component
 class UserContextArgumentResolver(
-    private val memberQueryPort: MemberQueryPort,
+    private val userQueryPort: UserQueryPort,
 ) : HandlerMethodArgumentResolver {
     override fun supportsParameter(parameter: MethodParameter): Boolean =
         parameter.parameterType == UserContext::class.java ||
@@ -37,14 +35,14 @@ class UserContextArgumentResolver(
 
     private fun resolveUserContext(authentication: Authentication): UserContext {
         val email = authentication.name
-        val member =
-            memberQueryPort.findByEmail(email)
+        val user =
+            userQueryPort.findByEmail(email)
                 ?: throw IllegalStateException("인증된 사용자를 찾을 수 없습니다: $email")
 
         return UserContext.from(
-            userId = member.id,
-            email = member.email,
-            name = member.name,
+            userId = user.id,
+            email = user.email,
+            name = user.name,
         )
     }
 }

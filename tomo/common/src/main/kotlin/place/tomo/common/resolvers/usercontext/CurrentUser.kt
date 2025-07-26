@@ -1,4 +1,4 @@
-package place.tomo.common.web.annotations
+package place.tomo.common.resolvers.usercontext
 
 @Target(AnnotationTarget.VALUE_PARAMETER)
 @Retention(AnnotationRetention.RUNTIME)
