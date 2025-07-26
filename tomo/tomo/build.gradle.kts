@@ -3,6 +3,8 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":common"))
+    implementation(project(":contract"))
     implementation(project(":user"))
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-security")
