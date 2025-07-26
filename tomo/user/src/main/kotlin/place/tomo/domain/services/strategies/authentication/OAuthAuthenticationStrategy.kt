@@ -2,20 +2,25 @@ package place.tomo.domain.services.strategies.authentication
 
 import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Component
-import place.tomo.domain.constant.OAuthProvider
+import place.tomo.contract.constant.AuthenticationType
+import place.tomo.domain.commands.AuthCredentials
+import place.tomo.domain.commands.OAuthCredentials
 import place.tomo.domain.services.oauth.OAuthClientFactory
 import place.tomo.infra.repositories.SocialAccountRepository
 
-class OAuthAuthenticationStrategy internal constructor(
+@Component
+class OAuthAuthenticationStrategy(
     private val oAuthClientFactory: OAuthClientFactory,
     private val socialAccountRepository: SocialAccountRepository,
-    private val provider: OAuthProvider,
-    private val authorizationCode: String,
-) : AuthenticationStrategy {
-    override fun authenticate(): String =
+) : AuthenticationStrategy() {
+    override fun supports(type: AuthenticationType): Boolean = type == AuthenticationType.OAUTH
+
+    override fun authenticate(credentials: AuthCredentials): String =
         runBlocking {
-            val oAuthClient = oAuthClientFactory.getClient(provider)
-            val tokenResponse = oAuthClient.getAccessToken(authorizationCode)
+            val oauthCreds = credentials as OAuthCredentials
+
+            val oAuthClient = oAuthClientFactory.getClient(oauthCreds.provider)
+            val tokenResponse = oAuthClient.getAccessToken(oauthCreds.code)
             val userInfo = oAuthClient.getUserInfo(tokenResponse.accessToken)
 
             val socialAccount =
@@ -24,36 +29,4 @@ class OAuthAuthenticationStrategy internal constructor(
 
             socialAccount.user.email
         }
-}
-
-@Component
-class OAuthStrategy(
-    private val userRepository: UserRepository,
-    private val oauthClientFactory: place.tomo.application.services.OAuthClientFactory,
-) : AuthenticationStrategy<OAuthCredentials>() {
-    override fun authenticate(credentials: OAuthCredentials): AuthResult =
-        try {
-            val client = oauthClientFactory.getClient(credentials.provider)
-            val userInfo = client.exchangeCodeForUserInfo(credentials.code)
-
-            val user =
-                userRepository.findBySocialId(userInfo.id)
-                    ?: createSocialUser(userInfo)
-
-            createAuthResult(user)
-        } catch (e: Exception) {
-            AuthResult.Failure("OAuth authentication failed: ${e.message}")
-        }
-
-    override fun supports(type: AuthType): Boolean = type == AuthType.OAUTH
-
-    private fun createSocialUser(userInfo: OAuthUserInfo): User =
-        userRepository.save(
-            User(
-                email = userInfo.email,
-                socialId = userInfo.id,
-                provider = userInfo.provider,
-                name = userInfo.name,
-            ),
-        )
 }
