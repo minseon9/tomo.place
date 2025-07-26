@@ -1,6 +1,6 @@
-package dev.ian.mapa.contract.dtos
+package place.tomo.contract.dtos
 
-data class MemberInfoDTO(
+data class UserInfoDTO(
     val id: Long,
     val email: String,
     val password: String,

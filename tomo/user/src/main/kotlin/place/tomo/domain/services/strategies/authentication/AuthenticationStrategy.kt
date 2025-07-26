@@ -1,9 +1,10 @@
 package place.tomo.domain.services.strategies.authentication
 
-import place.tomo.application.commands.AuthenticationCommand
+import place.tomo.contract.constant.AuthenticationType
+import place.tomo.domain.commands.AuthCredentials
 
-interface AuthenticationStrategy {
-    fun supports(command: AuthenticationCommand): Boolean
+abstract class AuthenticationStrategy {
+    abstract fun authenticate(credentials: AuthCredentials): String
 
-    fun authenticate(command: AuthenticationCommand): String // JWT 토큰 반환
+    abstract fun supports(type: AuthenticationType): Boolean
 }

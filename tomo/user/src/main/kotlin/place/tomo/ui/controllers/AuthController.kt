@@ -5,8 +5,8 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import place.tomo.application.commands.LoginCommand
 import place.tomo.application.commands.SignUpCommand
+import place.tomo.application.requests.EmailPasswordAuthenticateRequest
 import place.tomo.application.services.AuthApplicationService
 import place.tomo.ui.requests.LoginRequestBody
 import place.tomo.ui.requests.SignUpRequestBody
@@ -19,13 +19,13 @@ class AuthController(
 ) {
     @PostMapping("/signup")
     fun signUp(
-        @RequestBody request: SignUpRequestBody,
+        @RequestBody body: SignUpRequestBody,
     ): ResponseEntity<Void> {
         authService.signUp(
             SignUpCommand(
-                email = request.email,
-                password = request.password,
-                name = request.name,
+                email = body.email,
+                password = body.password,
+                name = body.name,
             ),
         )
         return ResponseEntity.ok().build()
@@ -33,13 +33,13 @@ class AuthController(
 
     @PostMapping("/login")
     fun login(
-        @RequestBody request: LoginRequestBody,
+        @RequestBody body: LoginRequestBody,
     ): ResponseEntity<LoginResponseBody> {
         val token =
-            authService.login(
-                LoginCommand(
-                    email = request.email,
-                    password = request.password,
+            authService.authenticate(
+                EmailPasswordAuthenticateRequest(
+                    email = body.email,
+                    password = body.password,
                 ),
             )
         return ResponseEntity.ok(LoginResponseBody(token = token))

@@ -1,6 +1,7 @@
 dependencies {
     // Common module
     implementation(project(":common"))
+    implementation(project(":contract"))
 
     // JWT
     implementation("io.jsonwebtoken:jjwt-api:0.12.5")

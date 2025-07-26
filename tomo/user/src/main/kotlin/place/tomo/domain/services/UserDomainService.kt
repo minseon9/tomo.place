@@ -1,23 +1,17 @@
 package place.tomo.domain.services
 
-import place.tomo.domain.entities.UserEntity
-import place.tomo.infra.repositories.UserRepository
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
+import place.tomo.domain.entities.UserEntity
+import place.tomo.infra.repositories.UserRepository
 
 @Service
 class UserDomainService(
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder,
 ) {
-    fun findByEmail(email: String): UserEntity? {
-        return userRepository.findByEmail(email)
-    }
-    
-    fun findById(id: Long): UserEntity? {
-        return userRepository.findById(id).orElse(null)
-    }
 
+    // FIXME: OAuth 회원가입인 경우, user의 password가 비어있어야함. 해당 검증 필요
     fun createUser(
         email: String,
         rawPassword: String,
@@ -34,4 +28,4 @@ class UserDomainService(
 
         return userEntity
     }
-} 
+}

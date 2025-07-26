@@ -1,9 +1,20 @@
 package place.tomo.domain.entities
 
-import place.tomo.domain.constant.OAuthProvider
-import jakarta.persistence.*
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
+import jakarta.persistence.FetchType
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.ManyToOne
+import jakarta.persistence.Table
+import jakarta.persistence.UniqueConstraint
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
+import place.tomo.domain.constant.OAuthProvider
 import java.time.LocalDateTime
 
 /**
@@ -21,9 +32,10 @@ import java.time.LocalDateTime
 class SocialAccountEntity(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
-    
-    @Column(name = "user_id", nullable = false)
-    val userId: Long,
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    val user: UserEntity,
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -54,7 +66,7 @@ class SocialAccountEntity(
 ) {
     companion object {
         fun create(
-            userId: Long,
+            user: UserEntity,
             provider: OAuthProvider,
             socialId: String,
             email: String?,
@@ -62,7 +74,7 @@ class SocialAccountEntity(
             profileImageUrl: String?
         ): SocialAccountEntity {
             return SocialAccountEntity(
-                userId = userId,
+                user = user,
                 provider = provider,
                 socialId = socialId,
                 email = email,

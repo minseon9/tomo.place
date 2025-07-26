@@ -3,25 +3,38 @@ package place.tomo.domain.services.strategies.authentication
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.stereotype.Component
-import place.tomo.application.commands.AuthenticationCommand
-import place.tomo.application.commands.EmailPasswordAuthCommand
-import place.tomo.domain.services.JwtTokenProvider
+
+class EmailPasswordAuthenticationStrategy internal constructor(
+    private val authenticationManager: AuthenticationManager,
+    private val email: String,
+    private val password: String,
+) : AuthenticationStrategy {
+    override fun authenticate(): String {
+        val authentication = authenticationManager.authenticate(UsernamePasswordAuthenticationToken(this.email, this.password))
+
+        return authentication.name
+    }
+}
 
 @Component
-class EmailPasswordAuthenticationStrategy(
-    private val authenticationManager: AuthenticationManager,
-    private val jwtTokenProvider: JwtTokenProvider,
-) : AuthenticationStrategy {
-    override fun supports(command: AuthenticationCommand): Boolean = command is EmailPasswordAuthCommand
+class EmailPasswordStrategy(
+    private val userRepository: UserRepository,
+) : AuthenticationStrategy<EmailPasswordCredentials>() {
+    override fun authenticate(credentials: EmailPasswordCredentials): AuthResult {
+        return try {
+            val user =
+                userRepository.findByEmail(credentials.email)
+                    ?: return AuthResult.Failure("User not found")
 
-    override fun authenticate(command: AuthenticationCommand): String {
-        require(command is EmailPasswordAuthCommand) { "지원하지 않는 인증 방식입니다." }
-
-        val authentication =
-            authenticationManager.authenticate(
-                UsernamePasswordAuthenticationToken(command.email, command.password),
-            )
-
-        return jwtTokenProvider.issueToken(authentication.name)
+            if (BCrypt.checkpw(credentials.password, user.password)) {
+                createAuthResult(user)
+            } else {
+                AuthResult.Failure("Invalid password")
+            }
+        } catch (e: Exception) {
+            AuthResult.Failure("Authentication failed: ${e.message}")
+        }
     }
+
+    override fun supports(type: AuthType): Boolean = type == AuthType.EMAIL
 }

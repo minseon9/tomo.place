@@ -5,36 +5,31 @@ import place.tomo.domain.constant.OAuthProvider
 import place.tomo.infra.repositories.SocialAccountRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import place.tomo.domain.commands.LinkSocialAccountCommand
 
 @Service
 class SocialAccountDomainService(
-    private val socialAccountRepository: SocialAccountRepository
+    private val socialAccountRepository: SocialAccountRepository,
+    private val userDomainService: UserDomainService,
 ) {
-    
-    fun findBySocialAccount(provider: OAuthProvider, socialId: String): SocialAccountEntity? {
-        return socialAccountRepository.findByProviderAndSocialIdAndIsActive(provider, socialId)
-    }
-    
+    // FIXME: 이미 연결된 경우, 오류 처리가 아니라 entity를 반환
     @Transactional
     fun linkSocialAccount(
-        userId: Long,
-        provider: OAuthProvider,
-        socialId: String,
-        email: String?,
-        name: String?,
-        profileImageUrl: String?
+        command: LinkSocialAccountCommand,
     ): SocialAccountEntity {
         // 기존에 연결된 소셜 계정이 있는지 확인
-        val existingSocialAccount = socialAccountRepository.findByUserIdAndProviderAndIsActive(userId, provider)
-        if (existingSocialAccount != null) {
-            throw IllegalStateException("이미 ${provider.name} 계정이 연결되어 있습니다.")
-        }
-        
+        // FIXME: email로 조회. email이 nullable인 지 검증
+        val existingSocialAccount = socialAccountRepository.findByProviderAndSocialIdAndIsActive(command.provider,command.socialId)
         // 해당 소셜 계정이 다른 회원에게 연결되어 있는지 확인
         if (socialAccountRepository.existsByProviderAndSocialId(provider, socialId)) {
             throw IllegalStateException("해당 ${provider.name} 계정은 이미 다른 회원과 연결되어 있습니다.")
         }
-        
+
+        if (existingSocialAccount != null) {
+            return existingSocialAccount
+        }
+        // FIXME: password 빈 값 처리 필요
+        val user = userDomainService.createUser()
         val socialAccount = SocialAccountEntity.create(
             userId = userId,
             provider = provider,
@@ -55,8 +50,4 @@ class SocialAccountDomainService(
         socialAccount.deactivate()
         socialAccountRepository.save(socialAccount)
     }
-    
-    fun getLinkedSocialAccounts(userId: Long): List<SocialAccountEntity> {
-        return socialAccountRepository.findByUserIdAndIsActive(userId)
-    }
-} 
+}

@@ -1,4 +1,4 @@
-package place.tomo.common.user
+package place.tomo.common.resolvers.usercontext
 
 data class UserContext(
     val userId: Long,
