@@ -1,8 +1,5 @@
 package place.tomo.infra.config
 
-import place.tomo.application.services.CustomUserDetailsService
-import place.tomo.domain.services.JwtTokenProvider
-import place.tomo.domain.services.UserDomainService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
@@ -17,15 +14,18 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.HttpStatusEntryPoint
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import place.tomo.application.services.CustomUserDetailsService
+import place.tomo.domain.services.JwtTokenProvider
+import place.tomo.infra.repositories.UserRepository
 
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
     private val jwtTokenProvider: JwtTokenProvider,
-    private val userDomainService: UserDomainService,
+    private val userRepository: UserRepository,
 ) {
     @Bean
-    fun userDetailsService(): UserDetailsService = CustomUserDetailsService(userDomainService)
+    fun userDetailsService(): UserDetailsService = CustomUserDetailsService(userRepository)
 
     @Bean
     fun jwtAuthenticationFilter(userDetailsService: UserDetailsService): JwtAuthenticationFilter =
@@ -47,19 +47,26 @@ class SecurityConfig(
     fun filterChain(
         http: HttpSecurity,
         jwtAuthenticationFilter: JwtAuthenticationFilter,
-    ): SecurityFilterChain =
-        http
+    ): SecurityFilterChain {
+        // FIXME: pattern
+        return http
             .csrf { csrf ->
-                csrf.ignoringRequestMatchers("/api/users/**")
+                csrf
+                    .ignoringRequestMatchers(
+                        "/api/auth/login",
+                        "/api/auth/signup",
+                        "/api/oauth/social-login",
+                        "/api/oauth/social-accounts",
+                    )
             }.authorizeHttpRequests { auth ->
                 auth
                     .requestMatchers(
                         HttpMethod.POST,
-                        "/api/users/signup",
-                        "/api/users/login",
-                        "/api/users/social-login/**"
-                    )
-                    .permitAll()
+                        "/api/auth/login",
+                        "/api/auth/signup",
+                        "/api/oauth/social-login",
+                        "/api/oauth/social-accounts",
+                    ).permitAll()
                     .anyRequest()
                     .authenticated()
             }.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
@@ -73,4 +80,5 @@ class SecurityConfig(
                 logout.permitAll()
             }.httpBasic { it.disable() }
             .build()
-} 
+    }
+}

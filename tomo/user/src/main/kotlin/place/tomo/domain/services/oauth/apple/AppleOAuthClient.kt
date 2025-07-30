@@ -18,6 +18,19 @@ import java.time.Instant
 import java.util.Base64
 import java.util.Date
 
+// @FeignClient(
+//    name = "AppleOAuthClient",
+//    url = "https://appleid.apple.com",
+//    configuration = AppleOAuthConfig.class)
+//            public interface AppleOAuthClient {
+//
+//        @PostMapping("/auth/token?grant_type=authorization_code")
+//        AppleTokenResponse appleAuth(
+//        @RequestParam("client_id") String clientId,
+//        @RequestParam("redirect_uri") String redirectUri,
+//        @RequestParam("code") String code,
+//        @RequestParam("client_secret") String clientSecret);
+//    }
 @Component
 class AppleOAuthClient(
     private val httpClient: HttpClient,

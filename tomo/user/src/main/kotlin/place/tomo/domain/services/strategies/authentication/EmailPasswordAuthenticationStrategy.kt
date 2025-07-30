@@ -3,25 +3,24 @@ package place.tomo.domain.services.strategies.authentication
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.stereotype.Component
-import place.tomo.application.commands.AuthenticationCommand
-import place.tomo.application.commands.EmailPasswordAuthCommand
-import place.tomo.domain.services.JwtTokenProvider
+import place.tomo.contract.constant.AuthenticationType
+import place.tomo.domain.commands.AuthCredentials
+import place.tomo.domain.commands.EmailPasswordCredentials
 
 @Component
 class EmailPasswordAuthenticationStrategy(
     private val authenticationManager: AuthenticationManager,
-    private val jwtTokenProvider: JwtTokenProvider,
-) : AuthenticationStrategy {
-    override fun supports(command: AuthenticationCommand): Boolean = command is EmailPasswordAuthCommand
+) : AuthenticationStrategy() {
+    override fun supports(type: AuthenticationType): Boolean = type == AuthenticationType.EMAILPASSWORD
 
-    override fun authenticate(command: AuthenticationCommand): String {
-        require(command is EmailPasswordAuthCommand) { "지원하지 않는 인증 방식입니다." }
+    override fun authenticate(credentials: AuthCredentials): String {
+        val emailCreds = credentials as EmailPasswordCredentials
 
         val authentication =
             authenticationManager.authenticate(
-                UsernamePasswordAuthenticationToken(command.email, command.password),
+                UsernamePasswordAuthenticationToken(emailCreds.email, emailCreds.password),
             )
 
-        return jwtTokenProvider.issueToken(authentication.name)
+        return authentication.name
     }
 }

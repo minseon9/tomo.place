@@ -1,62 +1,56 @@
 package place.tomo.domain.services
 
-import place.tomo.domain.entities.SocialAccountEntity
-import place.tomo.domain.constant.OAuthProvider
-import place.tomo.infra.repositories.SocialAccountRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import place.tomo.domain.commands.LinkSocialAccountCommand
+import place.tomo.domain.constant.OAuthProvider
+import place.tomo.domain.entities.SocialAccountEntity
+import place.tomo.infra.repositories.SocialAccountRepository
 
 @Service
 class SocialAccountDomainService(
-    private val socialAccountRepository: SocialAccountRepository
+    private val socialAccountRepository: SocialAccountRepository,
+    private val userDomainService: UserDomainService,
 ) {
-    
-    fun findBySocialAccount(provider: OAuthProvider, socialId: String): SocialAccountEntity? {
-        return socialAccountRepository.findByProviderAndSocialIdAndIsActive(provider, socialId)
-    }
-    
     @Transactional
-    fun linkSocialAccount(
-        userId: Long,
-        provider: OAuthProvider,
-        socialId: String,
-        email: String?,
-        name: String?,
-        profileImageUrl: String?
-    ): SocialAccountEntity {
+    fun linkSocialAccount(command: LinkSocialAccountCommand): SocialAccountEntity {
         // 기존에 연결된 소셜 계정이 있는지 확인
-        val existingSocialAccount = socialAccountRepository.findByUserIdAndProviderAndIsActive(userId, provider)
-        if (existingSocialAccount != null) {
-            throw IllegalStateException("이미 ${provider.name} 계정이 연결되어 있습니다.")
-        }
-        
+        // FIXME: email로 조회. email이 nullable인 지 검증
+        val existingSocialAccount = socialAccountRepository.findByProviderAndSocialIdAndIsActive(command.provider, command.socialId)
         // 해당 소셜 계정이 다른 회원에게 연결되어 있는지 확인
-        if (socialAccountRepository.existsByProviderAndSocialId(provider, socialId)) {
-            throw IllegalStateException("해당 ${provider.name} 계정은 이미 다른 회원과 연결되어 있습니다.")
+//        if (socialAccountRepository.existsByProviderAndSocialId(provider, socialId)) {
+//            throw IllegalStateException("해당 ${provider.name} 계정은 이미 다른 회원과 연결되어 있습니다.")
+//        }
+
+        if (existingSocialAccount != null) {
+            return existingSocialAccount
         }
-        
-        val socialAccount = SocialAccountEntity.create(
-            userId = userId,
-            provider = provider,
-            socialId = socialId,
-            email = email,
-            name = name,
-            profileImageUrl = profileImageUrl
-        )
-        
+
+        // FIXME: password 빈 값 처리 필요
+        val user = userDomainService.createUser(command.email ?: "", "", command.name ?: "")
+        val socialAccount =
+            SocialAccountEntity.create(
+                user = user,
+                provider = command.provider,
+                socialId = command.socialId,
+                email = command.email,
+                name = command.name,
+                profileImageUrl = command.profileImageUrl,
+            )
+
         return socialAccountRepository.save(socialAccount)
     }
-    
+
     @Transactional
-    fun unlinkSocialAccount(userId: Long, provider: OAuthProvider) {
-        val socialAccount = socialAccountRepository.findByUserIdAndProviderAndIsActive(userId, provider)
-            ?: throw IllegalArgumentException("연결된 ${provider.name} 계정을 찾을 수 없습니다.")
-        
+    fun unlinkSocialAccount(
+        userId: Long,
+        provider: OAuthProvider,
+    ) {
+        val socialAccount =
+            socialAccountRepository.findByUserIdAndProviderAndIsActive(userId, provider)
+                ?: throw IllegalArgumentException("연결된 ${provider.name} 계정을 찾을 수 없습니다.")
+
         socialAccount.deactivate()
         socialAccountRepository.save(socialAccount)
     }
-    
-    fun getLinkedSocialAccounts(userId: Long): List<SocialAccountEntity> {
-        return socialAccountRepository.findByUserIdAndIsActive(userId)
-    }
-} 
+}

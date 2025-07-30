@@ -13,11 +13,6 @@ import org.springframework.data.annotation.LastModifiedDate
 import place.tomo.domain.constant.UserStatus
 import java.time.LocalDateTime
 
-/**
- * User 도메인 모델 (Entity)
- * - 사용자 기본 정보 및 인증 정보 관리
- * - 소셜 계정과 연결되는 기본 사용자 엔티티
- */
 @Entity
 @Table(name = "user")
 class UserEntity(
@@ -56,4 +51,4 @@ class UserEntity(
             return UserEntity(email = email, password = password, username = username, status = UserStatus.ACTIVATED)
         }
     }
-} 
+}
