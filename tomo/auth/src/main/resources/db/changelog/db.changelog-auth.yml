@@ -1,0 +1,3 @@
+databaseChangeLog:
+- include:
+    file: migrations/1754666862887-change-changelog-identity.yml
