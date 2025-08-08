@@ -1,4 +1,4 @@
-package place.tomo.infra.adapters
+package place.tomo.user.infra.adapters
 
 import org.springframework.stereotype.Component
 import place.tomo.contract.dtos.UserInfoDTO
@@ -25,5 +25,8 @@ class SocialAccountQueryAdapter(
         password: String,
         name: String,
     ) {
+        // no-op: linking is handled in auth domain via command port
     }
 }
+
+

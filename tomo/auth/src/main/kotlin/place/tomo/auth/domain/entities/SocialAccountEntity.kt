@@ -4,18 +4,17 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
-import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
+import org.hibernate.annotations.SQLDelete
+import org.hibernate.annotations.Where
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
 import place.tomo.contract.constant.OIDCProviderType
-import place.tomo.user.domain.entities.UserEntity
+// user 도메인 엔티티 직접 참조 제거
 import java.time.LocalDateTime
 
 /**
@@ -30,12 +29,13 @@ import java.time.LocalDateTime
         UniqueConstraint(columnNames = ["provider", "social_id"]),
     ],
 )
+@SQLDelete(sql = "UPDATE social_account SET is_active = false WHERE id = ?")
+@Where(clause = "is_active = true")
 class SocialAccountEntity(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    val user: UserEntity,
+    @Column(name = "user_id", nullable = false)
+    val userId: Long,
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     val provider: OIDCProviderType,
@@ -58,7 +58,7 @@ class SocialAccountEntity(
 ) {
     companion object {
         fun create(
-            user: UserEntity,
+            userId: Long,
             provider: OIDCProviderType,
             socialId: String,
             email: String?,
@@ -66,7 +66,7 @@ class SocialAccountEntity(
             profileImageUrl: String?,
         ): SocialAccountEntity =
             SocialAccountEntity(
-                user = user,
+                userId = userId,
                 provider = provider,
                 socialId = socialId,
                 email = email,

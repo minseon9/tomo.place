@@ -18,7 +18,7 @@ class OIDCApplicationService(
         // FIXME: token에서부터 user 정보 가져온 후에 생성해줘야함
         val userInfo = authenticateService.getOidcUserInfo(request.provider, request.authorizationCode)
 
-        socialAccountQueryPort.linkSocialAccount(
+        socialAccountService.linkSocialAccount(
             LinkSocialAccountCommand(
                 provider = request.provider,
                 socialId = userInfo.socialId,

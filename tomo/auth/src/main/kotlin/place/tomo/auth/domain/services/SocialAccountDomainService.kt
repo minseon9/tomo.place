@@ -6,12 +6,12 @@ import place.tomo.auth.domain.commands.LinkSocialAccountCommand
 import place.tomo.auth.domain.entities.SocialAccountEntity
 import place.tomo.contract.constant.OIDCProviderType
 import place.tomo.infra.repositories.SocialAccountRepository
-import place.tomo.user.domain.services.UserDomainService
+import place.tomo.contract.ports.UserCommandPort
 
 @Service
 class SocialAccountDomainService(
     private val socialAccountRepository: SocialAccountRepository,
-    private val userDomainService: UserDomainService,
+    private val userCommandPort: UserCommandPort,
 ) {
     @Transactional
     fun linkSocialAccount(command: LinkSocialAccountCommand): SocialAccountEntity {
@@ -28,10 +28,10 @@ class SocialAccountDomainService(
         }
 
         // FIXME: password 빈 값 처리 필요
-        val user = userDomainService.createUser(command.email ?: "", "", command.name ?: "")
+        val userId = userCommandPort.create(command.email ?: "", "", command.name)
         val socialAccount =
             SocialAccountEntity.create(
-                user = user,
+                userId = userId.value,
                 provider = command.provider,
                 socialId = command.socialId,
                 email = command.email,
