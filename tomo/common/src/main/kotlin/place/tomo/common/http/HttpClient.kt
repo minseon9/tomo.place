@@ -5,13 +5,15 @@ import org.springframework.http.MediaType
 interface HttpClient {
     suspend fun <T> post(
         uri: String,
-        body: Map<String, String>,
+        body: Map<String, String> = emptyMap(),
+        query: Map<String, String>? = null,
         responseType: Class<T>,
-        contentType: MediaType = MediaType.APPLICATION_FORM_URLENCODED,
+        contentType: MediaType = MediaType.APPLICATION_JSON,
     ): T
 
     suspend fun <T> get(
         uri: String,
+        query: Map<String, String>? = null,
         responseType: Class<T>,
         accessToken: String? = null,
     ): T
@@ -19,11 +21,13 @@ interface HttpClient {
 
 suspend inline fun <reified T> HttpClient.post(
     uri: String,
-    body: Map<String, String>,
-    contentType: MediaType = MediaType.APPLICATION_FORM_URLENCODED,
-): T = post(uri, body, T::class.java, contentType)
+    body: Map<String, String> = emptyMap(),
+    query: Map<String, String>? = null,
+    contentType: MediaType = MediaType.APPLICATION_JSON,
+): T = post(uri, body, query, T::class.java, contentType)
 
 suspend inline fun <reified T> HttpClient.get(
     uri: String,
+    query: Map<String, String>? = null,
     accessToken: String? = null,
-): T = get(uri, T::class.java, accessToken)
+): T = get(uri, query, T::class.java, accessToken)
