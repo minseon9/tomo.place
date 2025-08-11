@@ -4,6 +4,8 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import place.tomo.user.domain.entities.UserEntity
 import place.tomo.user.infra.repositories.UserRepository
+import place.tomo.common.exception.HttpErrorStatus
+import place.tomo.common.exception.HttpException
 
 @Service
 class UserDomainService(
@@ -17,8 +19,7 @@ class UserDomainService(
         name: String,
     ): UserEntity {
         if (userRepository.findByEmail(email) != null) {
-            println("이미 존재하는 이메일")
-            throw IllegalArgumentException("이미 존재하는 이메일입니다.")
+            throw HttpException(HttpErrorStatus.CONFLICT, "이미 존재하는 이메일입니다.")
         }
 
         val encodedPassword = passwordEncoder.encode(rawPassword)

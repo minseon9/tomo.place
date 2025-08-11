@@ -11,6 +11,8 @@ import jakarta.persistence.Table
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
 import place.tomo.user.domain.constant.UserStatus
+import place.tomo.common.exception.HttpErrorStatus
+import place.tomo.common.exception.HttpException
 import java.time.LocalDateTime
 
 @Entity
@@ -43,9 +45,15 @@ class UserEntity(
             password: String,
             username: String,
         ): UserEntity {
-            require(email.isNotBlank()) { "이메일은 필수입니다." }
-            require(password.length >= 8) { "비밀번호는 8자 이상이어야 합니다." }
-            require(username.isNotBlank()) { "이름은 필수입니다." }
+            if (email.isBlank()) {
+                throw HttpException(HttpErrorStatus.BAD_REQUEST, "이메일은 필수입니다.")
+            }
+            if (password.length < 8) {
+                throw HttpException(HttpErrorStatus.BAD_REQUEST, "비밀번호는 8자 이상이어야 합니다.")
+            }
+            if (username.isBlank()) {
+                throw HttpException(HttpErrorStatus.BAD_REQUEST, "이름은 필수입니다.")
+            }
 
             // FIXME: 이메일 인증 같은 프로세스가 없어서 우선 ACTIVATED로 생성
             return UserEntity(email = email, password = password, username = username, status = UserStatus.ACTIVATED)
