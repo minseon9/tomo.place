@@ -1,11 +1,11 @@
-package place.tomo.auth.domain.models
+package place.tomo.auth.domain.dtos.oidc
 
 import place.tomo.contract.constant.OIDCProviderType
 
-data class OidcUserInfo(
+data class OIDCUserInfo(
     val provider: OIDCProviderType,
     val socialId: String,
-    val email: String?,
-    val name: String?,
+    val email: String,
+    val name: String,
     val profileImageUrl: String?,
 )
