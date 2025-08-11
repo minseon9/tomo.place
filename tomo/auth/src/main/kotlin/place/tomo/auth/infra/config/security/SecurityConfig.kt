@@ -1,9 +1,8 @@
-package place.tomo.auth.infra.config
+package place.tomo.auth.infra.config.security
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
-import org.springframework.http.HttpStatus
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -11,21 +10,30 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
-import org.springframework.security.web.authentication.HttpStatusEntryPoint
+import org.springframework.security.web.access.AccessDeniedHandler
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import place.tomo.auth.application.services.CustomUserDetailsService
 import place.tomo.auth.domain.services.JwtTokenProvider
-import place.tomo.contract.ports.UserQueryPort
+import place.tomo.contract.ports.UserDomainPort
 
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
     private val jwtTokenProvider: JwtTokenProvider,
-    private val userQueryPort: UserQueryPort,
+    private val userDomainPort: UserDomainPort,
 ) {
+    private val publicPostEndpoints =
+        arrayOf(
+            "/api/auth/login",
+            "/api/auth/signup",
+            "/api/oidc/login",
+            "/api/oidc/signup",
+        )
+
     @Bean
-    fun userDetailsService(): UserDetailsService = CustomUserDetailsService(userQueryPort)
+    fun userDetailsService(): UserDetailsService = CustomUserDetailsService(userDomainPort)
 
     @Bean
     fun jwtAuthenticationFilter(userDetailsService: UserDetailsService): JwtAuthenticationFilter =
@@ -47,31 +55,24 @@ class SecurityConfig(
     fun filterChain(
         http: HttpSecurity,
         jwtAuthenticationFilter: JwtAuthenticationFilter,
-    ): SecurityFilterChain {
-        // FIXME: pattern
-        return http
+        authenticationEntryPoint: AuthenticationEntryPoint,
+        accessDeniedHandler: AccessDeniedHandler,
+    ): SecurityFilterChain =
+        http
             .csrf { csrf ->
                 csrf
-                    .ignoringRequestMatchers(
-                        "/api/auth/login",
-                        "/api/auth/signup",
-                        "/api/oauth/social-login",
-                        "/api/oauth/social-accounts",
-                    )
+                    .ignoringRequestMatchers(*publicPostEndpoints)
             }.authorizeHttpRequests { auth ->
                 auth
-                    .requestMatchers(
-                        HttpMethod.POST,
-                        "/api/auth/login",
-                        "/api/auth/signup",
-                        "/api/oauth/social-login",
-                        "/api/oauth/social-accounts",
-                    ).permitAll()
+                    .requestMatchers(HttpMethod.POST, *publicPostEndpoints)
+                    .permitAll()
                     .anyRequest()
                     .authenticated()
             }.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
             .exceptionHandling { exception ->
-                exception.authenticationEntryPoint(HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+                exception
+                    .authenticationEntryPoint(authenticationEntryPoint)
+                    .accessDeniedHandler(accessDeniedHandler)
             }.formLogin {
                 it.disable()
             }.sessionManagement {
@@ -80,5 +81,10 @@ class SecurityConfig(
                 logout.permitAll()
             }.httpBasic { it.disable() }
             .build()
-    }
+
+    @Bean
+    fun authenticationEntryPoint(): AuthenticationEntryPoint = JsonAuthenticationEntryPoint()
+
+    @Bean
+    fun accessDeniedHandler(): AccessDeniedHandler = JsonAccessDeniedHandler()
 }

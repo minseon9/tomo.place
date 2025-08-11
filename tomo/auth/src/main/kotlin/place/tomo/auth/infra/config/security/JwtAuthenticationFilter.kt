@@ -1,4 +1,4 @@
-package place.tomo.auth.infra.config
+package place.tomo.auth.infra.config.security
 
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
