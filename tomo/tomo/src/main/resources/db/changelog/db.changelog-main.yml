@@ -1,6 +1,5 @@
 databaseChangeLog:
-  - include:
-      file: auth/src/main/resources/db/changelog/db.changelog-auth.yml
-  # TODO: user 모듈의 changelog가 생기면 아래에 include 추가
-  # - include:
-  #     file: user/src/main/resources/db/changelog/db.changelog-user.yml
+- include:
+    file: auth/src/main/resources/db/changelog/db.changelog-auth.yml
+- include:
+    file: user/src/main/resources/db/changelog/db.changelog-user.yml

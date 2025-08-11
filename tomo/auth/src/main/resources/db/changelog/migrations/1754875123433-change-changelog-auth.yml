@@ -1,0 +1,80 @@
+databaseChangeLog:
+- changeSet:
+    id: 1754875166148-1
+    author: ian (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            autoIncrement: true
+            constraints:
+              nullable: false
+              primaryKey: true
+              primaryKeyName: social_accountPK
+            name: id
+            type: BIGINT
+        - column:
+            constraints:
+              nullable: false
+            name: created_at
+            type: TIMESTAMP(6) WITHOUT TIME ZONE
+        - column:
+            constraints:
+              nullable: false
+            name: email
+            type: VARCHAR(255)
+        - column:
+            constraints:
+              nullable: false
+            name: is_active
+            type: BOOLEAN
+        - column:
+            name: name
+            type: VARCHAR(255)
+        - column:
+            name: profile_image_url
+            type: VARCHAR(255)
+        - column:
+            constraints:
+              nullable: false
+            name: provider
+            type: VARCHAR(255)
+        - column:
+            constraints:
+              nullable: false
+            name: social_id
+            type: VARCHAR(255)
+        - column:
+            constraints:
+              nullable: false
+            name: updated_at
+            type: TIMESTAMP(6) WITHOUT TIME ZONE
+        - column:
+            constraints:
+              nullable: false
+            name: user_id
+            type: BIGINT
+        tableName: social_account
+- changeSet:
+    id: 1754875166148-2
+    author: ian (generated)
+    changes:
+    - addUniqueConstraint:
+        columnNames: provider, social_id
+        constraintName: UK7qvotc6xu79jjtlvadwc2rgjh
+        tableName: social_account
+- changeSet:
+      id: 1754875166148-3
+      author: ian (generated)
+      changes:
+          - addForeignKeyConstraint:
+                baseColumnNames: user_id
+                baseTableName: social_account
+                constraintName: FKqg7naq00cg9s76a2tljlyafn6
+                deferrable: false
+                initiallyDeferred: false
+                referencedColumnNames: id
+                referencedTableName: users
+                validate: true
+
+
