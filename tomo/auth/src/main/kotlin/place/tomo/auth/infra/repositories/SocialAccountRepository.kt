@@ -7,10 +7,9 @@ import place.tomo.auth.domain.entities.SocialAccountEntity
 import place.tomo.contract.constant.OIDCProviderType
 
 interface SocialAccountRepository : JpaRepository<SocialAccountEntity, Long> {
-    fun findByProviderAndSocialIdAndIsActive(
+    fun findByProviderAndSocialId(
         provider: OIDCProviderType,
         socialId: String,
-        isActive: Boolean = true,
     ): SocialAccountEntity?
 
     fun findByUserIdAndProviderAndIsActive(
@@ -19,14 +18,10 @@ interface SocialAccountRepository : JpaRepository<SocialAccountEntity, Long> {
         isActive: Boolean = true,
     ): SocialAccountEntity?
 
-    fun findByUserIdAndIsActive(
-        userId: Long,
-        isActive: Boolean = true,
-    ): List<SocialAccountEntity>
-
-    fun existsByProviderAndSocialId(
+    fun existsByProviderAndSocialIdAndIsActive(
         provider: OIDCProviderType,
         socialId: String,
+        isActive: Boolean = true,
     ): Boolean
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)

@@ -5,5 +5,4 @@ import place.tomo.contract.constant.OIDCProviderType
 data class OIDCLoginRequestBody(
     val provider: OIDCProviderType,
     val authorizationCode: String,
-    val state: String,
 )

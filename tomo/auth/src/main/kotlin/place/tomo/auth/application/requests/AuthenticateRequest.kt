@@ -10,5 +10,4 @@ data class EmailPasswordAuthenticateRequest(
 data class OIDCAuthenticateRequest(
     val provider: OIDCProviderType,
     val authorizationCode: String,
-    val state: String? = null,
 )

@@ -6,16 +6,16 @@ import place.tomo.auth.application.requests.EmailPasswordAuthenticateRequest
 import place.tomo.auth.application.requests.SignUpRequest
 import place.tomo.auth.application.responses.LoginResponse
 import place.tomo.auth.domain.services.AuthenticationService
-import place.tomo.contract.ports.UserQueryPort
+import place.tomo.contract.ports.UserDomainPort
 
 @Service
 class AuthApplicationService(
     private val authenticateService: AuthenticationService,
-    private val userQueryPort: UserQueryPort,
+    private val userDomainPort: UserDomainPort,
 ) {
     @Transactional
     fun signUp(request: SignUpRequest) {
-        userQueryPort.createUser(request.email, request.password, request.name)
+        userDomainPort.create(request.email, request.password, request.name)
 
         // TODO: email 인증 번호 저장
         // TODO: email 인증 발송

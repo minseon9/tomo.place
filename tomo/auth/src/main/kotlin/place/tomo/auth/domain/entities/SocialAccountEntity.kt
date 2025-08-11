@@ -10,18 +10,11 @@ import jakarta.persistence.Id
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import org.hibernate.annotations.SQLDelete
-import org.hibernate.annotations.Where
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
 import place.tomo.contract.constant.OIDCProviderType
-// user 도메인 엔티티 직접 참조 제거
 import java.time.LocalDateTime
 
-/**
- * 소셜 계정 엔티티
- * - 사용자와 소셜 로그인 제공자 간의 연결 정보 관리
- * - 하나의 사용자는 여러 소셜 계정을 연결할 수 있음
- */
 @Entity
 @Table(
     name = "social_account",
@@ -30,7 +23,6 @@ import java.time.LocalDateTime
     ],
 )
 @SQLDelete(sql = "UPDATE social_account SET is_active = false WHERE id = ?")
-@Where(clause = "is_active = true")
 class SocialAccountEntity(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
@@ -41,8 +33,8 @@ class SocialAccountEntity(
     val provider: OIDCProviderType,
     @Column(name = "social_id", nullable = false)
     val socialId: String,
-    @Column
-    val email: String?,
+    @Column(name = "email", nullable = false)
+    val email: String,
     @Column
     val name: String?,
     @Column(name = "profile_image_url")
@@ -61,7 +53,7 @@ class SocialAccountEntity(
             userId: Long,
             provider: OIDCProviderType,
             socialId: String,
-            email: String?,
+            email: String,
             name: String?,
             profileImageUrl: String?,
         ): SocialAccountEntity =
@@ -77,6 +69,9 @@ class SocialAccountEntity(
 
     fun deactivate() {
         this.isActive = false
-        this.updatedAt = LocalDateTime.now()
+    }
+
+    fun activate() {
+        this.isActive = true
     }
 }

@@ -1,14 +1,22 @@
 package place.tomo.auth.domain.services
 
+import kotlinx.coroutines.runBlocking
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.stereotype.Service
 import place.tomo.auth.domain.dtos.AuthTokenDTO
+import place.tomo.auth.domain.dtos.oidc.OIDCUserInfo
+import place.tomo.auth.domain.services.oidc.OIDCProviderFactory
+import place.tomo.common.exception.HttpErrorStatus
+import place.tomo.common.exception.HttpException
+import place.tomo.contract.constant.OIDCProviderType
+import place.tomo.domain.services.SocialAccountDomainService
 
 @Service
 class AuthenticationService(
     private val authenticationManager: AuthenticationManager,
-//    private val oAuthServiceFactory: OIDCProviderFactory,
+    private val socialAccountService: SocialAccountDomainService,
+    private val oAuthServiceFactory: OIDCProviderFactory,
     private val jwtTokenProvider: JwtTokenProvider,
 ) {
     fun authenticateEmailPassword(
@@ -26,12 +34,19 @@ class AuthenticationService(
         return AuthTokenDTO(accessToken = accessToken, refreshToken = refreshToken)
     }
 
-    fun authenticateOAuth(
+    fun authenticateOIDC(
         provider: OIDCProviderType,
         authorizationCode: String,
     ): AuthTokenDTO {
         val oidcUserInfo = getOidcUserInfo(provider, authorizationCode)
+        if (!socialAccountService.checkSocialAccount(oidcUserInfo.provider, oidcUserInfo.socialId)) {
+            throw HttpException(HttpErrorStatus.FORBIDDEN, "해당 ${oidcUserInfo.provider} 계정이 비활성화되었거나 없습니다.")
+        }
 
+        return issueOIDCUserAuthToken(oidcUserInfo)
+    }
+
+    fun issueOIDCUserAuthToken(oidcUserInfo: OIDCUserInfo): AuthTokenDTO {
         val accessToken = jwtTokenProvider.issueAccessToken(oidcUserInfo.email)
         val refreshToken = jwtTokenProvider.issueRefreshToken(oidcUserInfo.email)
 
@@ -41,16 +56,9 @@ class AuthenticationService(
     fun getOidcUserInfo(
         provider: OIDCProviderType,
         authorizationCode: String,
-    ): OidcUserInfo =
+    ): OIDCUserInfo =
         runBlocking {
-            val oAuthService = oAuthServiceFactory.getService(provider)
-            val tokenResponse = oAuthService.getTokenResponse(authorizationCode)
-
-            // ID token이 없는 경우 예외 처리
-            val idToken =
-                tokenResponse.idToken
-                    ?: throw IllegalStateException("ID token is required for OIDC")
-
-            oAuthService.getUserInfoFromIdToken(idToken)
+            val service = oAuthServiceFactory.getService(provider)
+            service.getOIDCUserInfo(authorizationCode)
         }
 }
