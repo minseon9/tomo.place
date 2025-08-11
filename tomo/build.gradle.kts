@@ -22,6 +22,15 @@ allprojects {
     }
 }
 
+dependencies {
+    runtimeOnly("io.netty:netty-resolver-dns-native-macos") {
+        artifact { classifier = "osx-aarch_64" }
+    }
+    runtimeOnly("io.netty:netty-resolver-dns-native-macos") {
+        artifact { classifier = "osx-x86_64" }
+    }
+}
+
 subprojects {
     apply(plugin = "kotlin")
     apply(plugin = "kotlin-spring")
@@ -58,6 +67,7 @@ subprojects {
         implementation("org.springframework.boot:spring-boot-starter-web-services")
         implementation("org.springframework.boot:spring-boot-starter-security")
         implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+        implementation("org.springframework.boot:spring-boot-starter-validation")
 
         runtimeOnly("org.postgresql:postgresql")
 
@@ -92,22 +102,24 @@ subprojects {
             val migrationsDir = "$moduleBasePath/migrations"
 
             configure<org.liquibase.gradle.LiquibaseExtension> {
-                val cfg = DbPropsLoader.load(project, "application.properties")
+                val cfg = DbPropsLoader.load(project, "$mainProjectName/src/main/resources/application.properties")
 
                 val changeLogFilePath = if (isMainProject) mainAggregateChangelog else moduleMainChangelog
 
                 // searchPath: 루트 + (메인프로젝트인 경우 모든 활성 모듈의 changelog 디렉토리, 그 외는 해당 모듈)
-                val searchPaths: String = buildList {
-                    add(rootProject.projectDir.absolutePath)
-                    if (isMainProject) {
-                        val enabledModules = rootProject.subprojects.filter {
-                            (it.findProperty("liquibaseEnabled") as String?)?.toBoolean() == true
+                val searchPaths: String =
+                    buildList {
+                        add(rootProject.projectDir.absolutePath)
+                        if (isMainProject) {
+                            val enabledModules =
+                                rootProject.subprojects.filter {
+                                    (it.findProperty("liquibaseEnabled") as String?)?.toBoolean() == true
+                                }
+                            addAll(enabledModules.map { it.projectDir.resolve("src/main/resources/db/changelog").absolutePath })
+                        } else {
+                            add(project.projectDir.resolve("src/main/resources/db/changelog").absolutePath)
                         }
-                        addAll(enabledModules.map { it.projectDir.resolve("src/main/resources/db/changelog").absolutePath })
-                    } else {
-                        add(project.projectDir.resolve("src/main/resources/db/changelog").absolutePath)
-                    }
-                }.joinToString(",")
+                    }.joinToString(",")
 
                 activities.register("main") {
                     arguments =
