@@ -1,7 +1,6 @@
 dependencies {
     implementation(project(":auth"))
     implementation(project(":contract"))
-    implementation(project(":user"))
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-security")
     // Spring Cloud OpenFeign

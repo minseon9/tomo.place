@@ -1,5 +1,4 @@
 dependencies {
-    implementation(project(":member"))
     implementation(project(":contract"))
 
     implementation("io.jsonwebtoken:jjwt-api:0.12.5")
