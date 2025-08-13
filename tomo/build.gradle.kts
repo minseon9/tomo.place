@@ -89,7 +89,6 @@ subprojects {
             val moduleBasePath = "${project.name}/src/main/resources/db/changelog"
             val moduleMainChangelog = "$moduleBasePath/db.changelog-${project.name}.yml"
             val mainAggregateChangelog = "$mainProjectName/src/main/resources/db/changelog/db.changelog-main.yml"
-            val migrationsDir = "$moduleBasePath/migrations"
 
             configure<org.liquibase.gradle.LiquibaseExtension> {
                 val cfg = DbPropsLoader.load(project, "$mainProjectName/src/main/resources/application.properties")
