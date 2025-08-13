@@ -2,25 +2,31 @@ package place.tomo.auth.domain.services
 
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
+import io.jsonwebtoken.io.Decoders
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.util.Date
 
 @Service
-class JwtTokenProvider {
-    // 32byte 이상의 임의의 시크릿 키 (예시)
-    private val secretKey = "d8f3b2c1e4a7f6b9c2d1e8f7a6b5c4d3d8f3b2c1e4a7f6b9c2d1e8f7a6b5c4d3" // 64byte
-    private val key = Keys.hmacShaKeyFor(secretKey.toByteArray())
-
-    companion object {
-        private const val ACCESS_TOKEN_EXPIRATION: Long = 60 * 60 * 24 * 7 // 7 days
-        private const val REFRESH_TOKEN_EXPIRATION: Long = 60 * 60 * 24 * 365 // 365 days
-        private const val ISSUER = "place.tomo"
+class JwtTokenProvider(
+    @Value("\${security.jwt.secret}") private val secret: String,
+    @Value("\${security.jwt.issuer:place.tomo}") private val issuer: String,
+    @Value("\${security.jwt.access-ttl-seconds:604800}") private val accessTtlSeconds: Long, // 7 days
+    @Value("\${security.jwt.refresh-ttl-seconds:31536000}") private val refreshTtlSeconds: Long, // 365 days
+) {
+    private val key by lazy {
+        val rawKeyBytes = try {
+            Decoders.BASE64.decode(secret)
+        } catch (e: Exception) {
+            secret.toByteArray()
+        }
+        Keys.hmacShaKeyFor(rawKeyBytes)
     }
 
-    fun issueAccessToken(subject: String): String = issueToken(subject, ACCESS_TOKEN_EXPIRATION)
+    fun issueAccessToken(subject: String): String = issueToken(subject, accessTtlSeconds)
 
-    fun issueRefreshToken(subject: String): String = issueToken(subject, REFRESH_TOKEN_EXPIRATION)
+    fun issueRefreshToken(subject: String): String = issueToken(subject, refreshTtlSeconds)
 
     fun validateToken(jwt: String): Boolean {
         try {
@@ -55,7 +61,7 @@ class JwtTokenProvider {
         return Jwts
             .builder()
             .subject(subject)
-            .issuer(ISSUER)
+            .issuer(issuer)
             .issuedAt(Date.from(nowInstant))
             .expiration(Date.from(nowInstant.plusSeconds(expiration)))
             .signWith(key, Jwts.SIG.HS256)
