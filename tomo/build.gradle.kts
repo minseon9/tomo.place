@@ -99,15 +99,19 @@ subprojects {
                 // searchPath: 루트 + (메인프로젝트인 경우 모든 활성 모듈의 changelog 디렉토리, 그 외는 해당 모듈)
                 val searchPaths: String =
                     buildList {
-                        add(rootProject.projectDir.absolutePath)
+                        add(project.relativePath(rootProject.projectDir))
                         if (isMainProject) {
                             val enabledModules =
                                 rootProject.subprojects.filter {
                                     (it.findProperty("liquibaseEnabled") as String?)?.toBoolean() == true
                                 }
-                            addAll(enabledModules.map { it.projectDir.resolve("src/main/resources/db/changelog").absolutePath })
+                            addAll(
+                                enabledModules.map {
+                                    project.relativePath(it.projectDir.resolve("src/main/resources/db/changelog"))
+                                }
+                            )
                         } else {
-                            add(project.projectDir.resolve("src/main/resources/db/changelog").absolutePath)
+                            add(project.relativePath(project.projectDir.resolve("src/main/resources/db/changelog")))
                         }
                     }.joinToString(",")
 
