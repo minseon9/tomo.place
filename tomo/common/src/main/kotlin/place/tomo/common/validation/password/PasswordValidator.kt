@@ -8,7 +8,7 @@ data class ValidationResult(
 )
 
 interface PasswordValidator {
-    fun getPolicies(): List<PasswordPolicy>
+    fun getPasswordPolicies(): List<PasswordPolicy>
 
     fun validate(password: String): ValidationResult
 }
@@ -17,7 +17,7 @@ interface PasswordValidator {
 class PasswordValidatorImpl(
     val policies: List<PasswordPolicy>,
 ) : PasswordValidator {
-    override fun getPolicies(): List<PasswordPolicy> = policies
+    override fun getPasswordPolicies(): List<PasswordPolicy> = policies
 
     override fun validate(password: String): ValidationResult {
         val violations = mutableListOf<String>()
