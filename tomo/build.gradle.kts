@@ -108,7 +108,7 @@ subprojects {
                             addAll(
                                 enabledModules.map {
                                     project.relativePath(it.projectDir.resolve("src/main/resources/db/changelog"))
-                                }
+                                },
                             )
                         } else {
                             add(project.relativePath(project.projectDir.resolve("src/main/resources/db/changelog")))

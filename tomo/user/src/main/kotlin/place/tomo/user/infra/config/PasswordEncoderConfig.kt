@@ -1,4 +1,4 @@
-package place.tomo.infra.config
+package place.tomo.user.infra.config
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -9,4 +9,4 @@ import org.springframework.security.crypto.password.PasswordEncoder
 class PasswordEncoderConfig {
     @Bean
     fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
-} 
+}
