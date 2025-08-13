@@ -1,4 +1,4 @@
-package place.tomo.auth.infra.config
+package place.tomo.common.http
 
 import io.netty.channel.ChannelOption
 import io.netty.handler.timeout.ReadTimeoutHandler
