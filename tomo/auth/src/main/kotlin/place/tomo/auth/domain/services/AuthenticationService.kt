@@ -10,7 +10,6 @@ import place.tomo.auth.domain.services.oidc.OIDCProviderFactory
 import place.tomo.common.exception.HttpErrorStatus
 import place.tomo.common.exception.HttpException
 import place.tomo.contract.constant.OIDCProviderType
-import place.tomo.domain.services.SocialAccountDomainService
 
 @Service
 class AuthenticationService(

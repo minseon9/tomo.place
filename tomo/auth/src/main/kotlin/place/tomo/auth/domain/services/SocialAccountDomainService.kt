@@ -1,13 +1,13 @@
-package place.tomo.domain.services
+package place.tomo.auth.domain.services
 
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import place.tomo.auth.domain.commands.LinkSocialAccountCommand
 import place.tomo.auth.domain.entities.SocialAccountEntity
+import place.tomo.auth.infra.repositories.SocialAccountRepository
 import place.tomo.common.exception.HttpErrorStatus
 import place.tomo.common.exception.HttpException
 import place.tomo.contract.constant.OIDCProviderType
-import place.tomo.infra.repositories.SocialAccountRepository
 
 @Service
 class SocialAccountDomainService(
