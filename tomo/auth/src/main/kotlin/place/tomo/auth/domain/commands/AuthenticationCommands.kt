@@ -1,4 +1,6 @@
 
+package place.tomo.auth.domain.commands
+
 import place.tomo.contract.constant.AuthenticationType
 import place.tomo.contract.constant.OIDCProviderType
 
