@@ -13,11 +13,9 @@ data class DbProps(
 )
 
 object DbPropsLoader {
-    fun load(
-        project: Project,
-        relativePathFromRoot: String = "application.properties",
-    ): DbProps {
-        val file = File(project.rootProject.projectDir, relativePathFromRoot)
+    fun load(project: Project): DbProps {
+        val mainProjectName = project.rootProject.findProperty("mainProjectName")
+        val file = File(project.rootProject.projectDir, "$mainProjectName/src/main/resources/application.properties")
         if (!file.exists()) {
             throw GradleException("DB properties not found: ${file.absolutePath}")
         }

@@ -2,7 +2,6 @@ import buildsrc.liquibase.AppendIncludeTask
 import buildsrc.liquibase.DbPropsLoader
 import buildsrc.liquibase.GenerateMigrationTask
 import buildsrc.liquibase.InitMigrationTask
-import java.io.File
 
 plugins {
     id("org.springframework.boot") version "3.5.0" apply false
@@ -22,15 +21,6 @@ allprojects {
     }
 }
 
-dependencies {
-    runtimeOnly("io.netty:netty-resolver-dns-native-macos") {
-        artifact { classifier = "osx-aarch_64" }
-    }
-    runtimeOnly("io.netty:netty-resolver-dns-native-macos") {
-        artifact { classifier = "osx-x86_64" }
-    }
-}
-
 subprojects {
     apply(plugin = "kotlin")
     apply(plugin = "kotlin-spring")
@@ -47,7 +37,7 @@ subprojects {
     kotlin {
         compilerOptions {
             freeCompilerArgs.addAll("-Xjsr305=strict")
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
         }
     }
 
@@ -99,10 +89,9 @@ subprojects {
             val moduleBasePath = "${project.name}/src/main/resources/db/changelog"
             val moduleMainChangelog = "$moduleBasePath/db.changelog-${project.name}.yml"
             val mainAggregateChangelog = "$mainProjectName/src/main/resources/db/changelog/db.changelog-main.yml"
-            val migrationsDir = "$moduleBasePath/migrations"
 
             configure<org.liquibase.gradle.LiquibaseExtension> {
-                val cfg = DbPropsLoader.load(project, "$mainProjectName/src/main/resources/application.properties")
+                val cfg = DbPropsLoader.load(project)
 
                 val changeLogFilePath = if (isMainProject) mainAggregateChangelog else moduleMainChangelog
 
