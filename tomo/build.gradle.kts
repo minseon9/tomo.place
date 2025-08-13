@@ -30,7 +30,7 @@ subprojects {
 
     java {
         toolchain {
-            languageVersion = JavaLanguageVersion.of(17)
+            languageVersion = JavaLanguageVersion.of(21)
         }
     }
 
@@ -89,24 +89,29 @@ subprojects {
             val moduleBasePath = "${project.name}/src/main/resources/db/changelog"
             val moduleMainChangelog = "$moduleBasePath/db.changelog-${project.name}.yml"
             val mainAggregateChangelog = "$mainProjectName/src/main/resources/db/changelog/db.changelog-main.yml"
+            val mainProps = rootProject.file("$mainProjectName/src/main/resources/application.properties")
 
             configure<org.liquibase.gradle.LiquibaseExtension> {
-                val cfg = DbPropsLoader.load(project)
+                val cfg = DbPropsLoader.load(mainProps)
 
                 val changeLogFilePath = if (isMainProject) mainAggregateChangelog else moduleMainChangelog
 
                 // searchPath: 루트 + (메인프로젝트인 경우 모든 활성 모듈의 changelog 디렉토리, 그 외는 해당 모듈)
                 val searchPaths: String =
                     buildList {
-                        add(rootProject.projectDir.absolutePath)
+                        add(project.relativePath(rootProject.projectDir))
                         if (isMainProject) {
                             val enabledModules =
                                 rootProject.subprojects.filter {
                                     (it.findProperty("liquibaseEnabled") as String?)?.toBoolean() == true
                                 }
-                            addAll(enabledModules.map { it.projectDir.resolve("src/main/resources/db/changelog").absolutePath })
+                            addAll(
+                                enabledModules.map {
+                                    project.relativePath(it.projectDir.resolve("src/main/resources/db/changelog"))
+                                }
+                            )
                         } else {
-                            add(project.projectDir.resolve("src/main/resources/db/changelog").absolutePath)
+                            add(project.relativePath(project.projectDir.resolve("src/main/resources/db/changelog")))
                         }
                     }.joinToString(",")
 
@@ -124,8 +129,6 @@ subprojects {
                         )
                 }
             }
-
-            val rootProps = rootProject.file("application.properties")
 
             // 메인 changelog에 현재 모듈의 changelog include 추가 (init 이후)
             val initMigration = tasks.register<InitMigrationTask>("initMigration")
@@ -151,7 +154,7 @@ subprojects {
                 tasks.register<GenerateMigrationTask>("generateMigration") {
                     liquibaseClasspath = configurations.getByName("liquibaseRuntime")
                     entityPackage = entityPkg
-                    propertiesFile = rootProps
+                    propertiesFile = mainProps
                     changelogOutputFile = outFile
                 }
             generateMigration.configure { dependsOn(tasks.named("classes"), initMigration) }

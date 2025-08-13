@@ -30,8 +30,7 @@ abstract class GenerateMigrationTask : DefaultTask() {
 
     @TaskAction
     fun run() {
-        val (dbUrl, dbUsername, dbPassword, dbDriver) = DbPropsLoader.load(project)
-        val output = changelogOutputFile.absolutePath
+        val cfg = DbPropsLoader.load(propertiesFile)
 
         try {
             val result =
@@ -39,15 +38,15 @@ abstract class GenerateMigrationTask : DefaultTask() {
                     classpath = liquibaseClasspath
                     mainClass.set("liquibase.integration.commandline.Main")
                     args(
-                        "--url=$dbUrl",
-                        "--username=$dbUsername",
-                        "--password=$dbPassword",
-                        "--driver=$dbDriver",
+                        "--url=${cfg.url}",
+                        "--username=${cfg.username}",
+                        "--password=${cfg.password}",
+                        "--driver=${cfg.driver}",
                         "--referenceUrl=hibernate:spring:$entityPackage" +
                             "?dialect=org.hibernate.dialect.PostgreSQLDialect" +
                             "&hibernate.physical_naming_strategy=org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy" +
                             "&hibernate.implicit_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy",
-                        "--changelogFile=$output",
+                        "--changelogFile=${changelogOutputFile.absolutePath}",
                         "--logLevel=DEBUG",
                         "--verbose=true",
                         "diffChangeLog",
