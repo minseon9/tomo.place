@@ -32,12 +32,7 @@ class TemporaryPasswordGenerator(
         val requiredChars: List<Char> =
             passwordValidator.getPasswordPolicies().mapNotNull { policy ->
                 val sample: List<Char> = policy.getSampleCharacters()
-
-                if (sample.isNotEmpty()) {
-                    null
-                } else {
-                    getRandom(sample)
-                }
+                if (sample.isNotEmpty()) getRandom(sample) else null
             }
 
         val allPossibleChars: List<Char> =
