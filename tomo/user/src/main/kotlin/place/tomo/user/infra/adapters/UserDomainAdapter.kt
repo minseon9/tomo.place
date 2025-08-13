@@ -1,4 +1,4 @@
-package place.tomo.infra.adapters
+package place.tomo.user.infra.adapters
 
 import org.springframework.stereotype.Component
 import place.tomo.contract.dtos.UserInfoDTO
@@ -17,35 +17,35 @@ class UserDomainAdapter(
         return UserInfoDTO(
             id = user.id,
             email = user.email,
-            password = user.password,
+            password = user.password.value,
             name = user.username,
         )
     }
 
     override fun create(
         email: String,
-        rawPassword: String?,
+        rawPassword: String,
         name: String?,
     ): UserInfoDTO {
-        val created = userDomainService.createUser(email, rawPassword ?: "", name ?: "")
+        val created = userDomainService.createUser(email, rawPassword, name ?: "")
         return UserInfoDTO(
             id = created.id,
             email = created.email,
-            password = created.password,
+            password = created.password.value,
             name = created.username,
         )
     }
 
     override fun getOrCreate(
         email: String,
-        rawPassword: String?,
+        rawPassword: String,
         name: String?,
     ): UserInfoDTO {
         val existingUser = findByEmail(email)
 
         return existingUser ?: create(
             email = email,
-            rawPassword = null,
+            rawPassword = rawPassword,
             name = name,
         )
     }
