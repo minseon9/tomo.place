@@ -28,21 +28,9 @@ abstract class GenerateMigrationTask : DefaultTask() {
     @Classpath
     lateinit var liquibaseClasspath: FileCollection
 
-    private fun loadDbProps(): Triple<String, String, String> {
-        val relativePath =
-            propertiesFile
-                .takeIf { it.exists() }
-                ?.relativeToOrNull(project.rootProject.projectDir)
-                ?.path
-                ?: "application.properties"
-
-        val cfg = DbPropsLoader.load(project, relativePath)
-        return Triple(cfg.url, cfg.username, cfg.password)
-    }
-
     @TaskAction
     fun run() {
-        val (dbUrl, dbUsername, dbPassword) = loadDbProps()
+        val (dbUrl, dbUsername, dbPassword, dbDriver) = DbPropsLoader.load(project)
         val output = changelogOutputFile.absolutePath
 
         try {
@@ -54,7 +42,7 @@ abstract class GenerateMigrationTask : DefaultTask() {
                         "--url=$dbUrl",
                         "--username=$dbUsername",
                         "--password=$dbPassword",
-                        "--driver=${DbPropsLoader.load(project).driver}",
+                        "--driver=$dbDriver",
                         "--referenceUrl=hibernate:spring:$entityPackage" +
                             "?dialect=org.hibernate.dialect.PostgreSQLDialect" +
                             "&hibernate.physical_naming_strategy=org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy" +

@@ -91,7 +91,7 @@ subprojects {
             val mainAggregateChangelog = "$mainProjectName/src/main/resources/db/changelog/db.changelog-main.yml"
 
             configure<org.liquibase.gradle.LiquibaseExtension> {
-                val cfg = DbPropsLoader.load(project, "$mainProjectName/src/main/resources/application.properties")
+                val cfg = DbPropsLoader.load(project)
 
                 val changeLogFilePath = if (isMainProject) mainAggregateChangelog else moduleMainChangelog
 
