@@ -89,9 +89,10 @@ subprojects {
             val moduleBasePath = "${project.name}/src/main/resources/db/changelog"
             val moduleMainChangelog = "$moduleBasePath/db.changelog-${project.name}.yml"
             val mainAggregateChangelog = "$mainProjectName/src/main/resources/db/changelog/db.changelog-main.yml"
+            val mainProps = rootProject.file("$mainProjectName/src/main/resources/application.properties")
 
             configure<org.liquibase.gradle.LiquibaseExtension> {
-                val cfg = DbPropsLoader.load(project)
+                val cfg = DbPropsLoader.load(mainProps)
 
                 val changeLogFilePath = if (isMainProject) mainAggregateChangelog else moduleMainChangelog
 
@@ -125,8 +126,6 @@ subprojects {
                 }
             }
 
-            val rootProps = rootProject.file("application.properties")
-
             // 메인 changelog에 현재 모듈의 changelog include 추가 (init 이후)
             val initMigration = tasks.register<InitMigrationTask>("initMigration")
             if (!isMainProject) {
@@ -151,7 +150,7 @@ subprojects {
                 tasks.register<GenerateMigrationTask>("generateMigration") {
                     liquibaseClasspath = configurations.getByName("liquibaseRuntime")
                     entityPackage = entityPkg
-                    propertiesFile = rootProps
+                    propertiesFile = mainProps
                     changelogOutputFile = outFile
                 }
             generateMigration.configure { dependsOn(tasks.named("classes"), initMigration) }

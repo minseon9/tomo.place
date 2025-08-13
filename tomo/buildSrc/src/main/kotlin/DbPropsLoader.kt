@@ -1,7 +1,6 @@
 package buildsrc.liquibase
 
 import org.gradle.api.GradleException
-import org.gradle.api.Project
 import java.io.File
 import java.util.Properties
 
@@ -13,14 +12,12 @@ data class DbProps(
 )
 
 object DbPropsLoader {
-    fun load(project: Project): DbProps {
-        val mainProjectName = project.rootProject.findProperty("mainProjectName")
-        val file = File(project.rootProject.projectDir, "$mainProjectName/src/main/resources/application.properties")
-        if (!file.exists()) {
-            throw GradleException("DB properties not found: ${file.absolutePath}")
+    fun load(propsFile: File): DbProps {
+        if (!propsFile.exists()) {
+            throw GradleException("DB properties not found: ${propsFile.absolutePath}")
         }
 
-        val props = Properties().apply { file.inputStream().use(::load) }
+        val props = Properties().apply { propsFile.inputStream().use(::load) }
 
         val url = System.getProperty("liquibase.url") ?: props.getProperty("spring.datasource.url").orEmpty()
         val username = System.getProperty("liquibase.username") ?: props.getProperty("spring.datasource.username").orEmpty()
