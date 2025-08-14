@@ -1,3 +1,5 @@
+package place.tomo.infra.config
+
 import com.zaxxer.hikari.HikariDataSource
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties
 import org.springframework.boot.context.properties.ConfigurationProperties
@@ -9,11 +11,11 @@ import org.springframework.context.annotation.Primary
 class DataSourceConfig {
     @Bean
     @Primary
-    @ConfigurationProperties("app.datasource")
+    @ConfigurationProperties(prefix = "spring.datasource")
     fun dataSourceProperties(): DataSourceProperties = DataSourceProperties()
 
     @Bean
-    @ConfigurationProperties("app.datasource.configuration")
+    @ConfigurationProperties("spring.datasource.hikari")
     fun dataSource(properties: DataSourceProperties): HikariDataSource =
         properties.initializeDataSourceBuilder().type(HikariDataSource::class.java).build()
 }

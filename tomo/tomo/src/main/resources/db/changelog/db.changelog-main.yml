@@ -1,1 +1,5 @@
 databaseChangeLog:
+- include:
+    file: auth/src/main/resources/db/changelog/db.changelog-auth.yml
+- include:
+    file: user/src/main/resources/db/changelog/db.changelog-user.yml

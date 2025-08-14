@@ -1,12 +1,13 @@
 package place.tomo
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan
 import org.springframework.boot.runApplication
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing
 
-// import org.springframework.cloud.openfeign.EnableFeignClients
-
-// @EnableFeignClients
+@EnableJpaAuditing
 @SpringBootApplication
+@ConfigurationPropertiesScan
 class TomoApplication
 
 fun main(args: Array<String>) {
