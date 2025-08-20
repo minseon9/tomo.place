@@ -47,7 +47,7 @@ class OIDCEndpointResolver(
     @CachePut(cacheNames = ["oidc-endpoints"], key = "#provider")
     suspend fun refresh(provider: OIDCProviderType): OIDCEndpoints = self.resolve(provider)
 
-    private data class WellKnownResponse(
+    data class WellKnownResponse(
         val issuer: String,
         val authorization_endpoint: String?,
         val token_endpoint: String,
