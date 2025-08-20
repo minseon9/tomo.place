@@ -11,8 +11,8 @@ class UserDomainAdapter(
     private val userRepository: UserRepository,
     private val userDomainService: UserDomainService,
 ) : UserDomainPort {
-    override fun findByEmail(email: String): UserInfoDTO? {
-        val user = userRepository.findByEmail(email) ?: return null
+    override fun findActiveByEmail(email: String): UserInfoDTO? {
+        val user = userRepository.findByEmailAndDeletedAtIsNull(email) ?: return null
 
         return UserInfoDTO(
             id = user.id,
@@ -41,7 +41,7 @@ class UserDomainAdapter(
         rawPassword: String,
         name: String?,
     ): UserInfoDTO {
-        val existingUser = findByEmail(email)
+        val existingUser = findActiveByEmail(email)
 
         return existingUser ?: create(
             email = email,
