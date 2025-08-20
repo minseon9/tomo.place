@@ -7,9 +7,9 @@ plugins {
     id("org.springframework.boot") version "3.5.0" apply false
     id("io.spring.dependency-management") version "1.1.7" apply false
     id("org.liquibase.gradle") version "2.2.2" apply false
-    kotlin("jvm") version "1.9.25"
-    kotlin("plugin.spring") version "1.9.25" apply false
-    kotlin("plugin.jpa") version "1.9.0" apply false
+    kotlin("jvm") version "2.1.21"
+    kotlin("plugin.spring") version "2.1.21" apply false
+    kotlin("plugin.jpa") version "2.1.21" apply false
 }
 
 allprojects {
@@ -49,6 +49,19 @@ subprojects {
         enabled = true
     }
 
+    tasks.withType<Test> {
+        useJUnitPlatform()
+
+        testLogging {
+            events("started", "passed", "skipped", "failed", "standardOut", "standardError")
+            showStandardStreams = true
+            showCauses = true
+            showExceptions = true
+            showStackTraces = true
+            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        }
+    }
+
     dependencies {
         implementation("org.jetbrains.kotlin:kotlin-reflect")
         implementation("org.jetbrains.kotlin:kotlin-stdlib")
@@ -61,8 +74,15 @@ subprojects {
 
         runtimeOnly("org.postgresql:postgresql")
 
+        testImplementation("org.springframework.boot:spring-boot-starter-data-jpa")
         testImplementation("org.springframework.boot:spring-boot-starter-test")
+        testImplementation("org.springframework.security:spring-security-test")
         testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+        testImplementation("io.mockk:mockk:1.13.11")
+        testImplementation("org.mockito:mockito-core")
+        testImplementation("org.mockito:mockito-junit-jupiter")
+        testImplementation("com.h2database:h2")
+        testImplementation("net.datafaker:datafaker:2.0.1")
 
         testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     }
@@ -168,10 +188,6 @@ subprojects {
             generateMigration.configure { finalizedBy(appendModule) }
         }
     }
-}
-
-tasks.withType<Test> {
-    useJUnitPlatform()
 }
 
 tasks.register("runTomo") {
