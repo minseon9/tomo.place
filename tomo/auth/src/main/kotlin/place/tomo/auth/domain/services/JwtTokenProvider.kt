@@ -5,15 +5,16 @@ import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import place.tomo.auth.domain.exception.InvalidAuthTokenException
 import java.time.Instant
 import java.util.Date
 
 @Service
 class JwtTokenProvider(
     @Value("\${security.jwt.secret}") private val secret: String,
-    @Value("\${security.jwt.issuer:place.tomo}") private val issuer: String,
-    @Value("\${security.jwt.access-ttl-seconds:604800}") private val accessTtlSeconds: Long,
-    @Value("\${security.jwt.refresh-ttl-seconds:31536000}") private val refreshTtlSeconds: Long,
+    @Value("\${security.jwt.issuer}") private val issuer: String,
+    @Value("\${security.jwt.access-ttl-seconds}") private val accessTtlSeconds: Long,
+    @Value("\${security.jwt.refresh-ttl-seconds}") private val refreshTtlSeconds: Long,
 ) {
     private val key by lazy {
         val rawKeyBytes =
@@ -31,27 +32,30 @@ class JwtTokenProvider(
 
     fun validateToken(jwt: String): Boolean {
         try {
-            Jwts
-                .parser()
-                .verifyWith(key)
-                .build()
-                .parseSignedClaims(jwt)
-            return true
+            val parsed =
+                Jwts
+                    .parser()
+                    .verifyWith(key)
+                    .build()
+                    .parseSignedClaims(jwt)
+
+            return parsed.payload.expiration > Date.from(Instant.now())
         } catch (e: Exception) {
             return false
         }
     }
 
     fun getUsernameFromToken(jwt: String): String {
-        val claims =
-            Jwts
-                .parser()
-                .verifyWith(key)
-                .build()
-                .parseSignedClaims(jwt)
-                .payload
+        if (!validateToken(jwt)) {
+            throw InvalidAuthTokenException()
+        }
 
-        return claims.subject
+        return Jwts
+            .parser()
+            .verifyWith(key)
+            .build()
+            .parseSignedClaims(jwt)
+            .payload.subject
     }
 
     private fun issueToken(
