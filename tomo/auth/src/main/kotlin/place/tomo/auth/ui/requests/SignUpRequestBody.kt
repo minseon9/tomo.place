@@ -5,12 +5,13 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
 
 data class SignUpRequestBody(
-    @Email
-    @NotBlank
+    @field:Email
+    @field:Size(max = 254)
+    @field:NotBlank
     val email: String,
-    @NotBlank
-    @Size(min = 8, max = 20)
+    @field:NotBlank
+    @field:Size(min = 8, max = 20)
     val password: String,
-    @NotBlank
+    @field:NotBlank
     val name: String,
 )
