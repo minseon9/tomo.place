@@ -1,9 +1,7 @@
 dependencies {
     implementation(project(":contract"))
     implementation(project(":common"))
-
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    
+    // User 모듈 전용 의존성
+    userDependencies()
 }
-
-
