@@ -3,12 +3,12 @@ dependencies {
     implementation(project(":contract"))
     implementation(project(":auth"))
     implementation(project(":user"))
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("org.springframework.boot:spring-boot-starter-security")
-    // Spring Cloud OpenFeign
-//    implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
-    developmentOnly("org.springframework.boot:spring-boot-devtools")
-    testImplementation("org.springframework.security:spring-security-test")
+    
+    // Tomo 모듈 전용 의존성
+    tomoDependencies()
+    
+    // 개발 전용 의존성
+    developmentDependencies()
 }
 
 tasks.bootJar {
