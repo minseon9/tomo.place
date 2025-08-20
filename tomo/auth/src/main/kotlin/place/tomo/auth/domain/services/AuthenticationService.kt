@@ -2,35 +2,42 @@ package place.tomo.auth.domain.services
 
 import kotlinx.coroutines.runBlocking
 import org.springframework.security.authentication.AuthenticationManager
+import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.stereotype.Service
 import place.tomo.auth.domain.dtos.AuthTokenDTO
 import place.tomo.auth.domain.dtos.oidc.OIDCUserInfo
+import place.tomo.auth.domain.exception.AuthenticationFailedException
+import place.tomo.auth.domain.exception.SocialAccountNotLinkedException
+import place.tomo.auth.domain.services.oidc.OIDCProvider
 import place.tomo.auth.domain.services.oidc.OIDCProviderFactory
-import place.tomo.common.exception.HttpErrorStatus
-import place.tomo.common.exception.HttpException
 import place.tomo.contract.constant.OIDCProviderType
 
 @Service
 class AuthenticationService(
     private val authenticationManager: AuthenticationManager,
     private val socialAccountService: SocialAccountDomainService,
-    private val oAuthServiceFactory: OIDCProviderFactory,
     private val jwtTokenProvider: JwtTokenProvider,
+    private val oAuthServiceFactory: OIDCProviderFactory,
 ) {
     fun authenticateEmailPassword(
         email: String,
         password: String,
     ): AuthTokenDTO {
-        val authentication =
-            authenticationManager.authenticate(
-                UsernamePasswordAuthenticationToken(email, password),
-            )
+        try {
+            val authentication =
+                authenticationManager.authenticate(
+                    UsernamePasswordAuthenticationToken(email, password),
+                )
 
-        val accessToken = jwtTokenProvider.issueAccessToken(authentication.name)
-        val refreshToken = jwtTokenProvider.issueRefreshToken(authentication.name)
+            val accessToken = jwtTokenProvider.issueAccessToken(authentication.name)
+            val refreshToken = jwtTokenProvider.issueRefreshToken(authentication.name)
 
-        return AuthTokenDTO(accessToken = accessToken, refreshToken = refreshToken)
+            return AuthTokenDTO(accessToken = accessToken, refreshToken = refreshToken)
+        } catch (e: BadCredentialsException) {
+            throw AuthenticationFailedException()
+        }
     }
 
     fun authenticateOIDC(
@@ -39,7 +46,7 @@ class AuthenticationService(
     ): AuthTokenDTO {
         val oidcUserInfo = getOidcUserInfo(provider, authorizationCode)
         if (!socialAccountService.checkSocialAccount(oidcUserInfo.provider, oidcUserInfo.socialId)) {
-            throw HttpException(HttpErrorStatus.FORBIDDEN, "해당 ${oidcUserInfo.provider} 계정이 비활성화되었거나 없습니다.")
+            throw SocialAccountNotLinkedException(provider)
         }
 
         return issueOIDCUserAuthToken(oidcUserInfo)
