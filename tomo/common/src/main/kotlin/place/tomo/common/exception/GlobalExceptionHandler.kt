@@ -50,13 +50,16 @@ class GlobalExceptionHandler {
     ): ResponseEntity<ErrorResponse> {
         logException(ex, request)
 
+        val messageBuilder = StringBuilder().append("유효성 검사에 실패했습니다")
+        ex.bindingResult.allErrors.forEach { error -> messageBuilder.append(error.toString()) }
+
         val errorResponse =
             ErrorResponse(
                 timestamp = LocalDateTime.now(),
                 status = HttpStatus.BAD_REQUEST.value(),
                 error = HttpStatus.BAD_REQUEST.reasonPhrase,
                 errorCode = "VALIDATION_ERROR",
-                message = "유효성 검사에 실패했습니다",
+                message = messageBuilder.toString(),
                 path = request.requestURI,
                 traceId = getTraceId(),
             )
