@@ -35,6 +35,7 @@ fun DependencyHandlerScope.testDependencies() {
     "testImplementation"("org.mockito:mockito-junit-jupiter")
     "testImplementation"("com.h2database:h2")
     "testImplementation"("net.datafaker:datafaker:2.0.1")
+    "testImplementation"("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
     "testRuntimeOnly"("org.junit.platform:junit-platform-launcher")
 }
 
@@ -48,12 +49,12 @@ fun DependencyHandlerScope.authDependencies() {
     "implementation"("org.springframework.boot:spring-boot-starter-aop")
     "implementation"("com.github.ben-manes.caffeine:caffeine")
     "implementation"("io.github.resilience4j:resilience4j-spring-boot3:2.2.0")
-    
+
     // JWT
     "implementation"("io.jsonwebtoken:jjwt-api:0.12.5")
     "runtimeOnly"("io.jsonwebtoken:jjwt-impl:0.12.5")
     "runtimeOnly"("io.jsonwebtoken:jjwt-jackson:0.12.5")
-    
+
     // Coroutines
     "implementation"("org.jetbrains.kotlinx:kotlinx-coroutines-core")
     "implementation"("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
@@ -81,7 +82,7 @@ fun DependencyHandlerScope.commonDependencies() {
     "implementation"("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
     "implementation"("org.springframework.boot:spring-boot-starter-test")
     "implementation"("io.mockk:mockk:1.13.11")
-    
+
     // 테스트용 Security 의존성
     "testImplementation"("org.springframework.security:spring-security-test")
     "testImplementation"("org.springframework.boot:spring-boot-starter-security")
