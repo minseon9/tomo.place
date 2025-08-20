@@ -21,6 +21,8 @@ class OIDCJwksResolver(
     private val httpClient: HttpClient,
     private val endpointResolver: OIDCEndpointResolver,
 ) {
+    private val keyType = "RSA"
+
     @Autowired
     @Lazy
     lateinit var self: OIDCJwksResolver
@@ -53,7 +55,7 @@ class OIDCJwksResolver(
             .keys
             .firstOrNull { matchesKidAndAlg(it, kid, alg) }
             ?.let { return it }
-        // 강제 1회 리프레시 후 재탐색
+
         self.refresh(provider)
 
         return self.getJwks(provider).keys.firstOrNull { matchesKidAndAlg(it, kid, alg) }
@@ -67,7 +69,7 @@ class OIDCJwksResolver(
         val e = BigInteger(1, Base64.getUrlDecoder().decode(exponent))
         val spec = RSAPublicKeySpec(n, e)
 
-        return KeyFactory.getInstance("RSA").generatePublic(spec) as RSAPublicKey
+        return KeyFactory.getInstance(keyType).generatePublic(spec) as RSAPublicKey
     }
 
     private fun matchesKidAndAlg(
@@ -75,7 +77,7 @@ class OIDCJwksResolver(
         kid: String,
         alg: String?,
     ): Boolean {
-        if (key.kty != "RSA") return false
+        if (key.kty != keyType) return false
         if (key.kid != kid) return false
         if (key.use != null && key.use != "sig") return false
         if (alg != null && key.alg != null && key.alg != alg) return false
