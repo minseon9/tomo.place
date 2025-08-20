@@ -11,5 +11,6 @@ class OIDCProviderFactory(
     fun getService(provider: OIDCProviderType): OIDCProvider =
         when (provider) {
             OIDCProviderType.GOOGLE -> googleOIDCProvider
+            else -> throw UnsupportedOperationException("Not implemented yet")
         }
 }
