@@ -8,8 +8,7 @@ import org.springframework.web.bind.support.WebDataBinderFactory
 import org.springframework.web.context.request.NativeWebRequest
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.method.support.ModelAndViewContainer
-import place.tomo.common.exception.HttpErrorStatus
-import place.tomo.common.exception.HttpException
+import place.tomo.common.exception.UserContextNotFoundException
 import place.tomo.contract.ports.UserDomainPort
 
 @Component
@@ -38,8 +37,8 @@ class UserContextArgumentResolver(
     private fun resolveUserContext(authentication: Authentication): UserContext {
         val email = authentication.name
         val user =
-            userDomainPort.findByEmail(email)
-                ?: throw HttpException(HttpErrorStatus.UNAUTHORIZED, "인증된 사용자를 찾을 수 없습니다: $email")
+            userDomainPort.findActiveByEmail(email)
+                ?: throw UserContextNotFoundException(email)
 
         return UserContext.from(
             userId = user.id,

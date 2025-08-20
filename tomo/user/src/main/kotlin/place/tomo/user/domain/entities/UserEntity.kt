@@ -14,10 +14,10 @@ import jakarta.persistence.Table
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
-import place.tomo.common.exception.HttpErrorStatus
-import place.tomo.common.exception.HttpException
 import place.tomo.common.validation.EmailValidation
 import place.tomo.user.domain.constant.UserStatus
+import place.tomo.user.domain.exception.InvalidEmailException
+import place.tomo.user.domain.exception.InvalidUsernameException
 import java.time.LocalDateTime
 
 @Embeddable
@@ -61,10 +61,10 @@ class UserEntity(
             status: UserStatus = UserStatus.ACTIVATED, // FIXME: 이메일 인증 같은 프로세스가 없어서 우선 ACTIVATED로 생성
         ): UserEntity {
             if (!EmailValidation.isValid(email)) {
-                throw HttpException(HttpErrorStatus.BAD_REQUEST, "이메일 형식이 올바르지 않습니다.")
+                throw InvalidEmailException(email)
             }
             if (username.isBlank()) {
-                throw HttpException(HttpErrorStatus.BAD_REQUEST, "이름은 필수입니다.")
+                throw InvalidUsernameException(username)
             }
 
             return UserEntity(
