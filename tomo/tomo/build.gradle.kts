@@ -3,11 +3,8 @@ dependencies {
     implementation(project(":contract"))
     implementation(project(":auth"))
     implementation(project(":user"))
-    
-    // Tomo 모듈 전용 의존성
+
     tomoDependencies()
-    
-    // 개발 전용 의존성
     developmentDependencies()
 }
 
