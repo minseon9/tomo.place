@@ -1,4 +1,4 @@
-package place.tomo.auth.infra.config.security
+package place.tomo.infra.config.security
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -6,7 +6,6 @@ import org.springframework.http.HttpMethod
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -14,15 +13,11 @@ import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.access.AccessDeniedHandler
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
-import place.tomo.auth.application.services.CustomUserDetailsService
 import place.tomo.auth.domain.services.JwtTokenProvider
-import place.tomo.contract.ports.UserDomainPort
 
 @Configuration
-@EnableWebSecurity
-class SecurityConfig(
+class SecurityFilterChainConfig(
     private val jwtTokenProvider: JwtTokenProvider,
-    private val userDomainPort: UserDomainPort,
 ) {
     private val publicPostEndpoints =
         arrayOf(
@@ -33,35 +28,33 @@ class SecurityConfig(
         )
 
     @Bean
-    fun userDetailsService(): UserDetailsService = CustomUserDetailsService(userDomainPort)
+    fun authenticationManager(
+        http: HttpSecurity,
+        passwordEncoder: PasswordEncoder,
+        userDetailsService: UserDetailsService,
+    ): AuthenticationManager {
+        val builder = http.getSharedObject(AuthenticationManagerBuilder::class.java)
+        builder
+            .userDetailsService(userDetailsService)
+            .passwordEncoder(passwordEncoder)
+        return builder.build()
+    }
 
     @Bean
     fun jwtAuthenticationFilter(userDetailsService: UserDetailsService): JwtAuthenticationFilter =
         JwtAuthenticationFilter(jwtTokenProvider, userDetailsService)
 
     @Bean
-    fun authenticationManager(
-        http: HttpSecurity,
-        passwordEncoder: PasswordEncoder,
-    ): AuthenticationManager {
-        val builder = http.getSharedObject(AuthenticationManagerBuilder::class.java)
-        builder
-            .userDetailsService(userDetailsService())
-            .passwordEncoder(passwordEncoder)
-        return builder.build()
-    }
-
-    @Bean
-    fun filterChain(
+    fun securityFilterChain(
         http: HttpSecurity,
         jwtAuthenticationFilter: JwtAuthenticationFilter,
+        userDetailsService: UserDetailsService,
         authenticationEntryPoint: AuthenticationEntryPoint,
         accessDeniedHandler: AccessDeniedHandler,
     ): SecurityFilterChain =
         http
             .csrf { csrf ->
-                csrf
-                    .ignoringRequestMatchers(*publicPostEndpoints)
+                csrf.ignoringRequestMatchers(*publicPostEndpoints)
             }.authorizeHttpRequests { auth ->
                 auth
                     .requestMatchers(HttpMethod.POST, *publicPostEndpoints)
@@ -73,9 +66,8 @@ class SecurityConfig(
                 exception
                     .authenticationEntryPoint(authenticationEntryPoint)
                     .accessDeniedHandler(accessDeniedHandler)
-            }.formLogin {
-                it.disable()
-            }.sessionManagement {
+            }.formLogin { it.disable() }
+            .sessionManagement {
                 it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             }.logout { logout ->
                 logout.permitAll()
@@ -83,8 +75,8 @@ class SecurityConfig(
             .build()
 
     @Bean
-    fun authenticationEntryPoint(): AuthenticationEntryPoint = JsonAuthenticationEntryPoint()
+    fun accessDeniedHandler(): AccessDeniedHandler = CustomAccessDeniedHandler()
 
     @Bean
-    fun accessDeniedHandler(): AccessDeniedHandler = JsonAccessDeniedHandler()
+    fun authenticationEntryPoint(): AuthenticationEntryPoint = CustomAuthenticationEntryPoint()
 }

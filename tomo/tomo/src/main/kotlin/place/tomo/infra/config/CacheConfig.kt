@@ -1,4 +1,4 @@
-package place.tomo.auth.infra.config.oidc
+package place.tomo.infra.config
 
 import com.github.benmanes.caffeine.cache.Caffeine
 import org.springframework.cache.CacheManager
@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
 @Configuration
 @EnableCaching
 @EnableScheduling
-class OIDCCacheConfig {
+class CacheConfig {
     @Bean
     fun cacheManager(): CacheManager =
         CaffeineCacheManager("oidc-endpoints", "oidc-jwks").apply {

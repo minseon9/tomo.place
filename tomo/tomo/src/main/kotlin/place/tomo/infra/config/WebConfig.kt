@@ -6,7 +6,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import place.tomo.common.resolvers.usercontext.UserContextArgumentResolver
 
 @Configuration
-class WebMvcConfig(
+class WebConfig(
     private val userContextArgumentResolver: UserContextArgumentResolver,
 ) : WebMvcConfigurer {
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {

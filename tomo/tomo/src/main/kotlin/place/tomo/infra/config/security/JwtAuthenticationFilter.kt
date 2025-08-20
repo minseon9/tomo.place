@@ -1,4 +1,4 @@
-package place.tomo.auth.infra.config.security
+package place.tomo.infra.config.security
 
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
@@ -6,11 +6,9 @@ import jakarta.servlet.http.HttpServletResponse
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UserDetailsService
-import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
 import place.tomo.auth.domain.services.JwtTokenProvider
 
-@Component
 class JwtAuthenticationFilter(
     private val jwtTokenProvider: JwtTokenProvider,
     private val userDetailsService: UserDetailsService,
@@ -20,20 +18,25 @@ class JwtAuthenticationFilter(
         response: HttpServletResponse,
         filterChain: FilterChain,
     ) {
-        val token = extractTokenFromRequest(request)
+        try {
+            val token = extractTokenFromRequest(request)
 
-        if (token != null && jwtTokenProvider.validateToken(token)) {
-            val username = jwtTokenProvider.getUsernameFromToken(token)
-            val userDetails = userDetailsService.loadUserByUsername(username)
+            if (token?.isNotEmpty() == true && jwtTokenProvider.validateToken(token)) {
+                val username = jwtTokenProvider.getUsernameFromToken(token)
+                val userDetails = userDetailsService.loadUserByUsername(username)
 
-            val authentication =
-                UsernamePasswordAuthenticationToken(
-                    userDetails,
-                    null,
-                    userDetails.authorities,
-                )
+                val authentication =
+                    UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null,
+                        userDetails.authorities,
+                    )
 
-            SecurityContextHolder.getContext().authentication = authentication
+                SecurityContextHolder.getContext().authentication = authentication
+            }
+        } catch (e: Exception) {
+            logger.warn("JWT authentication failed: ${e.message}")
+            SecurityContextHolder.clearContext()
         }
 
         filterChain.doFilter(request, response)
