@@ -1,5 +1,6 @@
 package place.tomo.auth.ui.controllers
 
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -19,7 +20,7 @@ class AuthController(
 ) {
     @PostMapping("/signup")
     fun signUp(
-        @RequestBody body: SignUpRequestBody,
+        @RequestBody @Valid body: SignUpRequestBody,
     ): ResponseEntity<Void> {
         authService.signUp(
             SignUpRequest(
@@ -33,7 +34,7 @@ class AuthController(
 
     @PostMapping("/login")
     fun login(
-        @RequestBody body: LoginRequestBody,
+        @RequestBody @Valid body: LoginRequestBody,
     ): ResponseEntity<LoginResponseBody> {
         val response =
             authService.authenticate(

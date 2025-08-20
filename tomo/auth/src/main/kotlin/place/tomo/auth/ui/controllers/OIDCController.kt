@@ -1,5 +1,6 @@
 package place.tomo.auth.ui.controllers
 
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -19,7 +20,7 @@ class OIDCController(
 ) {
     @PostMapping("/signup")
     fun signUp(
-        @RequestBody request: OIDCSignupRequestBody,
+        @RequestBody @Valid request: OIDCSignupRequestBody,
     ): ResponseEntity<LoginResponseBody> {
         val response = authService.signUp(OIDCSignUpRequest(request.provider, request.authorizationCode))
 
@@ -28,7 +29,7 @@ class OIDCController(
 
     @PostMapping("/login")
     fun authenticate(
-        @RequestBody body: OIDCLoginRequestBody,
+        @RequestBody @Valid body: OIDCLoginRequestBody,
     ): ResponseEntity<LoginResponseBody> {
         val response = authService.authenticate(OIDCAuthenticateRequest(body.provider, body.authorizationCode))
 

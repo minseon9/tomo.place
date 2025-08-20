@@ -25,9 +25,29 @@ class TemporaryPasswordGenerator(
     }
 
     private fun generatePassword(length: Int): String {
-        val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*"
-        return (1..length)
-            .map { chars[secureRandom.nextInt(chars.length)] }
-            .joinToString("")
+        val requiredChars: List<Char> =
+            passwordService.getPasswordPolicies().mapNotNull { policy ->
+                val sample: List<Char> = policy.getSampleCharacters()
+                if (sample.isNotEmpty()) getRandom(sample) else null
+            }
+
+        val allPossibleChars: List<Char> =
+            passwordService
+                .getPasswordPolicies()
+                .flatMap { policy ->
+                    policy.getSampleCharacters()
+                }.distinct()
+        val additionalCount = (length - requiredChars.size).coerceAtLeast(0)
+        val additionalChars =
+            List(additionalCount) {
+                getRandom(allPossibleChars)
+            }
+
+        val allChars = (requiredChars + additionalChars).toMutableList()
+        allChars.shuffle(secureRandom)
+
+        return allChars.joinToString("")
     }
+
+    private fun getRandom(chars: List<Char>): Char = chars[secureRandom.nextInt(chars.size)]
 }

@@ -1,4 +1,4 @@
-package place.tomo.auth.ui.controllers
+package place.tomo.user.ui.controllers
 
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
