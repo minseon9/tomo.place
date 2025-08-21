@@ -1,5 +1,3 @@
-package buildsrc.liquibase
-
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.file.FileCollection
@@ -29,7 +27,7 @@ abstract class GenerateMigrationTask : DefaultTask() {
     lateinit var liquibaseClasspath: FileCollection
 
     @TaskAction
-    fun run() {
+    fun execute() {
         val cfg = DbPropsLoader.load(propertiesFile)
 
         try {
@@ -56,9 +54,9 @@ abstract class GenerateMigrationTask : DefaultTask() {
                     isIgnoreExitValue = true
                 }
             result.assertNormalExitValue()
-            println("[INFO] Liquibase diffChangeLog completed for project: ${project.name}")
+            logger.lifecycle("Liquibase diffChangeLog completed for project: ${project.name}")
         } catch (e: Exception) {
-            println("[ERROR] Liquibase diffChangeLog 실행 실패 (project=${project.name}): ${e.message}")
+            logger.error("Liquibase diffChangeLog 실행 실패 (project=${project.name}): ${e.message}")
             throw GradleException("Liquibase diffChangeLog 실행 실패", e)
         }
     }

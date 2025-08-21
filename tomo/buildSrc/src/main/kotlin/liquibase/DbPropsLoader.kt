@@ -1,5 +1,3 @@
-package buildsrc.liquibase
-
 import org.gradle.api.GradleException
 import java.io.File
 import java.util.Properties

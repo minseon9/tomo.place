@@ -1,5 +1,3 @@
-package buildsrc.liquibase
-
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.tasks.Input
@@ -14,12 +12,11 @@ abstract class AppendIncludeTask : DefaultTask() {
     @Input
     lateinit var targetChangelogPath: String
 
-    // 일반화: 전체 include 경로를 전달 (예: migrations/xxx.yml 혹은 ../../../module/...yml)
     @Input
     lateinit var includeFilePath: String
 
     @TaskAction
-    fun run() {
+    fun execute() {
         try {
             val file = File(targetChangelogPath)
             if (!file.exists()) {
@@ -55,9 +52,9 @@ abstract class AppendIncludeTask : DefaultTask() {
 
             val dumper = Yaml(dumpOpt)
             file.writeText(dumper.dump(newRoot))
-            println("[INFO] Ensured include for '$includeFilePath' in ${file.absolutePath}")
+            logger.lifecycle("Ensured include for '$includeFilePath' in ${file.absolutePath}")
         } catch (e: Exception) {
-            println("[ERROR] Changelog include 추가 실패: ${e.message}")
+            logger.error("Changelog include 추가 실패: ${e.message}")
             throw GradleException("Changelog include 추가 실패", e)
         }
     }
