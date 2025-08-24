@@ -1,13 +1,12 @@
-plugins {
-    kotlin("jvm")
-    kotlin("plugin.spring")
-    id("org.springframework.boot")
-    id("io.spring.dependency-management")
-}
-
 dependencies {
     implementation(project(":contract"))
-    implementation("org.springframework.boot:spring-boot-starter-webflux")
-    implementation("org.springframework:spring-context")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
-} 
+
+    // 번들 그룹 활용
+    implementation(libs.bundles.webflux.common)
+    implementation(libs.spring.context)
+    implementation(libs.kotlinx.datetime)
+    
+    // 테스트 의존성 정리
+    testImplementation(libs.bundles.testing.core)
+    testImplementation(libs.mockk)
+}

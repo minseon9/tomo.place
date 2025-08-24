@@ -42,3 +42,4 @@ out/
 # Local env and properties (do not commit secrets)
 .env
 *.local.properties
+gradle.properties

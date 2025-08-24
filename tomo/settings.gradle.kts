@@ -1,9 +1,13 @@
 rootProject.name = "tomo"
 
-rootDir.listFiles()
+rootDir
+    .listFiles()
     ?.filter {
         it.isDirectory &&
-            it.name != "buildSrc" && // Gradle 예약 디렉토리: 서브프로젝트로 포함 금지
+            it.name != "build-logic" &&
             File(it, "build.gradle.kts").exists()
-    }
-    ?.forEach { include(it.name) }
+    }?.forEach { include(it.name) }
+
+pluginManagement {
+    includeBuild("build-logic")
+}

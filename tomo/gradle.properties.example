@@ -1,0 +1,5 @@
+MAIN_PROJECT_NAME=tomo
+DATASOURCE_URL=jdbc:postgresql://localhost:5432/tomo
+DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
+DATASOURCE_USERNAME=postgres
+DATASOURCE_PASSWORD=postgres

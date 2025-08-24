@@ -1,14 +1,15 @@
 dependencies {
+    // 프로젝트 의존성
     implementation(project(":common"))
     implementation(project(":contract"))
     implementation(project(":auth"))
     implementation(project(":user"))
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("org.springframework.boot:spring-boot-starter-security")
-    // Spring Cloud OpenFeign
-//    implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
-    developmentOnly("org.springframework.boot:spring-boot-devtools")
-    testImplementation("org.springframework.security:spring-security-test")
+
+    // 번들 그룹 활용
+    implementation(libs.bundles.app.runtime)
+    implementation(libs.bundles.webflux.common)
+
+    developmentOnly(libs.spring.boot.devtools)
 }
 
 tasks.bootJar {
