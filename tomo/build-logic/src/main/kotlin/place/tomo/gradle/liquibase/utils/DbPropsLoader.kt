@@ -1,6 +1,7 @@
 package place.tomo.gradle.liquibase.utils
 
-import java.lang.System.getenv
+import org.gradle.api.Project
+import place.tomo.gradle.liquibase.constants.LiquibaseConstants
 
 data class DbProps(
     val url: String,
@@ -17,11 +18,11 @@ data class DbProps(
 }
 
 object DbPropsLoader {
-    fun load(): DbProps {
-        val url = getenv("DATASOURCE_URL") as String
-        val username = getenv("DATASOURCE_USERNAME") as String
-        val password = getenv("DATASOURCE_PASSWORD") as String
-        val driver = getenv("DATASOURCE_DRIVER_CLASS_NAME") as String
+    fun load(project: Project): DbProps {
+        val url = project.findProperty(LiquibaseConstants.DATASOURCE_URL_PROPERTY)!! as String
+        val username = project.findProperty(LiquibaseConstants.DATASOURCE_USERNAME_PROPERTY)!! as String
+        val password = project.findProperty(LiquibaseConstants.DATASOURCE_PASSWORD_PROPERTY)!! as String
+        val driver = project.findProperty(LiquibaseConstants.DATASOURCE_DRIVER_CLASS_NAME_PROPERTY)!! as String
 
         return DbProps(url = url, username = username, password = password, driver = driver)
     }

@@ -11,7 +11,7 @@ data class LiquibaseProjectContext(
     companion object {
         fun create(project: Project): LiquibaseProjectContext {
             val pathResolver = LiquibasePathResolver(project)
-            val dbProps = DbPropsLoader.load()
+            val dbProps = DbPropsLoader.load(project)
             val entityPackage =
                 project.findProperty(LiquibaseConstants.LIQUIBASE_ENTITY_PACKAGE_PROPERTY) as String?
                     ?: "${LiquibaseConstants.DEFAULT_ENTITY_PACKAGE_PREFIX}.${project.name}.domain.entities"
