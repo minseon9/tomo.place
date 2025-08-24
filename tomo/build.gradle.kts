@@ -16,17 +16,9 @@ allprojects {
     repositories {
         mavenCentral()
     }
-}
 
-subprojects {
+    // 공통 Java/Kotlin 설정을 allprojects로 이동
     apply(plugin = "kotlin")
-    apply(plugin = "kotlin-spring")
-    apply(plugin = "kotlin-jpa")
-    apply(plugin = "org.springframework.boot")
-    apply(plugin = "io.spring.dependency-management")
-
-    apply(plugin = "place.tomo.gradle.test-convention")
-    apply(plugin = "place.tomo.gradle.liquibase-convention")
 
     java {
         toolchain {
@@ -40,6 +32,17 @@ subprojects {
             jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
         }
     }
+}
+
+subprojects {
+    // Spring 관련 플러그인과 Convention Plugin만 유지
+    apply(plugin = "kotlin-spring")
+    apply(plugin = "kotlin-jpa")
+    apply(plugin = "org.springframework.boot")
+    apply(plugin = "io.spring.dependency-management")
+
+    apply(plugin = "place.tomo.gradle.test-convention")
+    apply(plugin = "place.tomo.gradle.liquibase-convention")
 
     tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
         enabled = false

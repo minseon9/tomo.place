@@ -145,3 +145,27 @@ kotlinx-coroutines = [
     "kotlinx-coroutines-core",
     "kotlinx-coroutines-reactor"
 ]
+
+# Auth 모듈용 번들
+auth-core = [
+    "spring-boot-starter-webflux",
+    "spring-boot-starter-oauth2-client",
+    "spring-boot-starter-cache",
+    "spring-boot-starter-aop",
+    "caffeine",
+    "resilience4j-spring-boot3"
+]
+
+# 공통 WebFlux 번들
+webflux-common = [
+    "spring-boot-starter-webflux",
+    "kotlinx-coroutines-reactor"
+]
+
+# 실행 애플리케이션용 번들
+app-runtime = [
+    "spring-boot-starter-actuator",
+    "spring-boot-starter-cache",
+    "caffeine",
+    "netty-all"
+]
