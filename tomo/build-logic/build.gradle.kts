@@ -3,6 +3,11 @@ plugins {
     `java-gradle-plugin`
 }
 
+repositories {
+    mavenCentral()
+    gradlePluginPortal()
+}
+
 dependencies {
     implementation(libs.liquibase.gradle.plugin)
     implementation("org.yaml:snakeyaml:2.2")
