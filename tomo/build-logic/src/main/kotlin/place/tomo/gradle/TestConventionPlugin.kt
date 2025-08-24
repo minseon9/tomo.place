@@ -8,18 +8,16 @@ import org.gradle.kotlin.dsl.withType
 
 class TestConventionPlugin : Plugin<Project> {
     override fun apply(project: Project) {
-        fun configureTestTasks(project: Project) {
-            project.tasks.withType<Test> {
-                useJUnitPlatform()
+        project.tasks.withType<Test> {
+            useJUnitPlatform()
 
-                testLogging {
-                    events("started", "passed", "skipped", "failed", "standardOut", "standardError")
-                    showStandardStreams = true
-                    showCauses = true
-                    showExceptions = true
-                    showStackTraces = true
-                    exceptionFormat = TestExceptionFormat.FULL
-                }
+            testLogging {
+                events("started", "passed", "skipped", "failed", "standardOut", "standardError")
+                showStandardStreams = true
+                showCauses = true
+                showExceptions = true
+                showStackTraces = true
+                exceptionFormat = TestExceptionFormat.FULL
             }
         }
     }
