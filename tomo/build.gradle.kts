@@ -1,12 +1,12 @@
-// buildSrc import 제거 - Liquibase 설정은 기존 로직 유지
-
 plugins {
     alias(libs.plugins.spring.boot) apply false
     alias(libs.plugins.spring.dependency.management) apply false
-    alias(libs.plugins.liquibase) apply false
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.spring) apply false
     alias(libs.plugins.kotlin.jpa) apply false
+
+    id("place.tomo.gradle.test-convention") apply false
+    id("place.tomo.gradle.liquibase-convention") apply false
 }
 
 allprojects {
@@ -24,6 +24,9 @@ subprojects {
     apply(plugin = "kotlin-jpa")
     apply(plugin = "org.springframework.boot")
     apply(plugin = "io.spring.dependency-management")
+
+    apply(plugin = "place.tomo.gradle.test-convention")
+    apply(plugin = "place.tomo.gradle.liquibase-convention")
 
     java {
         toolchain {
@@ -46,28 +49,20 @@ subprojects {
         enabled = true
     }
 
-    // buildSrc로 분리된 테스트 설정 적용
-    TestConfig.configureTestTasks(this)
-
+    val libs = rootProject.libs
     dependencies {
-        // buildSrc로 분리된 의존성 그룹 적용
-        productionDependencies()
-        testDependencies()
-    }
+        implementation(libs.bundles.kotlin.basic)
+        implementation(libs.bundles.spring.boot.core)
+        implementation(libs.bundles.spring.boot.web.services)
+        implementation(libs.bundles.spring.boot.data)
+        runtimeOnly(libs.postgresql)
 
-    // Liquibase 활성화 여부 (모듈별 opt-in)
-    val liquibaseEnabled: Boolean = (findProperty("liquibaseEnabled") as String?)?.toBoolean() == true
+        testImplementation(libs.bundles.testing.core)
+        testImplementation(libs.bundles.testing.mock)
+        testImplementation(libs.bundles.testing.utils)
+        testImplementation(libs.spring.boot.starter.data.jpa)
 
-    if (liquibaseEnabled) {
-        apply(plugin = "org.liquibase.gradle")
-
-        dependencies {
-            liquibaseDependencies()
-            add("liquibaseRuntime", sourceSets.main.get().runtimeClasspath)
-        }
-
-        // buildSrc로 분리된 Liquibase 설정 적용
-        LiquibaseConfig.configureLiquibase(this)
+        testRuntimeOnly(libs.junit.platform.launcher)
     }
 }
 
