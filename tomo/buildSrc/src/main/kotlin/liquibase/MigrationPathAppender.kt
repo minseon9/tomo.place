@@ -1,22 +1,20 @@
-import org.gradle.api.DefaultTask
+@file:Suppress("ktlint:standard:filename")
+
 import org.gradle.api.GradleException
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.TaskAction
+import org.gradle.api.logging.Logger
 import org.yaml.snakeyaml.DumperOptions
 import org.yaml.snakeyaml.LoaderOptions
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.SafeConstructor
 import java.io.File
 
-abstract class AppendIncludeTask : DefaultTask() {
-    @Input
-    lateinit var targetChangelogPath: String
-
-    @Input
-    lateinit var includeFilePath: String
-
-    @TaskAction
-    fun execute() {
+object MigrationPathAppender {
+    fun append(
+        targetChangelogPath: String,
+        includeFilePath: String,
+        logger: Logger,
+    ) {
+        // FIXME: class loader를 사용해서 resource의 적절한 파일 경로를 찾도록 수정
         try {
             val file = File(targetChangelogPath)
             if (!file.exists()) {
