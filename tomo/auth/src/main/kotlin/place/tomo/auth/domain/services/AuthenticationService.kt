@@ -4,13 +4,11 @@ import kotlinx.coroutines.runBlocking
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.stereotype.Service
 import place.tomo.auth.domain.dtos.AuthTokenDTO
 import place.tomo.auth.domain.dtos.oidc.OIDCUserInfo
 import place.tomo.auth.domain.exception.AuthenticationFailedException
 import place.tomo.auth.domain.exception.SocialAccountNotLinkedException
-import place.tomo.auth.domain.services.oidc.OIDCProvider
 import place.tomo.auth.domain.services.oidc.OIDCProviderFactory
 import place.tomo.contract.constant.OIDCProviderType
 
@@ -36,7 +34,8 @@ class AuthenticationService(
 
             return AuthTokenDTO(accessToken = accessToken, refreshToken = refreshToken)
         } catch (e: BadCredentialsException) {
-            throw AuthenticationFailedException()
+            val reason = e.message ?: "이메일 또는 비밀번호가 올바르지 않습니다"
+            throw AuthenticationFailedException(reason, e.cause)
         }
     }
 
