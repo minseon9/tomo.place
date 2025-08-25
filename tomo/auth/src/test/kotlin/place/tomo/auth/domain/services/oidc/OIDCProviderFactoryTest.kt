@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import place.tomo.auth.domain.exception.UnsupportedOIDCProviderException
 import place.tomo.auth.domain.services.oidc.google.GoogleOIDCProvider
 import place.tomo.contract.constant.OIDCProviderType
 
@@ -40,7 +41,7 @@ class OIDCProviderFactoryTest {
             notSupportedProvider.forEach { provider ->
                 assertThatThrownBy {
                     factory.getService(provider)
-                }.isInstanceOf(UnsupportedOperationException::class.java)
+                }.isInstanceOf(UnsupportedOIDCProviderException::class.java)
             }
         }
     }
