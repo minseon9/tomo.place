@@ -1,0 +1,171 @@
+[versions]
+spring-boot = "3.5.0"
+spring-dependency-management = "1.1.7"
+liquibase-gradle = "2.2.2"
+kotlin = "2.1.21"
+mockk = "1.13.11"
+datafaker = "2.0.1"
+liquibase-hibernate = "4.33.0"
+picocli = "4.7.5"
+caffeine = "3.1.8"
+resilience4j = "2.2.0"
+jjwt = "0.12.5"
+kotlinx-datetime = "0.7.1"
+
+# Additional versions for dependencies without explicit versions
+postgresql = "42.7.3"
+h2 = "2.2.224"
+kotlinx-coroutines = "1.8.0"
+mockito = "5.11.0"
+junit-platform = "1.10.2"
+netty = "4.1.107.Final"
+liquibase-core = "4.27.0"
+spring-framework = "6.1.4"
+
+[plugins]
+spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }
+liquibase = { id = "org.liquibase.gradle", version.ref = "liquibase-gradle" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin" }
+kotlin-jpa = { id = "org.jetbrains.kotlin.plugin.jpa", version.ref = "kotlin" }
+
+[libraries]
+# Spring Boot
+spring-boot-starter = { module = "org.springframework.boot:spring-boot-starter", version.ref = "spring-boot" }
+spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web", version.ref = "spring-boot" }
+spring-boot-starter-web-services = { module = "org.springframework.boot:spring-boot-starter-web-services", version.ref = "spring-boot" }
+spring-boot-starter-security = { module = "org.springframework.boot:spring-boot-starter-security", version.ref = "spring-boot" }
+spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa", version.ref = "spring-boot" }
+spring-boot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation", version.ref = "spring-boot" }
+spring-boot-starter-webflux = { module = "org.springframework.boot:spring-boot-starter-webflux", version.ref = "spring-boot" }
+spring-boot-starter-oauth2-client = { module = "org.springframework.boot:spring-boot-starter-oauth2-client", version.ref = "spring-boot" }
+spring-boot-starter-cache = { module = "org.springframework.boot:spring-boot-starter-cache", version.ref = "spring-boot" }
+spring-boot-starter-aop = { module = "org.springframework.boot:spring-boot-starter-aop", version.ref = "spring-boot" }
+spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator", version.ref = "spring-boot" }
+spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test", version.ref = "spring-boot" }
+spring-boot-devtools = { module = "org.springframework.boot:spring-boot-devtools", version.ref = "spring-boot" }
+
+# Kotlin
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
+kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
+kotlin-test-junit5 = { module = "org.jetbrains.kotlin:kotlin-test-junit5", version.ref = "kotlin" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-reactor = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-reactor", version.ref = "kotlinx-coroutines" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
+kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+
+# Database
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
+h2 = { module = "com.h2database:h2", version.ref = "h2" }
+
+# Testing
+spring-security-test = { module = "org.springframework.security:spring-security-test", version.ref = "spring-framework" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
+mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
+datafaker = { module = "net.datafaker:datafaker", version.ref = "datafaker" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit-platform" }
+
+# Cache & Resilience
+caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
+resilience4j-spring-boot3 = { module = "io.github.resilience4j:resilience4j-spring-boot3", version.ref = "resilience4j" }
+
+# JWT
+jjwt-api = { module = "io.jsonwebtoken:jjwt-api", version.ref = "jjwt" }
+jjwt-impl = { module = "io.jsonwebtoken:jjwt-impl", version.ref = "jjwt" }
+jjwt-jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
+
+# Netty
+netty-all = { module = "io.netty:netty-all", version.ref = "netty" }
+
+# Liquibase
+liquibase-core = { module = "org.liquibase:liquibase-core", version.ref = "liquibase-core" }
+liquibase-hibernate6 = { module = "org.liquibase.ext:liquibase-hibernate6", version.ref = "liquibase-hibernate" }
+liquibase-gradle-plugin = { module = "org.liquibase:liquibase-gradle-plugin", version.ref = "liquibase-gradle" }
+picocli = { module = "info.picocli:picocli", version.ref = "picocli" }
+
+# Spring
+spring-context = { module = "org.springframework:spring-context", version.ref = "spring-framework" }
+
+[bundles]
+# Kotlin 기본
+kotlin-basic = [
+    "kotlin-reflect",
+    "kotlin-stdlib"
+]
+
+# Spring Boot 핵심 (starter + web + validation + security)
+spring-boot-core = [
+    "spring-boot-starter",
+    "spring-boot-starter-web",
+    "spring-boot-starter-validation",
+    "spring-boot-starter-security"
+]
+
+# Spring Boot 웹 서비스
+spring-boot-web-services = [
+    "spring-boot-starter-web-services"
+]
+
+# Spring Boot 데이터 액세스
+spring-boot-data = [
+    "spring-boot-starter-data-jpa"
+]
+
+# 테스트 핵심
+testing-core = [
+    "spring-boot-starter-test",
+    "spring-security-test",
+    "kotlin-test-junit5"
+]
+
+# 테스트 목킹
+testing-mock = [
+    "mockk",
+    "mockito-core",
+    "mockito-junit-jupiter"
+]
+
+# 테스트 데이터베이스 및 유틸
+testing-utils = [
+    "h2",
+    "datafaker"
+]
+
+# JWT 관련
+jwt = [
+    "jjwt-api",
+    "jjwt-impl",
+    "jjwt-jackson"
+]
+
+# Coroutines 관련
+kotlinx-coroutines = [
+    "kotlinx-coroutines-core",
+    "kotlinx-coroutines-reactor"
+]
+
+# Auth 모듈용 번들
+auth-core = [
+    "spring-boot-starter-webflux",
+    "spring-boot-starter-oauth2-client",
+    "spring-boot-starter-cache",
+    "spring-boot-starter-aop",
+    "caffeine",
+    "resilience4j-spring-boot3"
+]
+
+# 공통 WebFlux 번들
+webflux-common = [
+    "spring-boot-starter-webflux",
+    "kotlinx-coroutines-reactor"
+]
+
+# 실행 애플리케이션용 번들
+app-runtime = [
+    "spring-boot-starter-actuator",
+    "spring-boot-starter-cache",
+    "caffeine",
+    "netty-all"
+]
