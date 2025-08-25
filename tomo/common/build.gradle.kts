@@ -5,7 +5,8 @@ dependencies {
     implementation(libs.bundles.webflux.common)
     implementation(libs.spring.context)
     implementation(libs.kotlinx.datetime)
-    
+    implementation(libs.spring.boot.starter.test)
+
     // 테스트 의존성 정리
     testImplementation(libs.bundles.testing.core)
     testImplementation(libs.mockk)

@@ -17,7 +17,6 @@ postgresql = "42.7.3"
 h2 = "2.2.224"
 kotlinx-coroutines = "1.8.0"
 mockito = "5.11.0"
-junit-platform = "1.10.2"
 netty = "4.1.107.Final"
 liquibase-core = "4.27.0"
 spring-framework = "6.1.4"
@@ -65,7 +64,7 @@ mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
 datafaker = { module = "net.datafaker:datafaker", version.ref = "datafaker" }
-junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit-platform" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 
 # Cache & Resilience
 caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
