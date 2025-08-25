@@ -3,16 +3,13 @@ package place.tomo.auth.domain.exception
 import org.springframework.http.HttpStatus
 import place.tomo.common.exception.BaseHttpException
 
-/**
- * 인증에 실패했을 때 발생하는 예외
- */
-class AuthenticationFailedException(
-    reason: String = "이메일 또는 비밀번호가 올바르지 않습니다",
+class UnsupportedOIDCProviderException(
+    provider: String,
     cause: Throwable? = null,
 ) : BaseHttpException(
         status = HttpStatus.UNAUTHORIZED,
         errorCode = "AUTHENTICATION_FAILED",
-        message = "인증에 실패했습니다: {reason}",
+        message = "지원하지 않는 제공자입니다: $provider",
         parameters = mapOf("reason" to reason),
         cause = cause,
     )

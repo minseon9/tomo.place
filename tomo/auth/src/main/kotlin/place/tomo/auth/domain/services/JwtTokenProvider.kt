@@ -9,6 +9,8 @@ import place.tomo.auth.domain.exception.InvalidAuthTokenException
 import java.time.Instant
 import java.util.Date
 
+// TODO: Spring Security의 OAuth2 Resource Server 를 사용하도록 리팩토링
+// TODO: provider, decoder, validator를 책임 분리
 @Service
 class JwtTokenProvider(
     @Value("\${security.jwt.secret}") private val secret: String,
