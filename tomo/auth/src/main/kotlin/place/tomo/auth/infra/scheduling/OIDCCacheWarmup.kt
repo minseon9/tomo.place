@@ -19,18 +19,21 @@ class OIDCCacheWarmup(
             OIDCProviderType.entries.forEach { provider ->
                 runCatching {
                     endpointResolver.refresh(provider)
+                }
+                runCatching {
                     jwksResolver.refresh(provider)
                 }
             }
         }
 
-    // 한국 시간 자정 기준으로 매일 리프레시
     @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
     fun scheduledRefresh() =
         runBlocking {
             OIDCProviderType.entries.forEach { provider ->
                 runCatching {
                     endpointResolver.refresh(provider)
+                }
+                runCatching {
                     jwksResolver.refresh(provider)
                 }
             }

@@ -15,8 +15,9 @@ class GoogleOIDCClient(
     oidcProperties: OIDCProperties,
     private val endpointResolver: OIDCEndpointResolver,
 ) : AbstractOIDCClient(httpClient, oidcProperties) {
-    override suspend fun getOIDCToken(authorizationCode: String): OIDCTokens {
+    override suspend fun doGetOIDCToken(authorizationCode: String): OIDCTokens {
         val endpoints = endpointResolver.resolve(OIDCProviderType.GOOGLE)
+
         val response =
             httpClient.post<GoogleTokenResponse>(
                 uri = endpoints.tokenEndpoint,

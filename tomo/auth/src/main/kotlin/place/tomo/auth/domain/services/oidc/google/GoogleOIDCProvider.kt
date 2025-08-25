@@ -4,11 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.jsonwebtoken.Jwts
 import org.springframework.stereotype.Component
 import place.tomo.auth.domain.dtos.oidc.OIDCIdTokenClaims
+import place.tomo.auth.domain.exception.InvalidIdTokenException
 import place.tomo.auth.domain.services.oidc.AbstractOIDCProvider
 import place.tomo.auth.domain.services.oidc.OIDCProperties
 import place.tomo.auth.domain.services.oidc.discovery.OIDCMetadataResolver
-import place.tomo.common.exception.HttpErrorStatus
-import place.tomo.common.exception.HttpException
 import place.tomo.contract.constant.OIDCProviderType
 
 @Component
@@ -33,7 +32,7 @@ class GoogleOIDCProvider(
         val kid = node.path("kid").asText(null)
         val alg = node.path("alg").asText(null)
         if (kid.isNullOrBlank()) {
-            throw HttpException(HttpErrorStatus.UNAUTHORIZED, "Missing kid in ID token header")
+            throw InvalidIdTokenException("Missing kid in ID token header")
         }
 
         val publicKey = metadataResolver.getPublicKeyByKid(providerType, kid, alg)
@@ -46,7 +45,7 @@ class GoogleOIDCProvider(
                     .parseSignedClaims(idToken)
                     .payload
             } catch (e: Exception) {
-                throw HttpException(HttpErrorStatus.UNAUTHORIZED, "Invalid ID token signature", cause = e)
+                throw InvalidIdTokenException("Invalid ID token signature", e)
             }
 
         return OIDCIdTokenClaims(

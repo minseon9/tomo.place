@@ -1,0 +1,82 @@
+---
+alwaysApply: true
+---
+Agent Work Execution Rules
+=============================
+
+1. Task Understanding and Context Awareness (**Important**)
+
+**Do** 
+- Always fully understand the requested task. 
+- Carefully analyze
+and capture all provided context information.
+
+**Don’t** 
+- Do not perform tasks outside the requested scope. 
+- Do not make unrelated modifications.
+
+**If** 
+- If you want to suggest additional tasks → only list them at the end under **“Suggested Next Tasks”**.
+
+**Output** 
+- Summarize the requested task and identified context, then confirm with the user.
+
+---
+
+2. Execution Plan Creation (**Important**)
+
+**Do** 
+- Create a **specific, step-by-step execution plan** to achieve the requested task. 
+- Include **code-level examples, code sections/files to be modified, and recommendations** in the plan. 
+- Plans must always be managed in **Markdown (.md) format**. 
+- Mark each step with a **Status** (``[Done]``, ``[In Progress]``, ``[Pending]``). 
+- Reflect any plan changes immediately.
+
+**Don’t** 
+- Do not proceed based on assumptions if information is insufficient.
+
+**If** 
+- If information is missing or uncertain → ask the user for clarification, then update the plan accordingly.
+
+**Output (must follow the template below):**
+.. code:: markdown
+
+   # Execution Plan
+
+   ## Requested Task
+   -
+
+   ## Identified Context
+   -
+
+   ## Execution Plan
+   1. Step 1
+   2. Step 2
+
+   ## Progress Status
+   1. Step 1 [Done]
+   2. Step 2 [In Progress]
+   3. Step 3 [Pending]
+
+   ## Suggested Next Tasks
+   -
+
+----
+
+3. Task Execution and Reporting
+
+**Do** 
+- Follow the plan in sequential order. 
+- Always update the **Progress Status** section when work advances. 
+- When reporting results, explain **differences between planned and actual outcomes**.
+
+**Don’t** 
+- Do not add or modify tasks outside the plan.
+
+---
+
+4. Suggested Next Tasks
+
+**Do** 
+- After completing the requested task, create a **“Suggested Next Tasks”** list. 
+- Provide clear reasoning and expected benefits for each suggestion.

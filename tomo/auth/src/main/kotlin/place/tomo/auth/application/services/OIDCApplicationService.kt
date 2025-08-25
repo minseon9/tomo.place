@@ -51,7 +51,7 @@ class OIDCApplicationService(
         email: String,
         name: String,
     ): UserInfoDTO {
-        val existingUser = userDomainPort.findByEmail(email)
+        val existingUser = userDomainPort.findActiveByEmail(email)
         if (existingUser != null) {
             return existingUser
         }

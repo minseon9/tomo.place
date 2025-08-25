@@ -4,8 +4,7 @@ import jakarta.validation.constraints.NotBlank
 import place.tomo.contract.constant.OIDCProviderType
 
 data class OIDCSignupRequestBody(
-    @NotBlank
     val provider: OIDCProviderType,
-    @NotBlank
+    @field:NotBlank
     val authorizationCode: String,
 )

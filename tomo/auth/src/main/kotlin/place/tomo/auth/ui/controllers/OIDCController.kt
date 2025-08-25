@@ -16,13 +16,13 @@ import place.tomo.auth.ui.responses.LoginResponseBody
 @RestController
 @RequestMapping("/api/oidc")
 class OIDCController(
-    private val authService: OIDCApplicationService,
+    private val oidcAuthService: OIDCApplicationService,
 ) {
     @PostMapping("/signup")
     fun signUp(
-        @RequestBody @Valid request: OIDCSignupRequestBody,
+        @RequestBody @Valid body: OIDCSignupRequestBody,
     ): ResponseEntity<LoginResponseBody> {
-        val response = authService.signUp(OIDCSignUpRequest(request.provider, request.authorizationCode))
+        val response = oidcAuthService.signUp(OIDCSignUpRequest(body.provider, body.authorizationCode))
 
         return ResponseEntity.ok(LoginResponseBody(token = response.token, refreshToken = response.refreshToken))
     }
@@ -31,7 +31,7 @@ class OIDCController(
     fun authenticate(
         @RequestBody @Valid body: OIDCLoginRequestBody,
     ): ResponseEntity<LoginResponseBody> {
-        val response = authService.authenticate(OIDCAuthenticateRequest(body.provider, body.authorizationCode))
+        val response = oidcAuthService.authenticate(OIDCAuthenticateRequest(body.provider, body.authorizationCode))
 
         return ResponseEntity.ok(LoginResponseBody(token = response.token, refreshToken = response.refreshToken))
     }

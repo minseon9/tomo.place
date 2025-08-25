@@ -11,7 +11,7 @@ import java.net.URI
 @Configuration
 class HttpClientConfig {
     @Bean
-    fun httpClientInterface(webClient: WebClient): HttpClient = HttpClientImpl(webClient)
+    fun httpClient(webClient: WebClient): HttpClient = HttpClientImpl(webClient)
 }
 
 private class HttpClientImpl(
@@ -72,11 +72,5 @@ private class HttpClientImpl(
             .apply { query.forEach { (k, v) -> queryParam(k, v) } }
             .build(true)
             .toUriString()
-
-//        val builder = StringBuilder(baseUri).append('?')
-//        val appended = query.entries.joinToString("&") { (key, value) -> "$key=$value" }
-//        builder.append(appended)
-//
-//        return builder.toString()
     }
 }

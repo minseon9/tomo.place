@@ -8,8 +8,7 @@ import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
 import place.tomo.auth.domain.dtos.oidc.OIDCEndpoints
-import place.tomo.common.exception.HttpErrorStatus
-import place.tomo.common.exception.HttpException
+import place.tomo.auth.domain.exception.OIDCConfigurationException
 import place.tomo.common.http.HttpClient
 import place.tomo.common.http.get
 import place.tomo.contract.constant.OIDCProviderType
@@ -29,7 +28,7 @@ class OIDCEndpointResolver(
     suspend fun resolve(provider: OIDCProviderType): OIDCEndpoints {
         val issuer =
             propsResolver.getIssuer(provider)
-                ?: throw HttpException(HttpErrorStatus.INTERNAL_SERVER_ERROR, "issuer-uri not configured for $provider")
+                ?: throw OIDCConfigurationException("issuer-uri not configured for $provider")
 
         val wellKnownUri = issuer.trimEnd('/') + "/.well-known/openid-configuration"
         val resp = httpClient.get<WellKnownResponse>(wellKnownUri)
