@@ -10,6 +10,6 @@ class UnsupportedOIDCProviderException(
         status = HttpStatus.UNAUTHORIZED,
         errorCode = "AUTHENTICATION_FAILED",
         message = "지원하지 않는 제공자입니다: $provider",
-        parameters = mapOf("reason" to reason),
+        parameters = mapOf("provider" to provider),
         cause = cause,
     )
