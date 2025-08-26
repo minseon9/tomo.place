@@ -15,7 +15,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.context.ApplicationContext
 import org.springframework.http.MediaType
 import org.springframework.security.core.userdetails.UserDetailsService
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
@@ -32,7 +31,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.context.WebApplicationContext
 import place.tomo.auth.application.services.CustomUserDetailsService
-import place.tomo.auth.domain.services.JwtTokenProvider
+import place.tomo.auth.domain.services.JwtProvider
 import place.tomo.auth.ui.controllers.AuthController
 import place.tomo.auth.ui.controllers.OIDCController
 import place.tomo.contract.dtos.UserInfoDTO
@@ -74,7 +73,7 @@ class SecurityFilterChainConfigTest {
     private lateinit var applicationContext: ApplicationContext
 
     @Autowired
-    private lateinit var jwtTokenProvider: JwtTokenProvider
+    private lateinit var jwtProvider: JwtProvider
 
     @Autowired
     private lateinit var userDomainPort: UserDomainPort
@@ -108,10 +107,6 @@ class SecurityFilterChainConfigTest {
         fun `securityConfig when beans created expect all beans injected with correct types`() {
             val securityFilterChainConfig = applicationContext.getBean(SecurityFilterChainConfig::class.java)
             assertThat(securityFilterChainConfig).isNotNull()
-
-            val jwtAuthenticationFilter = applicationContext.getBean(JwtAuthenticationFilter::class.java)
-            assertThat(jwtAuthenticationFilter).isNotNull()
-            assertThat(jwtAuthenticationFilter).isInstanceOf(JwtAuthenticationFilter::class.java)
 
             val authenticationEntryPoint = applicationContext.getBean(AuthenticationEntryPoint::class.java)
             assertThat(authenticationEntryPoint).isNotNull()
@@ -149,50 +144,10 @@ class SecurityFilterChainConfigTest {
         }
 
         @Test
-        @DisplayName("GET 요청에 대해서는 CSRF 보호가 비활성화됨")
-        fun `filterChain when GET endpoints expect csrf disabled`() {
-            val token = createAuthenticatedUser()
-
-            mockMvc
-                .perform(
-                    MockMvcRequestBuilders
-                        .get("/need-authentication")
-                        .header("Authorization", "Bearer $token")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"),
-                ).andExpect(MockMvcResultMatchers.status().isOk)
-        }
-
-        @Test
-        @DisplayName("POST 요청에 대해서는 CSRF 보호가 활성화됨")
-        fun `filterChain when POST endpoints expect csrf`() {
-            val token = createAuthenticatedUser()
-
-            mockMvc
-                .perform(
-                    MockMvcRequestBuilders
-                        .post("/need-authentication")
-                        .header("Authorization", "Bearer $token")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"),
-                ).andExpect(MockMvcResultMatchers.status().isForbidden)
-
-            mockMvc
-                .perform(
-                    MockMvcRequestBuilders
-                        .post("/need-authentication")
-                        .header("Authorization", "Bearer $token")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"),
-                ).andExpect(MockMvcResultMatchers.status().isOk)
-        }
-
-        @Test
         @DisplayName("보호된 엔드포인트는 인증 필요")
         fun `filterChain when protected endpoints expect authentication required`() {
             mockMvc
-                .perform(MockMvcRequestBuilders.post("/need-authentication").with(csrf()))
+                .perform(MockMvcRequestBuilders.post("/need-authentication"))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized)
         }
 
@@ -205,7 +160,6 @@ class SecurityFilterChainConfigTest {
                 .perform(
                     MockMvcRequestBuilders
                         .post("/need-authentication")
-                        .with(csrf())
                         .header("Authorization", "Bearer $token"),
                 ).andExpect(MockMvcResultMatchers.status().isOk)
         }
@@ -217,7 +171,6 @@ class SecurityFilterChainConfigTest {
                 .perform(
                     MockMvcRequestBuilders
                         .post("/need-authentication")
-                        .with(csrf())
                         .header("Authorization", "Bearer invalid.token.here"),
                 ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
         }
@@ -241,7 +194,6 @@ class SecurityFilterChainConfigTest {
                 .perform(
                     MockMvcRequestBuilders
                         .post("/need-authentication")
-                        .with(csrf())
                         .header("Authorization", "Basic dGVzdDp0ZXN0"),
                 ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
         }
@@ -262,7 +214,7 @@ class SecurityFilterChainConfigTest {
 
     private fun createAuthenticatedUser(): String {
         val email = faker.internet().emailAddress()
-        val token = jwtTokenProvider.issueAccessToken(email)
+        val token = jwtProvider.issueAccessToken(email)
 
         every { userDomainPort.findActiveByEmail(email) } returns
             UserInfoDTO(

@@ -7,9 +7,8 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.FilterType
 import org.springframework.context.annotation.Primary
-import org.springframework.security.core.userdetails.UserDetailsService
 import place.tomo.auth.application.services.CustomUserDetailsService
-import place.tomo.auth.domain.services.JwtTokenProvider
+import place.tomo.auth.domain.services.JwtProvider
 import place.tomo.contract.ports.UserDomainPort
 import place.tomo.infra.config.PasswordConfig
 
@@ -28,9 +27,8 @@ import place.tomo.infra.config.PasswordConfig
             classes = [
                 SecurityFilterChainConfig::class,
                 PasswordConfig::class,
-                JwtTokenProvider::class,
+                JwtProvider::class,
                 CustomUserDetailsService::class,
-                JwtAuthenticationFilter::class,
                 CustomAuthenticationEntryPoint::class,
                 CustomAccessDeniedHandler::class,
             ],
@@ -40,7 +38,7 @@ import place.tomo.infra.config.PasswordConfig
         ComponentScan.Filter(
             type = FilterType.REGEX,
             pattern = [
-                "place\\.tomo\\.auth\\.domain\\.services\\.(?!JwtTokenProvider).*",
+                "place\\.tomo\\.auth\\.domain\\.services\\.(?!JwtProvider).*",
                 "place\\.tomo\\.auth\\.application\\.services\\.(?!CustomUserDetailsService).*",
                 "place\\.tomo\\.infra\\.config\\.(?!PasswordConfig|security).*",
             ],
