@@ -1,7 +1,7 @@
 package place.tomo.auth.domain.services
 
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm
 import org.springframework.security.oauth2.jwt.JwsHeader
 import org.springframework.security.oauth2.jwt.JwtClaimsSet
 import org.springframework.security.oauth2.jwt.JwtEncoder
@@ -37,7 +37,7 @@ class JwtProvider(
                 .expiresAt(nowInstant.plusSeconds(expiration))
                 .build()
 
-        val jwsHeader = JwsHeader.with(SignatureAlgorithm.RS256).build()
+        val jwsHeader = JwsHeader.with(MacAlgorithm.HS256).build()
 
         return jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, jwtClaims)).tokenValue
     }
