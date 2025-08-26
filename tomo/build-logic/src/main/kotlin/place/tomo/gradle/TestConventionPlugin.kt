@@ -13,10 +13,8 @@ class TestConventionPlugin : Plugin<Project> {
 
             testLogging {
                 events("started", "passed", "skipped", "failed", "standardOut", "standardError")
-                showStandardStreams = true
                 showCauses = true
                 showExceptions = true
-                showStackTraces = true
                 exceptionFormat = TestExceptionFormat.FULL
             }
         }
