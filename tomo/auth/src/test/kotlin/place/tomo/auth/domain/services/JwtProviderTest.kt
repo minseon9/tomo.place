@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.security.oauth2.jwt.JwtEncoder
 
 @DisplayName("JwtTokenProvider")
-class JwtTokenProviderTest {
+class JwtProviderTest {
     private val faker: Faker = Faker()
     private val jwtEncoder: JwtEncoder = mockk(relaxed = true)
     private val provider: JwtProvider = initJwtTokenProvider()

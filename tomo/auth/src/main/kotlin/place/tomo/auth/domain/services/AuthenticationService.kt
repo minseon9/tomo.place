@@ -16,7 +16,7 @@ import place.tomo.contract.constant.OIDCProviderType
 class AuthenticationService(
     private val authenticationManager: AuthenticationManager,
     private val socialAccountService: SocialAccountDomainService,
-    private val jwtTokenProvider: JwtTokenProvider,
+    private val jwtTokenProvider: JwtProvider,
     private val oAuthServiceFactory: OIDCProviderFactory,
 ) {
     fun authenticateEmailPassword(
