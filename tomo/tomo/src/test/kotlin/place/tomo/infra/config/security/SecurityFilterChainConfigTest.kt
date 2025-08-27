@@ -76,9 +76,6 @@ class SecurityFilterChainConfigTest {
     @Autowired
     private lateinit var jwtProvider: JwtProvider
 
-    @Autowired
-    private lateinit var userDomainPort: UserDomainPort
-
     private lateinit var mockMvc: MockMvc
 
     private val faker = Faker()
@@ -155,7 +152,7 @@ class SecurityFilterChainConfigTest {
         @Test
         @DisplayName("유효한 JWT 토큰으로 보호된 엔드포인트 접근 가능")
         fun `filterChain when valid jwt token expect access to protected endpoints`() {
-            val token = createAuthenticatedUser()
+            val token = jwtProvider.issueAccessToken(faker.internet().emailAddress())
 
             mockMvc
                 .perform(
@@ -202,7 +199,7 @@ class SecurityFilterChainConfigTest {
         @Test
         @DisplayName("Form 로그인이 비활성화됨")
         fun `filterChain when form login expect disabled`() {
-            val token = createAuthenticatedUser()
+            val token = jwtProvider.issueAccessToken(faker.internet().emailAddress())
 
             mockMvc
                 .perform(
@@ -211,20 +208,5 @@ class SecurityFilterChainConfigTest {
                         .header("Authorization", "Bearer $token"),
                 ).andExpect(MockMvcResultMatchers.status().isNotFound)
         }
-    }
-
-    private fun createAuthenticatedUser(): String {
-        val email = faker.internet().emailAddress()
-        val token = jwtProvider.issueAccessToken(email)
-
-        every { userDomainPort.findActiveByEmail(email) } returns
-            UserInfoDTO(
-                id = faker.number().randomNumber(),
-                email = email,
-                password = faker.internet().password(),
-                name = faker.name().username(),
-            )
-
-        return token
     }
 }
