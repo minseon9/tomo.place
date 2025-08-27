@@ -25,8 +25,9 @@ class JwtConfig(
 
     @Bean
     fun jwtDecoder(): JwtDecoder {
-        val key: SecretKeySpec = SecretKeySpec(jwtSecret.toByteArray(), "HmacSHA256")
+        val algorithm = MacAlgorithm.HS256
+        val key = SecretKeySpec(jwtSecret.toByteArray(), algorithm.toString())
 
-        return NimbusJwtDecoder.withSecretKey(key).macAlgorithm(MacAlgorithm.HS256).build()
+        return NimbusJwtDecoder.withSecretKey(key).macAlgorithm(algorithm).build()
     }
 }
