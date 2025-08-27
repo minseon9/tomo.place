@@ -9,16 +9,13 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.security.oauth2.jwt.JwtDecoder
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.access.AccessDeniedHandler
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
-import place.tomo.auth.domain.services.JwtTokenProvider
 
 @Configuration
-class SecurityFilterChainConfig(
-    private val jwtTokenProvider: JwtTokenProvider,
-) {
+class SecurityFilterChainConfig {
     private val publicPostEndpoints =
         arrayOf(
             "/api/auth/login",
@@ -41,28 +38,24 @@ class SecurityFilterChainConfig(
     }
 
     @Bean
-    fun jwtAuthenticationFilter(userDetailsService: UserDetailsService): JwtAuthenticationFilter =
-        JwtAuthenticationFilter(jwtTokenProvider, userDetailsService)
-
-    @Bean
     fun securityFilterChain(
         http: HttpSecurity,
-        jwtAuthenticationFilter: JwtAuthenticationFilter,
-        userDetailsService: UserDetailsService,
+        jwtDecoder: JwtDecoder,
         authenticationEntryPoint: AuthenticationEntryPoint,
         accessDeniedHandler: AccessDeniedHandler,
     ): SecurityFilterChain =
         http
             .csrf { csrf ->
-                csrf.ignoringRequestMatchers(*publicPostEndpoints)
+                csrf.disable()
             }.authorizeHttpRequests { auth ->
                 auth
                     .requestMatchers(HttpMethod.POST, *publicPostEndpoints)
                     .permitAll()
                     .anyRequest()
                     .authenticated()
-            }.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
-            .exceptionHandling { exception ->
+            }.oauth2ResourceServer { auth ->
+                auth.jwt { jwt -> jwt.decoder(jwtDecoder) }
+            }.exceptionHandling { exception ->
                 exception
                     .authenticationEntryPoint(authenticationEntryPoint)
                     .accessDeniedHandler(accessDeniedHandler)
