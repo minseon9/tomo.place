@@ -7,31 +7,24 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.security.oauth2.jwt.JwtEncoder
+import place.tomo.auth.domain.dtos.JwtPropertiesDTO
 
 @DisplayName("JwtTokenProvider")
 class JwtProviderTest {
     private val faker: Faker = Faker()
     private val jwtEncoder: JwtEncoder = mockk(relaxed = true)
-    private val provider: JwtProvider = initJwtTokenProvider()
-
-    fun initJwtTokenProvider(
-        accessTtlSeconds: Long = 604800L,
-        refreshTtlSeconds: Long = 31536000L,
-    ): JwtProvider {
-        val audiences: List<String> =
-            faker
-                .collection<String>({ faker.internet().url() })
-                .len(3)
-                .generate<List<String>>()
-
-        return JwtProvider(
+    private val jwtProperties: JwtPropertiesDTO =
+        JwtPropertiesDTO(
             issuer = faker.name().fullName(),
-            audiences = audiences,
-            accessTtlSeconds = accessTtlSeconds,
-            refreshTtlSeconds = refreshTtlSeconds,
-            jwtEncoder = jwtEncoder,
+            audiences =
+                faker
+                    .collection<String>({ faker.internet().url() })
+                    .len(3)
+                    .generate<List<String>>(),
+            accessTtlSeconds = 604800L,
+            refreshTtlSeconds = 31536000L,
         )
-    }
+    private val provider: JwtProvider = JwtProvider(jwtProperties, jwtEncoder)
 
     @Nested
     @DisplayName("토큰 발급")
