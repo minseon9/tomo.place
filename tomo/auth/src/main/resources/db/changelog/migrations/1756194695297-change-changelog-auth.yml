@@ -1,0 +1,66 @@
+databaseChangeLog:
+- changeSet:
+    id: 1756194697308-1
+    author: yeseo (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            autoIncrement: true
+            constraints:
+              nullable: false
+              primaryKey: true
+              primaryKeyName: social_accountPK
+            name: id
+            type: BIGINT
+        - column:
+            constraints:
+              nullable: false
+            name: created_at
+            type: TIMESTAMP(6) WITHOUT TIME ZONE
+        - column:
+            constraints:
+              nullable: false
+            name: email
+            type: VARCHAR(255)
+        - column:
+            constraints:
+              nullable: false
+            name: is_active
+            type: BOOLEAN
+        - column:
+            name: name
+            type: VARCHAR(255)
+        - column:
+            name: profile_image_url
+            type: VARCHAR(255)
+        - column:
+            constraints:
+              nullable: false
+            name: provider
+            type: VARCHAR(255)
+        - column:
+            constraints:
+              nullable: false
+            name: social_id
+            type: VARCHAR(255)
+        - column:
+            constraints:
+              nullable: false
+            name: updated_at
+            type: TIMESTAMP(6) WITHOUT TIME ZONE
+        - column:
+            constraints:
+              nullable: false
+            name: user_id
+            type: BIGINT
+        tableName: social_account
+- changeSet:
+    id: 1756194697308-2
+    author: yeseo (generated)
+    changes:
+    - addUniqueConstraint:
+        columnNames: provider, social_id
+        constraintName: UK7qvotc6xu79jjtlvadwc2rgjh
+        tableName: social_account
+
