@@ -9,6 +9,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder
 import org.springframework.security.oauth2.jwt.JwtEncoder
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder
+import place.tomo.auth.domain.exception.InvalidJwtSecretException
 import javax.crypto.spec.SecretKeySpec
 
 @Configuration
@@ -16,12 +17,17 @@ class JwtConfig(
     @Value("\${security.jwt.secret}") private val jwtSecret: String,
 ) {
     @Bean
-    fun jwtEncoder(): JwtEncoder = NimbusJwtEncoder(ImmutableSecret(jwtSecret.toByteArray()))
+    fun jwtEncoder(): JwtEncoder {
+        if (jwtSecret.length < 32) throw InvalidJwtSecretException()
+
+        return NimbusJwtEncoder(ImmutableSecret(jwtSecret.toByteArray()))
+    }
 
     @Bean
     fun jwtDecoder(): JwtDecoder {
-        val key: SecretKeySpec = SecretKeySpec(jwtSecret.toByteArray(), "HmacSHA256")
+        val algorithm = MacAlgorithm.HS256
+        val key = SecretKeySpec(jwtSecret.toByteArray(), algorithm.toString())
 
-        return NimbusJwtDecoder.withSecretKey(key).macAlgorithm(MacAlgorithm.HS256).build()
+        return NimbusJwtDecoder.withSecretKey(key).macAlgorithm(algorithm).build()
     }
 }

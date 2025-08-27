@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
+import jakarta.servlet.http.HttpSession
 import org.assertj.core.api.Assertions.assertThat
 import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.BeforeEach
@@ -19,6 +20,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.header
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import place.tomo.auth.application.requests.EmailPasswordAuthenticateRequest
@@ -49,6 +51,9 @@ class AuthControllerTest
         private val authService: AuthApplicationService,
         private val objectMapper: ObjectMapper,
     ) {
+        @Autowired
+        private lateinit var httpSession: HttpSession
+
         @Nested
         @DisplayName("이메일/비밀번호 회원 가입")
         inner class SignUp {
@@ -136,6 +141,7 @@ class AuthControllerTest
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(body)),
                     ).andExpect(status().isOk)
+                    .andExpect(header().doesNotExist("Set-Cookie"))
                     .andExpect(jsonPath("$.token", equalTo("access-token")))
                     .andExpect(jsonPath("$.refreshToken", equalTo("refresh-token")))
             }

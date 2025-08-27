@@ -16,7 +16,7 @@ import place.tomo.contract.constant.OIDCProviderType
 class AuthenticationService(
     private val authenticationManager: AuthenticationManager,
     private val socialAccountService: SocialAccountDomainService,
-    private val jwtTokenProvider: JwtProvider,
+    private val jwtProvider: JwtProvider,
     private val oAuthServiceFactory: OIDCProviderFactory,
 ) {
     fun authenticateEmailPassword(
@@ -29,8 +29,8 @@ class AuthenticationService(
                     UsernamePasswordAuthenticationToken(email, password),
                 )
 
-            val accessToken = jwtTokenProvider.issueAccessToken(authentication.name)
-            val refreshToken = jwtTokenProvider.issueRefreshToken(authentication.name)
+            val accessToken = jwtProvider.issueAccessToken(authentication.name)
+            val refreshToken = jwtProvider.issueRefreshToken(authentication.name)
 
             return AuthTokenDTO(accessToken = accessToken, refreshToken = refreshToken)
         } catch (e: BadCredentialsException) {
@@ -52,8 +52,8 @@ class AuthenticationService(
     }
 
     fun issueOIDCUserAuthToken(oidcUserInfo: OIDCUserInfo): AuthTokenDTO {
-        val accessToken = jwtTokenProvider.issueAccessToken(oidcUserInfo.email)
-        val refreshToken = jwtTokenProvider.issueRefreshToken(oidcUserInfo.email)
+        val accessToken = jwtProvider.issueAccessToken(oidcUserInfo.email)
+        val refreshToken = jwtProvider.issueRefreshToken(oidcUserInfo.email)
 
         return AuthTokenDTO(accessToken = accessToken, refreshToken = refreshToken)
     }

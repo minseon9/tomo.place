@@ -13,6 +13,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.header
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import place.tomo.auth.application.requests.OIDCAuthenticateRequest
@@ -59,6 +60,7 @@ class OIDCControllerTest
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(OIDCSignupRequestBody(provider, authorizationCode))),
                     ).andExpect(status().isOk)
+                    .andExpect(header().doesNotExist("Set-Cookie"))
                     .andExpect(jsonPath("$.token", equalTo("access-token")))
                     .andExpect(jsonPath("$.refreshToken", equalTo("refresh-token")))
             }
@@ -113,6 +115,7 @@ class OIDCControllerTest
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(body)),
                     ).andExpect(status().isOk)
+                    .andExpect(header().doesNotExist("Set-Cookie"))
                     .andExpect(jsonPath("$.token", equalTo("access-token")))
                     .andExpect(jsonPath("$.refreshToken", equalTo("refresh-token")))
             }
