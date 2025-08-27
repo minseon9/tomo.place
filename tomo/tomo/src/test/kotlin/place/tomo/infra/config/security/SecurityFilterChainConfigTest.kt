@@ -14,6 +14,7 @@ import org.springframework.boot.autoconfigure.web.reactive.WebFluxAutoConfigurat
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.context.ApplicationContext
 import org.springframework.http.MediaType
+import org.springframework.mock.web.MockHttpSession
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers
 import org.springframework.security.web.AuthenticationEntryPoint
@@ -178,13 +179,13 @@ class SecurityFilterChainConfigTest {
         @Test
         @DisplayName("세션 관리가 STATELESS로 설정됨")
         fun `filterChain when any request expect stateless session`() {
-            val response =
+            val result =
                 mockMvc
                     .perform(MockMvcRequestBuilders.post("/need-authentication"))
                     .andReturn()
-                    .response
 
-            assertThat(response.getHeader("Set-Cookie")).isNull()
+            assertThat(result.request.getSession(false)).isNull()
+            assertThat(result.response.getHeader("Set-Cookie")).isNull()
         }
 
         @Test
