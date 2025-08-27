@@ -74,8 +74,6 @@ resilience4j-spring-boot3 = { module = "io.github.resilience4j:resilience4j-spri
 
 # JWT
 jjwt-api = { module = "io.jsonwebtoken:jjwt-api", version.ref = "jjwt" }
-jjwt-impl = { module = "io.jsonwebtoken:jjwt-impl", version.ref = "jjwt" }
-jjwt-jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
 
 # Netty
 netty-all = { module = "io.netty:netty-all", version.ref = "netty" }
@@ -132,13 +130,6 @@ testing-mock = [
 testing-utils = [
     "h2",
     "datafaker"
-]
-
-# JWT 관련
-jwt = [
-    "jjwt-api",
-    "jjwt-impl",
-    "jjwt-jackson"
 ]
 
 # Coroutines 관련
