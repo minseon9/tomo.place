@@ -1,6 +1,6 @@
 import '../entities/user.dart';
 import '../repositories/auth_repository.dart';
-import '../../../social_login/domain/entities/social_account.dart';
+import '../entities/social_account.dart';
 
 /// 소셜 계정으로 사용자 인증 UseCase
 /// 

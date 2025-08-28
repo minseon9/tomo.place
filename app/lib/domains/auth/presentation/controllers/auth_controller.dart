@@ -3,9 +3,9 @@ import 'package:equatable/equatable.dart';
 
 import '../../domain/entities/user.dart';
 import '../../domain/usecases/authenticate_with_social.dart';
-import '../../../social_login/domain/usecases/kakao_login.dart';
-import '../../../social_login/domain/usecases/google_login.dart';
-import '../../../social_login/domain/usecases/apple_login.dart';
+import '../../domain/usecases/kakao_login.dart';
+import '../../domain/usecases/google_login.dart';
+import '../../domain/usecases/apple_login.dart';
 
 /// 인증 상태 관리를 위한 Cubit
 /// 

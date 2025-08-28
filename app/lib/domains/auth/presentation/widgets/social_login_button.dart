@@ -22,6 +22,18 @@ class SocialLoginButton extends StatelessWidget {
   final bool isLoading;
   final SocialLabelVariant labelVariant;
 
+  /// 버튼이 비활성화되어야 하는지 확인
+  bool get _isDisabled {
+    switch (provider) {
+      case SocialProvider.kakao:
+      case SocialProvider.apple:
+        return true; // 아직 지원하지 않음
+      case SocialProvider.google:
+      case SocialProvider.email:
+        return false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -38,7 +50,7 @@ class SocialLoginButton extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: isLoading ? null : onPressed,
+          onTap: (isLoading || _isDisabled) ? null : onPressed,
           borderRadius: BorderRadius.circular(AppSizes.buttonRadius),
           child: Padding(
             padding: const EdgeInsets.symmetric(
@@ -62,6 +74,10 @@ class SocialLoginButton extends StatelessWidget {
   }
 
   Color _getBackgroundColor() {
+    if (_isDisabled) {
+      return DesignTokens.tomoDarkGray.withValues(alpha: 0.3);
+    }
+    
     switch (provider) {
       case SocialProvider.kakao:
         return DesignTokens.kakaoYellow;
@@ -73,6 +89,12 @@ class SocialLoginButton extends StatelessWidget {
   }
 
   TextStyle _getTextStyle() {
+    if (_isDisabled) {
+      return AppTypography.button.copyWith(
+        color: DesignTokens.tomoDarkGray.withValues(alpha: 0.5),
+      );
+    }
+    
     switch (provider) {
       case SocialProvider.kakao:
       case SocialProvider.google:
@@ -84,6 +106,21 @@ class SocialLoginButton extends StatelessWidget {
   }
 
   String _getText() {
+    if (_isDisabled) {
+      switch (provider) {
+        case SocialProvider.kakao:
+          return labelVariant == SocialLabelVariant.login 
+              ? '카카오 로그인 (준비 중)' 
+              : '카카오로 시작하기 (준비 중)';
+        case SocialProvider.apple:
+          return labelVariant == SocialLabelVariant.login 
+              ? '애플 로그인 (준비 중)' 
+              : '애플로 시작하기 (준비 중)';
+        default:
+          return '';
+      }
+    }
+    
     switch (provider) {
       case SocialProvider.kakao:
         return labelVariant == SocialLabelVariant.login 

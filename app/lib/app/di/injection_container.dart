@@ -5,11 +5,11 @@ import '../../domains/auth/domain/entities/user.dart';
 import '../../domains/auth/domain/entities/auth_token.dart';
 import '../../domains/auth/domain/repositories/auth_repository.dart';
 import '../../domains/auth/domain/usecases/authenticate_with_social.dart';
-import '../../domains/social_login/domain/entities/social_account.dart';
-import '../../domains/social_login/domain/repositories/social_auth_repository.dart';
-import '../../domains/social_login/domain/usecases/kakao_login.dart';
-import '../../domains/social_login/domain/usecases/google_login.dart';
-import '../../domains/social_login/domain/usecases/apple_login.dart';
+import '../../domains/auth/domain/entities/social_account.dart';
+import '../../domains/auth/domain/repositories/social_auth_repository.dart';
+import '../../domains/auth/domain/usecases/kakao_login.dart';
+import '../../domains/auth/domain/usecases/google_login.dart';
+import '../../domains/auth/domain/usecases/apple_login.dart';
 
 // Presentation layer imports
 import '../../domains/auth/presentation/controllers/auth_controller.dart';

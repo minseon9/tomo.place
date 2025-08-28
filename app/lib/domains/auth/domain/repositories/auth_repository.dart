@@ -1,6 +1,6 @@
 import '../entities/user.dart';
 import '../entities/auth_token.dart';
-import '../../../social_login/domain/entities/social_account.dart';
+import '../entities/social_account.dart';
 
 /// 인증 관련 데이터 접근을 위한 Repository 인터페이스
 /// 
