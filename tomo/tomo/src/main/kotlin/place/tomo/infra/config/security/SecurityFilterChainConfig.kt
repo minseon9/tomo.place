@@ -18,8 +18,14 @@ import org.springframework.security.web.access.AccessDeniedHandler
 class SecurityFilterChainConfig {
     private val publicPostEndpoints =
         arrayOf(
-            "/api/auth/login",
             "/api/auth/signup",
+        )
+
+    private val apiDocsEndpoints =
+        arrayOf(
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/v3/api-docs/**",
         )
 
     @Bean
@@ -49,7 +55,7 @@ class SecurityFilterChainConfig {
                 auth
                     .requestMatchers(HttpMethod.POST, *publicPostEndpoints)
                     .permitAll()
-                    .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**")
+                    .requestMatchers(*apiDocsEndpoints)
                     .permitAll()
                     .anyRequest()
                     .authenticated()
