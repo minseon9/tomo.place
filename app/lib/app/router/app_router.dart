@@ -1,26 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../domains/auth/presentation/pages/login_page.dart';
-import '../../domains/auth/presentation/pages/email_login_page.dart';
-import '../../domains/auth/presentation/pages/signup_page.dart';
+import '../../domains/auth/presentation/routes/auth_routes.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
-    initialLocation: '/login',
+    initialLocation: '/signup',
     routes: <RouteBase>[
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginPage(),
-      ),
-      GoRoute(
-        path: '/email-login',
-        builder: (context, state) => const EmailLoginPage(),
-      ),
-      GoRoute(
-        path: '/signup',
-        builder: (context, state) => const SignupPage(),
-      ),
+      // Auth 도메인 라우트들
+      ...authRoutes,
+      
+      // 홈 화면 (추후 별도 도메인으로 분리 예정)
       GoRoute(
         path: '/home',
         builder: (context, state) => const Scaffold(
