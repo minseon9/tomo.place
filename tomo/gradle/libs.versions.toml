@@ -11,6 +11,7 @@ caffeine = "3.1.8"
 resilience4j = "2.2.0"
 jjwt = "0.12.5"
 kotlinx-datetime = "0.7.1"
+springdoc-openapi = "2.7.0"
 
 # Additional versions for dependencies without explicit versions
 postgresql = "42.7.3"
@@ -87,6 +88,9 @@ picocli = { module = "info.picocli:picocli", version.ref = "picocli" }
 # Spring
 spring-context = { module = "org.springframework:spring-context", version.ref = "spring-framework" }
 
+# SpringDoc OpenAPI
+springdoc-openapi-starter-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc-openapi" }
+
 [bundles]
 # Kotlin 기본
 kotlin-basic = [
@@ -99,7 +103,7 @@ spring-boot-core = [
     "spring-boot-starter",
     "spring-boot-starter-web",
     "spring-boot-starter-validation",
-    "spring-boot-starter-security"
+    "spring-boot-starter-security",
 ]
 
 # Spring Boot 웹 서비스
@@ -160,4 +164,9 @@ app-runtime = [
     "spring-boot-starter-cache",
     "caffeine",
     "netty-all"
+]
+
+# API 문서화 번들
+api-docs = [
+    "springdoc-openapi-starter-webmvc-ui"
 ]
