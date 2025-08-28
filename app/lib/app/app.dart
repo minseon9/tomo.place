@@ -17,7 +17,7 @@ class TomoPlaceApp extends StatelessWidget {
           create: (context) => di.sl<AuthController>(),
         ),
       ],
-      child: MaterialApp(
+      child: MaterialApp.router(
         title: 'Tomo Place',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
@@ -27,8 +27,7 @@ class TomoPlaceApp extends StatelessWidget {
           useMaterial3: true,
           scaffoldBackgroundColor: DesignTokens.appColors['background'],
         ),
-        onGenerateRoute: AppRouter.generateRoute,
-        initialRoute: AppRouter.login,
+        routerConfig: AppRouter.router,
       ),
     );
   }
