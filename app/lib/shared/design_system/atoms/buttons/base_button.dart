@@ -52,8 +52,8 @@ class BaseButton extends StatelessWidget {
           elevation: 0.0,
           shadowColor: Colors.transparent,
           padding: padding ?? const EdgeInsets.symmetric(
-            horizontal: AppSpacing.buttonPaddingHorizontal,
-            vertical: AppSpacing.buttonPaddingVertical,
+            horizontal: AppSpacing.lg,
+            vertical: AppSpacing.md,
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(borderRadius),
