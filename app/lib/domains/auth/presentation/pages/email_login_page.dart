@@ -90,7 +90,7 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: AppSpacing.sectionGap),
+                  const SizedBox(height: AppSpacing.lg),
                   
                   // 이메일 입력 필드
                   TextFormField(
@@ -162,7 +162,7 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
                   child: Text(
                     '비밀번호를 잊으셨나요?',
                     style: AppTypography.bodyMedium.copyWith(
-                      color: DesignTokens.appColors['text_secondary'],
+                      color: DesignTokens.tomoDarkGray,
                       decoration: TextDecoration.underline,
                     ),
                   ),
@@ -174,7 +174,7 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
                     Text(
                       '아직 계정이 없으신가요? ',
                       style: AppTypography.bodyMedium.copyWith(
-                        color: DesignTokens.appColors['text_secondary'],
+                        color: DesignTokens.tomoDarkGray,
                       ),
                     ),
                     TextButton(
@@ -187,7 +187,7 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
                       child: Text(
                         '회원가입',
                         style: AppTypography.bodyMedium.copyWith(
-                          color: DesignTokens.tomoPrimary,
+                          color: DesignTokens.tomoPrimary200,
                           decoration: TextDecoration.underline,
                         ),
                       ),

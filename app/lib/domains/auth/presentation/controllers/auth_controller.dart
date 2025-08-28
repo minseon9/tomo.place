@@ -52,6 +52,30 @@ class AuthController extends Cubit<AuthState> {
     );
   }
 
+  /// 카카오 회원가입 실행
+  Future<void> signupWithKakao() async {
+    await _performSocialSignup(
+      socialLoginUseCase: _kakaoLoginUseCase,
+      provider: 'Kakao',
+    );
+  }
+
+  /// 구글 회원가입 실행
+  Future<void> signupWithGoogle() async {
+    await _performSocialSignup(
+      socialLoginUseCase: _googleLoginUseCase,
+      provider: 'Google',
+    );
+  }
+
+  /// 애플 회원가입 실행
+  Future<void> signupWithApple() async {
+    await _performSocialSignup(
+      socialLoginUseCase: _appleLoginUseCase,
+      provider: 'Apple',
+    );
+  }
+
   /// 소셜 로그인 공통 로직
   Future<void> _performSocialLogin({
     required Future<dynamic> Function() socialLoginUseCase,
@@ -75,6 +99,30 @@ class AuthController extends Cubit<AuthState> {
     }
   }
 
+  /// 소셜 회원가입 공통 로직
+  Future<void> _performSocialSignup({
+    required Future<dynamic> Function() socialLoginUseCase,
+    required String provider,
+  }) async {
+    try {
+      emit(const AuthLoading());
+      
+      // 1단계: 소셜 로그인으로 계정 정보 획득
+      final socialAccount = await socialLoginUseCase();
+      
+      // 2단계: 소셜 계정 정보로 서버 회원가입 및 인증
+      // TODO: 회원가입 UseCase 구현 후 연결
+      final user = await _authenticateUseCase(socialAccount);
+      
+      emit(AuthSuccess(user: user));
+    } catch (e) {
+      emit(AuthFailure(
+        message: '$provider 회원가입에 실패했습니다: ${e.toString()}',
+        provider: provider.toLowerCase(),
+      ));
+    }
+  }
+
   /// 이메일 로그인 (추후 구현)
   Future<void> loginWithEmail(String email, String password) async {
     emit(const AuthLoading());
@@ -84,6 +132,19 @@ class AuthController extends Cubit<AuthState> {
     
     emit(const AuthFailure(
       message: '이메일 로그인은 아직 구현되지 않았습니다.',
+      provider: 'email',
+    ));
+  }
+
+  /// 이메일 회원가입 (추후 구현)
+  Future<void> signupWithEmail(String email, String password) async {
+    emit(const AuthLoading());
+    
+    // TODO: 이메일 회원가입 UseCase 구현 후 연결
+    await Future.delayed(const Duration(seconds: 1));
+    
+    emit(const AuthFailure(
+      message: '이메일 회원가입은 아직 구현되지 않았습니다.',
       provider: 'email',
     ));
   }

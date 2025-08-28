@@ -4,16 +4,14 @@ import 'package:go_router/go_router.dart';
 
 import '../controllers/auth_controller.dart';
 import '../widgets/social_login_section.dart';
-import '../../consts/social_label_variant.dart';
+import '../widgets/login_bottom_links_group.dart';
 import '../../../../shared/design_system/tokens/colors.dart';
 import '../../../../shared/design_system/tokens/spacing.dart';
-import '../../../../shared/design_system/tokens/typography.dart';
-// SocialLoginButton은 도메인 위젯으로 이동됨
+import '../../consts/social_label_variant.dart';
 
 /// 로그인 화면
 /// 
-/// 순수한 UI 컴포넌트로서 비즈니스 로직에 의존하지 않습니다.
-/// 상태 변화에 따른 UI 업데이트와 사용자 입력 처리만 담당합니다.
+/// 피그마 디자인에 맞게 단순화된 로그인 화면입니다.
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
 
@@ -50,7 +48,7 @@ class LoginPage extends StatelessWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: DesignTokens.appColors['error'],
+        backgroundColor: DesignTokens.error,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
@@ -71,135 +69,24 @@ class _LoginPageContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // 로고 및 타이틀 영역
-        const Expanded(
-          flex: 2,
-          child: _LogoSection(),
-        ),
-        
-        // 소셜 로그인 버튼 영역
-        Expanded(
-          flex: 3,
-          child: const SocialLoginSection(
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        children: [
+          const Spacer(),
+          SocialLoginSection(
             includeEmail: false,
             labelVariant: SocialLabelVariant.login,
+            onKakaoPressed: () => context.read<AuthController>().loginWithKakao(),
+            onApplePressed: () => context.read<AuthController>().loginWithApple(),
+            onGooglePressed: () => context.read<AuthController>().loginWithGoogle(),
           ),
-        ),
-        
-        // 하단 링크 영역
-        const _BottomLinksSection(),
-      ],
-    );
-  }
-}
-
-/// 로고 섹션
-class _LogoSection extends StatelessWidget {
-  const _LogoSection();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.screenPadding),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // TODO: 실제 로고 이미지로 교체
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: DesignTokens.tomoPrimary,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Icon(
-              Icons.place,
-              size: 40,
-              color: Colors.black,
-            ),
+          const SizedBox(height: AppSpacing.xl),
+          LoginBottomLinksGroup(
+            onEmailLogin: () => context.push('/email-login'),
+            onSignUp: () => context.push('/signup'),
           ),
           const SizedBox(height: AppSpacing.lg),
-          Text(
-            '토모플레이스',
-            style: AppTypography.h1.copyWith(
-              color: DesignTokens.appColors['text_primary'],
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            '당신만의 특별한 장소를 찾아보세요',
-            style: AppTypography.bodyMedium.copyWith(
-              color: DesignTokens.appColors['text_secondary'],
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// 하단 링크 섹션
-class _BottomLinksSection extends StatelessWidget {
-  const _BottomLinksSection();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.screenPadding),
-      child: Column(
-        children: [
-          // 약관 동의 텍스트
-          Text(
-            '회원가입 시 개인정보 수집 • 이용 및 이용약관에\n동의하는 것으로 간주됩니다.',
-            style: AppTypography.bodySmall.copyWith(
-              color: DesignTokens.appColors['text_secondary'],
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          
-          // 이메일 로그인 / 회원가입 링크
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TextButton(
-                onPressed: () {
-                  context.push('/email-login');
-                },
-                child: Text(
-                  '이메일로 로그인',
-                  style: AppTypography.bodyMedium.copyWith(
-                    color: DesignTokens.appColors['text_primary'],
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ),
-              Text(
-                ' | ',
-                style: AppTypography.bodyMedium.copyWith(
-                  color: DesignTokens.appColors['text_secondary'],
-                ),
-              ),
-              TextButton(
-                onPressed: () {
-                  // TODO: 회원가입 페이지로 이동
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('회원가입 페이지는 준비 중입니다.')),
-                  );
-                },
-                child: Text(
-                  '회원 가입',
-                  style: AppTypography.bodyMedium.copyWith(
-                    color: DesignTokens.appColors['text_primary'],
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ),
-            ],
-          ),
         ],
       ),
     );

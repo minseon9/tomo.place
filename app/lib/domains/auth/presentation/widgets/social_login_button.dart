@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
-import '../../../../shared/design_system/atoms/buttons/button_variants.dart';
+import '../../../../shared/design_system/tokens/colors.dart';
 import '../../../../shared/design_system/tokens/spacing.dart';
+import '../../../../shared/design_system/tokens/sizes.dart';
 import '../../../../shared/design_system/tokens/typography.dart';
 import '../../consts/social_provider.dart';
 import '../../consts/social_label_variant.dart';
@@ -22,94 +24,106 @@ class SocialLoginButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final config = _getProviderConfig(provider, labelVariant);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.screenPadding,
-        vertical: AppSpacing.buttonGap,
+    return Container(
+      width: AppSizes.buttonWidth,
+      height: AppSizes.buttonHeight,
+      decoration: BoxDecoration(
+        color: _getBackgroundColor(),
+        borderRadius: BorderRadius.circular(AppSizes.buttonRadius),
+        border: Border.all(
+          color: Colors.black.withValues(alpha: 0.5),
+          width: 1,
+        ),
       ),
-      child: config.buttonBuilder(
-        onPressed: onPressed,
-        isLoading: isLoading,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            config.icon,
-            const SizedBox(width: 8),
-            Text(
-              config.text,
-              style: AppTypography.buttonMedium,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: isLoading ? null : onPressed,
+          borderRadius: BorderRadius.circular(AppSizes.buttonRadius),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSizes.buttonPadding,
             ),
-          ],
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildIcon(),
+                const SizedBox(width: AppSpacing.sm),
+                Text(
+                  _getText(),
+                  style: _getTextStyle(),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 
-  _SocialButtonConfig _getProviderConfig(
-    SocialProvider provider,
-    SocialLabelVariant variant,
-  ) {
+  Color _getBackgroundColor() {
     switch (provider) {
       case SocialProvider.kakao:
-        return _SocialButtonConfig(
-          text: variant == SocialLabelVariant.login ? '카카오 로그인' : '카카오로 시작하기',
-          icon: _buildIcon('💬', Colors.black),
-          buttonBuilder: ButtonVariants.kakao,
-        );
+        return DesignTokens.kakaoYellow;
       case SocialProvider.apple:
-        return _SocialButtonConfig(
-          text: variant == SocialLabelVariant.login ? '애플 로그인' : '애플로 시작하기',
-          icon: _buildIcon('🍎', Colors.black),
-          buttonBuilder: ButtonVariants.outlined,
-        );
       case SocialProvider.google:
-        return _SocialButtonConfig(
-          text: variant == SocialLabelVariant.login ? '구글 로그인' : '구글로 시작하기',
-          icon: _buildIcon('G', Colors.black),
-          buttonBuilder: ButtonVariants.outlined,
-        );
       case SocialProvider.email:
-        return _SocialButtonConfig(
-          text: variant == SocialLabelVariant.login ? '이메일로 로그인' : '이메일로 시작하기',
-          icon: const Icon(Icons.email, size: 20, color: Colors.black),
-          buttonBuilder: ButtonVariants.outlined,
-        );
+        return DesignTokens.white;
     }
   }
 
-  Widget _buildIcon(String emoji, Color color) {
-    return Container(
-      width: 20,
-      height: 20,
-      alignment: Alignment.center,
-      child: Text(
-        emoji,
-        style: TextStyle(
-          fontSize: 16,
-          color: color,
-        ),
-      ),
+  TextStyle _getTextStyle() {
+    switch (provider) {
+      case SocialProvider.kakao:
+      case SocialProvider.google:
+      case SocialProvider.email:
+        return AppTypography.button;
+      case SocialProvider.apple:
+        return AppTypography.body; // 애플은 16px Regular 사용
+    }
+  }
+
+  String _getText() {
+    switch (provider) {
+      case SocialProvider.kakao:
+        return labelVariant == SocialLabelVariant.login 
+            ? '카카오 로그인' 
+            : '카카오로 시작하기';
+      case SocialProvider.apple:
+        return labelVariant == SocialLabelVariant.login 
+            ? '애플 로그인' 
+            : '애플로 시작하기';
+      case SocialProvider.google:
+        return labelVariant == SocialLabelVariant.login 
+            ? '구글 로그인' 
+            : '구글로 시작하기';
+      case SocialProvider.email:
+        return labelVariant == SocialLabelVariant.login 
+            ? '이메일로 로그인' 
+            : '이메일로 시작하기';
+    }
+  }
+
+  Widget _buildIcon() {
+    return SizedBox(
+      width: AppSizes.iconSize,
+      height: AppSizes.iconSize,
+      child: _getIconWidget(),
     );
   }
-}
 
-class _SocialButtonConfig {
-  final String text;
-  final Widget icon;
-  final Widget Function({
-    required VoidCallback? onPressed,
-    required Widget child,
-    bool isLoading,
-    double? width,
-  }) buttonBuilder;
-
-  _SocialButtonConfig({
-    required this.text,
-    required this.icon,
-    required this.buttonBuilder,
-  });
+  Widget _getIconWidget() {
+    switch (provider) {
+      case SocialProvider.kakao:
+        return SvgPicture.asset('assets/icons/kakao_logo.svg');
+      case SocialProvider.apple:
+        return SvgPicture.asset('assets/icons/apple_logo.svg');
+      case SocialProvider.google:
+        return SvgPicture.asset('assets/icons/google_logo.svg');
+      case SocialProvider.email:
+        return const SizedBox.shrink(); // 이메일 버튼은 아이콘 없음
+    }
+  }
 }
 
 
