@@ -2,124 +2,86 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 
 import '../../domain/entities/user.dart';
-import '../../domain/usecases/authenticate_with_social.dart';
-import '../../domain/usecases/kakao_login.dart';
-import '../../domain/usecases/google_login.dart';
-import '../../domain/usecases/apple_login.dart';
+import '../../services/auth_service.dart';
 
 /// 인증 상태 관리를 위한 Cubit
 /// 
 /// UI와 비즈니스 로직을 연결하는 Presentation Layer의 컨트롤러입니다.
-/// 순수한 상태 관리만 담당하며, 비즈니스 로직은 UseCase에 위임합니다.
+/// 개선된 아키텍처에 따라 Service Layer를 사용합니다.
 class AuthController extends Cubit<AuthState> {
   AuthController({
-    required KakaoLoginUseCase kakaoLoginUseCase,
-    required GoogleLoginUseCase googleLoginUseCase,
-    required AppleLoginUseCase appleLoginUseCase,
-    required AuthenticateWithSocialUseCase authenticateUseCase,
-  }) : _kakaoLoginUseCase = kakaoLoginUseCase,
-       _googleLoginUseCase = googleLoginUseCase,
-       _appleLoginUseCase = appleLoginUseCase,
-       _authenticateUseCase = authenticateUseCase,
+    required AuthService authService,
+  }) : _authService = authService,
        super(const AuthInitial());
 
-  final KakaoLoginUseCase _kakaoLoginUseCase;
-  final GoogleLoginUseCase _googleLoginUseCase;
-  final AppleLoginUseCase _appleLoginUseCase;
-  final AuthenticateWithSocialUseCase _authenticateUseCase;
-
-  /// 카카오 로그인 실행
-  Future<void> loginWithKakao() async {
-    await _performSocialLogin(
-      socialLoginUseCase: _kakaoLoginUseCase,
-      provider: 'Kakao',
-    );
-  }
+  final AuthService _authService;
 
   /// 구글 로그인 실행
   Future<void> loginWithGoogle() async {
-    await _performSocialLogin(
-      socialLoginUseCase: _googleLoginUseCase,
+    await _performSocialAuth(
+      authMethod: () => _authService.loginWithGoogle(),
       provider: 'Google',
-    );
-  }
-
-  /// 애플 로그인 실행
-  Future<void> loginWithApple() async {
-    await _performSocialLogin(
-      socialLoginUseCase: _appleLoginUseCase,
-      provider: 'Apple',
-    );
-  }
-
-  /// 카카오 회원가입 실행
-  Future<void> signupWithKakao() async {
-    await _performSocialSignup(
-      socialLoginUseCase: _kakaoLoginUseCase,
-      provider: 'Kakao',
     );
   }
 
   /// 구글 회원가입 실행
   Future<void> signupWithGoogle() async {
-    await _performSocialSignup(
-      socialLoginUseCase: _googleLoginUseCase,
+    await _performSocialAuth(
+      authMethod: () => _authService.signupWithGoogle(),
       provider: 'Google',
     );
   }
 
-  /// 애플 회원가입 실행
+  /// 카카오 로그인 실행 (준비 중)
+  Future<void> loginWithKakao() async {
+    emit(const AuthFailure(
+      message: '카카오 로그인은 아직 지원하지 않습니다.',
+      provider: 'kakao',
+    ));
+  }
+
+  /// 카카오 회원가입 실행 (준비 중)
+  Future<void> signupWithKakao() async {
+    emit(const AuthFailure(
+      message: '카카오 회원가입은 아직 지원하지 않습니다.',
+      provider: 'kakao',
+    ));
+  }
+
+  /// 애플 로그인 실행 (준비 중)
+  Future<void> loginWithApple() async {
+    emit(const AuthFailure(
+      message: '애플 로그인은 아직 지원하지 않습니다.',
+      provider: 'apple',
+    ));
+  }
+
+  /// 애플 회원가입 실행 (준비 중)
   Future<void> signupWithApple() async {
-    await _performSocialSignup(
-      socialLoginUseCase: _appleLoginUseCase,
-      provider: 'Apple',
-    );
+    emit(const AuthFailure(
+      message: '애플 회원가입은 아직 지원하지 않습니다.',
+      provider: 'apple',
+    ));
   }
 
-  /// 소셜 로그인 공통 로직
-  Future<void> _performSocialLogin({
-    required Future<dynamic> Function() socialLoginUseCase,
+  /// 소셜 인증 공통 로직
+  Future<void> _performSocialAuth({
+    required Future<User> Function() authMethod,
     required String provider,
   }) async {
     try {
       emit(const AuthLoading());
       
-      // 1단계: 소셜 로그인으로 계정 정보 획득
-      final socialAccount = await socialLoginUseCase();
-      
-      // 2단계: 소셜 계정 정보로 서버 인증
-      final user = await _authenticateUseCase(socialAccount);
+      final user = await authMethod();
       
       emit(AuthSuccess(user: user));
     } catch (e) {
       emit(AuthFailure(
-        message: '$provider 로그인에 실패했습니다: ${e.toString()}',
+        message: '$provider 인증에 실패했습니다: ${e.toString()}',
         provider: provider.toLowerCase(),
       ));
-    }
-  }
-
-  /// 소셜 회원가입 공통 로직
-  Future<void> _performSocialSignup({
-    required Future<dynamic> Function() socialLoginUseCase,
-    required String provider,
-  }) async {
-    try {
-      emit(const AuthLoading());
       
-      // 1단계: 소셜 로그인으로 계정 정보 획득
-      final socialAccount = await socialLoginUseCase();
-      
-      // 2단계: 소셜 계정 정보로 서버 회원가입 및 인증
-      // TODO: 회원가입 UseCase 구현 후 연결
-      final user = await _authenticateUseCase(socialAccount);
-      
-      emit(AuthSuccess(user: user));
-    } catch (e) {
-      emit(AuthFailure(
-        message: '$provider 회원가입에 실패했습니다: ${e.toString()}',
-        provider: provider.toLowerCase(),
-      ));
+      // TODO: 팝업 메시지 표시 로직 추가
     }
   }
 
@@ -154,8 +116,7 @@ class AuthController extends Cubit<AuthState> {
     try {
       emit(const AuthLoading());
       
-      // TODO: 로그아웃 UseCase 구현 후 연결
-      await Future.delayed(const Duration(milliseconds: 500));
+      await _authService.logout();
       
       emit(const AuthInitial());
     } catch (e) {
