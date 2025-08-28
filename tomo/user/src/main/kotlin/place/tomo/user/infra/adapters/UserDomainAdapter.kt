@@ -13,11 +13,23 @@ class UserDomainAdapter(
 ) : UserDomainPort {
     override fun findActiveByEmail(email: String): UserInfoDTO? {
         val user = userRepository.findByEmailAndDeletedAtIsNull(email) ?: return null
+        require(user.isActivated())
 
         return UserInfoDTO(
             id = user.id,
             email = user.email,
             name = user.username,
+            isActivated = user.isActivated(),
+        )
+    }
+
+    override fun findByEmail(email: String): UserInfoDTO? {
+        val user = userRepository.findByEmail(email) ?: return null
+        return UserInfoDTO(
+            id = user.id,
+            email = user.email,
+            name = user.username,
+            isActivated = user.isActivated(),
         )
     }
 
@@ -25,11 +37,14 @@ class UserDomainAdapter(
         email: String,
         name: String?,
     ): UserInfoDTO {
-        val created = userDomainService.createUser(email, name ?: "")
+        val user = userDomainService.createUser(email, name ?: "")
+        require(user.isActivated())
+
         return UserInfoDTO(
-            id = created.id,
-            email = created.email,
-            name = created.username,
+            id = user.id,
+            email = user.email,
+            name = user.username,
+            isActivated = user.isActivated(),
         )
     }
 

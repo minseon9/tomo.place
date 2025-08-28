@@ -59,4 +59,6 @@ class UserEntity(
             )
         }
     }
+
+    fun isActivated(): Boolean = status == UserStatus.ACTIVATED
 }
