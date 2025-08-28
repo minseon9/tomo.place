@@ -7,7 +7,6 @@ import '../../shared/infrastructure/external_services/oauth_service.dart';
 import '../../shared/config/app_config.dart';
 
 // Domain layer imports
-import '../../domains/auth/domain/entities/user.dart';
 import '../../domains/auth/domain/repositories/auth_repository.dart';
 
 // Data layer imports

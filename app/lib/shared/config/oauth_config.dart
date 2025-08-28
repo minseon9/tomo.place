@@ -8,9 +8,9 @@ class OAuthConfig {
   static const String _baseUrl = 'https://accounts.google.com';
   
   /// Provider별 설정
-  static const Map<String, OAuthProviderConfig> _providers = {
-          'GOOGLE': OAuthProviderConfig(
-        clientId: AppConfig.oauthClientId ?? '1016804314663-ji2taqsu14c3sqfg0u60jfni9shg3dja.apps.googleusercontent.com',
+  static Map<String, OAuthProviderConfig> get _providers => {
+    'GOOGLE': OAuthProviderConfig(
+      clientId: AppConfig.oauthClientId ?? '1016804314663-ji2taqsu14c3sqfg0u60jfni9shg3dja.apps.googleusercontent.com',
       authEndpoint: '/o/oauth2/v2/auth',
       scope: 'openid email',
       accessType: 'offline',

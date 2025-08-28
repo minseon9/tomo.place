@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import '../config/app_config.dart';
+import '../../config/app_config.dart';
 
 /// 공통 API 클라이언트
 /// 

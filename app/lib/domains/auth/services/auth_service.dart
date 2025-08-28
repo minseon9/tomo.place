@@ -1,7 +1,7 @@
 import '../domain/repositories/auth_repository.dart';
 import '../domain/entities/user.dart';
-import '../../shared/infrastructure/storage/token_storage_service.dart';
-import '../../shared/infrastructure/external_services/oauth_service.dart';
+import '../../../../shared/infrastructure/storage/token_storage_service.dart';
+import '../../../../shared/infrastructure/external_services/oauth_service.dart';
 
 /// 인증 서비스
 /// 

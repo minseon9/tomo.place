@@ -1,6 +1,6 @@
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/entities/user.dart';
-import '../../../shared/infrastructure/network/api_client.dart';
+import '../../../../shared/infrastructure/network/api_client.dart';
 
 /// AuthRepository 구현체
 /// 

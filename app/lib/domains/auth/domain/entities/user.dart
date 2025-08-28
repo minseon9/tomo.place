@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'dart:convert';
 
 /// 사용자 도메인 엔티티
 /// 
