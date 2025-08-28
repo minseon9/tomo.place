@@ -4,7 +4,7 @@ import '../../../../shared/design_system/tokens/colors.dart';
 import '../../../../shared/design_system/tokens/spacing.dart';
 import '../../../../shared/design_system/tokens/typography.dart';
 import '../../presentation/widgets/social_login_section.dart';
-import '../../../../shared/design_system/molecules/social_login_button.dart';
+import '../../consts/social_label_variant.dart';
 
 /// 회원가입 시작 화면 (Figma 노드 48:1264 대응)
 class SignupPage extends StatelessWidget {

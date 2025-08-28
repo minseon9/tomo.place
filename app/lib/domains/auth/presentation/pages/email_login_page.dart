@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../controllers/auth_controller.dart';
 import '../../../../shared/design_system/tokens/colors.dart';
@@ -39,7 +40,7 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => context.pop(),
         ),
         title: Text(
           '이메일 로그인',
@@ -52,11 +53,7 @@ class _EmailLoginPageState extends State<EmailLoginPage> {
         child: BlocConsumer<AuthController, AuthState>(
           listener: (context, state) {
             if (state is AuthSuccess) {
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                '/home',
-                (route) => false,
-              );
+              context.go('/home');
             } else if (state is AuthFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(

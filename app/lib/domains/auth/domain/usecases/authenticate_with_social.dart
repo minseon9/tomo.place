@@ -86,7 +86,7 @@ class AuthenticateWithSocialUseCase {
   void _logAuthenticationEvent(User user, SocialAccount socialAccount) {
     // TODO: 분석 서비스에 로그인 이벤트 전송
     // 예: Firebase Analytics, Mixpanel 등
-    print('Social auth success: ${user.id} via ${socialAccount.provider}');
+    // TODO: replace with domain logger if needed
   }
 }
 

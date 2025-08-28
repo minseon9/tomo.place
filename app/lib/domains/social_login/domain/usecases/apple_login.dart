@@ -78,7 +78,7 @@ class AppleLoginUseCase {
   void _logAppleLoginSuccess(SocialAccount account) {
     // TODO: 분석 서비스에 애플 로그인 이벤트 전송
     // 애플의 경우 개인정보 보호를 위해 최소한의 정보만 로깅
-    print('Apple login success: ${account.providerUserId}');
+    // TODO: replace with domain logger if needed
   }
 }
 

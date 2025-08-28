@@ -76,7 +76,7 @@ class GoogleLoginUseCase {
   /// 구글 로그인 성공 이벤트 로깅
   void _logGoogleLoginSuccess(SocialAccount account) {
     // TODO: 분석 서비스에 구글 로그인 이벤트 전송
-    print('Google login success: ${account.email}');
+    // TODO: replace with domain logger if needed
   }
 }
 

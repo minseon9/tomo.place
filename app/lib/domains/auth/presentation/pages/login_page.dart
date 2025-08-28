@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../controllers/auth_controller.dart';
 import '../widgets/social_login_section.dart';
+import '../../consts/social_label_variant.dart';
 import '../../../../shared/design_system/tokens/colors.dart';
 import '../../../../shared/design_system/tokens/spacing.dart';
 import '../../../../shared/design_system/tokens/typography.dart';
-import '../../../../app/router/app_router.dart';
-import '../../../../shared/design_system/molecules/social_login_button.dart';
+// SocialLoginButton은 도메인 위젯으로 이동됨
 
 /// 로그인 화면
 /// 
@@ -37,7 +38,7 @@ class LoginPage extends StatelessWidget {
   void _handleStateChange(BuildContext context, AuthState state) {
     if (state is AuthSuccess) {
       // 로그인 성공 시 홈 화면으로 이동
-      Navigator.pushReplacementNamed(context, AppRouter.home);
+      context.go('/home');
     } else if (state is AuthFailure) {
       // 로그인 실패 시 에러 메시지 표시
       _showErrorSnackBar(context, state.message);
@@ -166,7 +167,7 @@ class _BottomLinksSection extends StatelessWidget {
             children: [
               TextButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, AppRouter.emailLogin);
+                  context.push('/email-login');
                 },
                 child: Text(
                   '이메일로 로그인',

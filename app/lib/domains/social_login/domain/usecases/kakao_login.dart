@@ -61,7 +61,7 @@ class KakaoLoginUseCase {
   /// 카카오 로그인 성공 이벤트 로깅
   void _logKakaoLoginSuccess(SocialAccount account) {
     // TODO: 분석 서비스에 카카오 로그인 이벤트 전송
-    print('Kakao login success: ${account.providerUserId}');
+    // TODO: replace with domain logger if needed
   }
 }
 

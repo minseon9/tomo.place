@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../controllers/auth_controller.dart';
-import '../../../../shared/design_system/molecules/social_login_button.dart';
+import 'social_login_button.dart';
+import '../../consts/social_provider.dart';
+import '../../consts/social_label_variant.dart';
 import '../../../../shared/design_system/tokens/spacing.dart';
 
 /// 소셜 로그인 버튼들을 모아놓은 섹션
@@ -67,7 +70,7 @@ class SocialLoginSection extends StatelessWidget {
               provider: SocialProvider.email,
               labelVariant: labelVariant,
               onPressed: () {
-                Navigator.pushNamed(context, '/email-login');
+                context.push('/email-login');
               },
             ),
         ],
