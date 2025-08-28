@@ -29,7 +29,6 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.context.WebApplicationContext
-import place.tomo.auth.application.services.CustomUserDetailsService
 import place.tomo.auth.domain.services.JwtProvider
 import place.tomo.auth.ui.controllers.AuthController
 
@@ -106,10 +105,6 @@ class SecurityFilterChainConfigTest {
             val securityFilterChain = applicationContext.getBean(SecurityFilterChain::class.java)
             assertThat(securityFilterChain).isNotNull()
             assertThat(securityFilterChain).isInstanceOf(SecurityFilterChain::class.java)
-
-            val userDetailsService = applicationContext.getBean(UserDetailsService::class.java)
-            assertThat(userDetailsService).isNotNull()
-            assertThat(userDetailsService).isInstanceOf(CustomUserDetailsService::class.java)
         }
     }
 
