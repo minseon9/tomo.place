@@ -34,14 +34,12 @@ class CustomUserDetailsServiceTest {
         @DisplayName("존재하는 이메일로 사용자를 찾아 Spring Security UserDetails로 매핑하여 반환한다")
         fun `load user by username when email exists expect user details returned`() {
             val email = faker.internet().emailAddress()
-            val password = faker.internet().password()
             every { userDomainPort.findActiveByEmail(email) } returns
-                UserInfoDTO(1, email, password, faker.name().fullName())
+                UserInfoDTO(1, email, faker.name().fullName())
 
             val details: UserDetails = service.loadUserByUsername(email)
 
             assertThat(details.username).isEqualTo(email)
-            assertThat(details.password).isEqualTo(password)
             assertThat(details.authorities).hasSize(1)
             assertThat(details.authorities.first().authority).isEqualTo("ROLE_USER")
         }

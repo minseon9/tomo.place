@@ -1,14 +1,10 @@
 package place.tomo.auth.ui.requests
 
-import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
-import jakarta.validation.constraints.Size
+import place.tomo.contract.constant.OIDCProviderType
 
 data class LoginRequestBody(
-    @field:Email
+    val provider: OIDCProviderType,
     @field:NotBlank
-    val email: String,
-    @field:NotBlank
-    @field:Size(min = 8, max = 20)
-    val password: String,
+    val authorizationCode: String,
 )

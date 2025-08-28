@@ -6,43 +6,32 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import place.tomo.auth.application.requests.EmailPasswordAuthenticateRequest
-import place.tomo.auth.application.requests.SignUpRequest
-import place.tomo.auth.application.services.AuthApplicationService
+import place.tomo.auth.application.requests.OIDCAuthenticateRequest
+import place.tomo.auth.application.requests.OIDCSignUpRequest
+import place.tomo.auth.application.services.OIDCApplicationService
 import place.tomo.auth.ui.requests.LoginRequestBody
-import place.tomo.auth.ui.requests.SignUpRequestBody
+import place.tomo.auth.ui.requests.SignupRequestBody
 import place.tomo.auth.ui.responses.LoginResponseBody
 
 @RestController
 @RequestMapping("/api/auth")
 class AuthController(
-    private val authService: AuthApplicationService,
+    private val oidcAuthService: OIDCApplicationService,
 ) {
     @PostMapping("/signup")
     fun signUp(
-        @RequestBody @Valid body: SignUpRequestBody,
-    ): ResponseEntity<Void> {
-        authService.signUp(
-            SignUpRequest(
-                email = body.email,
-                password = body.password,
-                name = body.name,
-            ),
-        )
-        return ResponseEntity.ok().build()
+        @RequestBody @Valid body: SignupRequestBody,
+    ): ResponseEntity<LoginResponseBody> {
+        val response = oidcAuthService.signUp(OIDCSignUpRequest(body.provider, body.authorizationCode))
+
+        return ResponseEntity.ok(LoginResponseBody(token = response.token, refreshToken = response.refreshToken))
     }
 
     @PostMapping("/login")
-    fun login(
+    fun authenticate(
         @RequestBody @Valid body: LoginRequestBody,
     ): ResponseEntity<LoginResponseBody> {
-        val response =
-            authService.authenticate(
-                EmailPasswordAuthenticateRequest(
-                    email = body.email,
-                    password = body.password,
-                ),
-            )
+        val response = oidcAuthService.authenticate(OIDCAuthenticateRequest(body.provider, body.authorizationCode))
 
         return ResponseEntity.ok(LoginResponseBody(token = response.token, refreshToken = response.refreshToken))
     }

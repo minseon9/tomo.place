@@ -20,8 +20,6 @@ class SecurityFilterChainConfig {
         arrayOf(
             "/api/auth/login",
             "/api/auth/signup",
-            "/api/oidc/login",
-            "/api/oidc/signup",
         )
 
     @Bean

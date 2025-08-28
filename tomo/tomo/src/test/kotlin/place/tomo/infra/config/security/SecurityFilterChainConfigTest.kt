@@ -32,7 +32,6 @@ import org.springframework.web.context.WebApplicationContext
 import place.tomo.auth.application.services.CustomUserDetailsService
 import place.tomo.auth.domain.services.JwtProvider
 import place.tomo.auth.ui.controllers.AuthController
-import place.tomo.auth.ui.controllers.OIDCController
 
 @RestController
 class DummyController {
@@ -45,14 +44,12 @@ class DummyController {
     @PostMapping(
         "/api/auth/login",
         "/api/auth/signup",
-        "/api/oidc/login",
-        "/api/oidc/signup",
     )
     fun postAllAllowed() {}
 }
 
 @WebMvcTest(
-    controllers = [DummyController::class, AuthController::class, OIDCController::class],
+    controllers = [DummyController::class, AuthController::class, AuthController::class],
     excludeAutoConfiguration = [
         HibernateJpaAutoConfiguration::class,
         JpaRepositoriesAutoConfiguration::class,
@@ -80,8 +77,6 @@ class SecurityFilterChainConfigTest {
         arrayOf(
             "/api/auth/login",
             "/api/auth/signup",
-            "/api/oidc/login",
-            "/api/oidc/signup",
         )
 
     @BeforeEach

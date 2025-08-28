@@ -20,7 +20,6 @@ import place.tomo.auth.domain.dtos.oidc.OIDCUserInfo
 import place.tomo.auth.domain.exception.SocialAccountNotLinkedException
 import place.tomo.auth.domain.services.AuthenticationService
 import place.tomo.auth.domain.services.SocialAccountDomainService
-import place.tomo.auth.domain.services.TemporaryPasswordGenerator
 import place.tomo.contract.constant.OIDCProviderType
 import place.tomo.contract.dtos.UserInfoDTO
 import place.tomo.contract.ports.UserDomainPort
@@ -30,7 +29,6 @@ class OIDCApplicationServiceTest {
     private lateinit var authenticationService: AuthenticationService
     private lateinit var userDomainPort: UserDomainPort
     private lateinit var socialAccountService: SocialAccountDomainService
-    private lateinit var temporaryPasswordGenerator: TemporaryPasswordGenerator
     private lateinit var service: OIDCApplicationService
     private val faker = Faker()
 
@@ -39,8 +37,7 @@ class OIDCApplicationServiceTest {
         authenticationService = mockk()
         userDomainPort = mockk()
         socialAccountService = mockk(relaxed = true)
-        temporaryPasswordGenerator = mockk()
-        service = OIDCApplicationService(authenticationService, userDomainPort, socialAccountService, temporaryPasswordGenerator)
+        service = OIDCApplicationService(authenticationService, userDomainPort, socialAccountService)
     }
 
     @Nested
@@ -62,7 +59,7 @@ class OIDCApplicationServiceTest {
                     name = name,
                     profileImageUrl = null,
                 )
-            val userInfo = UserInfoDTO(faker.number().numberBetween(1L, 1000L), email, faker.internet().password(), name)
+            val userInfo = UserInfoDTO(faker.number().numberBetween(1L, 1000L), email, name)
             val expectedAuthToken = AuthTokenDTO(accessToken, refreshToken)
 
             every { authenticationService.getOidcUserInfo(OIDCProviderType.GOOGLE, any()) } returns oidcInfo
@@ -75,8 +72,7 @@ class OIDCApplicationServiceTest {
                 )
 
             assertThat(res.token).isEqualTo(accessToken)
-            verify(exactly = 0) { temporaryPasswordGenerator.generate() }
-            verify(exactly = 0) { userDomainPort.create(any(), any(), any()) }
+            verify(exactly = 0) { userDomainPort.create(any(), any()) }
             verify(exactly = 1) { socialAccountService.linkSocialAccount(any<LinkSocialAccountCommand>()) }
         }
 
@@ -85,7 +81,7 @@ class OIDCApplicationServiceTest {
         fun `sign up when user not exists expect temporary password generated and user created`() {
             val email = faker.internet().emailAddress()
             val name = faker.name().fullName()
-            val temporaryPassword = faker.internet().password()
+            faker.internet().password()
             val accessToken = faker.internet().password()
             val refreshToken = faker.internet().password()
 
@@ -97,20 +93,18 @@ class OIDCApplicationServiceTest {
                     name = name,
                     profileImageUrl = null,
                 )
-            val createdUserInfo = UserInfoDTO(faker.number().numberBetween(1L, 1000L), email, faker.internet().password(), name)
+            val createdUserInfo = UserInfoDTO(faker.number().numberBetween(1L, 1000L), email, name)
             val expectedAuthToken = AuthTokenDTO(accessToken, refreshToken)
 
             every { authenticationService.getOidcUserInfo(OIDCProviderType.GOOGLE, any()) } returns oidcInfo
             every { userDomainPort.findActiveByEmail(email) } returns null
-            every { temporaryPasswordGenerator.generate() } returns temporaryPassword
-            every { userDomainPort.create(email, temporaryPassword, name) } returns createdUserInfo
+            every { userDomainPort.create(email, name) } returns createdUserInfo
             every { authenticationService.issueOIDCUserAuthToken(oidcInfo) } returns expectedAuthToken
 
             val res = service.signUp(OIDCSignUpRequest(OIDCProviderType.GOOGLE, authorizationCode = faker.internet().password()))
 
             assertThat(res.token).isEqualTo(accessToken)
-            verify { temporaryPasswordGenerator.generate() }
-            verify { userDomainPort.create(email, temporaryPassword, name) }
+            verify { userDomainPort.create(email, name) }
             verify { socialAccountService.linkSocialAccount(any<LinkSocialAccountCommand>()) }
         }
 
@@ -129,12 +123,12 @@ class OIDCApplicationServiceTest {
                     name = name,
                     profileImageUrl = faker.internet().url(),
                 )
-            val userInfo = UserInfoDTO(faker.number().numberBetween(1L, 1000L), email, faker.internet().password(), name)
+            val userInfo = UserInfoDTO(faker.number().numberBetween(1L, 1000L), email, name)
 
             every { authenticationService.getOidcUserInfo(any(), any()) } returns oidcInfo
             every { userDomainPort.findActiveByEmail(email) } returns userInfo
             every { authenticationService.issueOIDCUserAuthToken(oidcInfo) } returns
-                AuthTokenDTO(faker.internet().password(), faker.internet().password())
+                AuthTokenDTO(faker.internet().password(), refreshToken = faker.internet().password())
 
             service.signUp(OIDCSignUpRequest(OIDCProviderType.GOOGLE, authorizationCode = faker.internet().password()))
 
@@ -167,7 +161,6 @@ class OIDCApplicationServiceTest {
                 UserInfoDTO(
                     faker.number().numberBetween(1L, 1000L),
                     faker.internet().emailAddress(),
-                    faker.internet().password(),
                     faker.name().fullName(),
                 )
             val expectedAuthToken = AuthTokenDTO(accessToken, refreshToken)

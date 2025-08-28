@@ -19,7 +19,7 @@ class CustomUserDetailsService(
         return User
             .builder()
             .username(user.email)
-            .password(user.password)
+            .password("")
             .roles("USER")
             .build()
     }

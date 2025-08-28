@@ -8,13 +8,11 @@ interface UserDomainPort {
 
     fun create(
         email: String,
-        rawPassword: String,
         name: String?,
     ): UserInfoDTO
 
     fun getOrCreate(
         email: String,
-        rawPassword: String,
         name: String?,
     ): UserInfoDTO
 

@@ -1,8 +1,6 @@
 package place.tomo.user.domain.entities
 
 import jakarta.persistence.Column
-import jakarta.persistence.Embeddable
-import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
 import jakarta.persistence.EntityListeners
 import jakarta.persistence.EnumType
@@ -20,14 +18,6 @@ import place.tomo.user.domain.exception.InvalidEmailException
 import place.tomo.user.domain.exception.InvalidUsernameException
 import java.time.LocalDateTime
 
-@Embeddable
-class HashedPassword(
-    @Column(name = "password", nullable = false, length = 100)
-    val value: String,
-) {
-    override fun toString(): String = "********"
-}
-
 @Entity
 @Table(name = "users")
 @EntityListeners(AuditingEntityListener::class)
@@ -36,14 +26,12 @@ class UserEntity(
     val id: Long = 0,
     @Column(unique = true, nullable = false)
     val email: String,
-    @Embedded
-    var password: HashedPassword,
     @Column(nullable = false)
     var username: String,
     @Column()
     var nickname: String? = null,
     @Enumerated(EnumType.STRING)
-    var status: UserStatus = UserStatus.STANDBY,
+    var status: UserStatus = UserStatus.ACTIVATED,
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
@@ -56,9 +44,7 @@ class UserEntity(
     companion object {
         fun create(
             email: String,
-            password: HashedPassword,
             username: String,
-            status: UserStatus = UserStatus.ACTIVATED, // FIXME: 이메일 인증 같은 프로세스가 없어서 우선 ACTIVATED로 생성
         ): UserEntity {
             if (!EmailValidation.isValid(email)) {
                 throw InvalidEmailException(email)
@@ -69,9 +55,7 @@ class UserEntity(
 
             return UserEntity(
                 email = email,
-                password = password,
                 username = username,
-                status = status,
             )
         }
     }
