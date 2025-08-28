@@ -5,10 +5,8 @@ import org.springframework.transaction.annotation.Transactional
 import place.tomo.auth.application.requests.OIDCSignUpRequest
 import place.tomo.auth.application.responses.LoginResponse
 import place.tomo.auth.domain.commands.LinkSocialAccountCommand
-import place.tomo.auth.domain.exception.DeactivatedUserException
 import place.tomo.auth.domain.services.AuthenticationService
 import place.tomo.auth.domain.services.SocialAccountDomainService
-import place.tomo.contract.dtos.UserInfoDTO
 import place.tomo.contract.ports.UserDomainPort
 
 @Service
@@ -21,7 +19,7 @@ class OIDCApplicationService(
     fun signUp(request: OIDCSignUpRequest): LoginResponse {
         val oidcUserInfo = authenticateService.getOidcUserInfo(request.provider, request.authorizationCode)
 
-        val userInfo = getOrCreateUser(oidcUserInfo.email, oidcUserInfo.name)
+        val userInfo = userDomainPort.getOrCreateActiveUser(oidcUserInfo.email, oidcUserInfo.name)
 
         socialAccountService.linkSocialAccount(
             LinkSocialAccountCommand(
@@ -37,23 +35,5 @@ class OIDCApplicationService(
         val authToken = authenticateService.issueOIDCUserAuthToken(oidcUserInfo)
 
         return LoginResponse(token = authToken.accessToken, refreshToken = authToken.refreshToken)
-    }
-
-    private fun getOrCreateUser(
-        email: String,
-        name: String,
-    ): UserInfoDTO {
-        val existingUser =
-            userDomainPort.findByEmail(email)
-                ?: return userDomainPort.create(
-                    email = email,
-                    name = name,
-                )
-
-        if (!existingUser.isActivated) {
-            throw DeactivatedUserException(email)
-        }
-
-        return existingUser
     }
 }

@@ -67,62 +67,38 @@ class UserDomainAdapterTest {
     }
 
     @Nested
-    @DisplayName("사용자 생성")
-    inner class Create {
+    @DisplayName("활성화된 사용자 조회 또는 생성")
+    inner class GetOrCreateActiveUser {
         @Test
-        @DisplayName("유효한 입력으로 사용자 생성 시 UserInfoDTO로 변환하여 반환한다")
-        fun `create when valid input expect creation success`() {
+        @DisplayName("기존 활성화된 사용자가 존재하면 그대로 반환한다")
+        fun `get or create active user when user exists expect existing returned`() {
             val userId = faker.number().numberBetween(1L, 100L)
             val userEmail = faker.internet().emailAddress()
             val userName = faker.name().fullName()
 
-            val created = UserEntity(id = userId, email = userEmail, username = userName)
-            every { userDomainService.createUser(userEmail, userName) } returns created
+            val existing = UserEntity(id = userId, email = userEmail, username = userName)
+            every { userDomainService.getOrCreateActiveUser(userEmail, userName) } returns existing
 
-            val dto = adapter.create(userEmail, userName)
+            val result = adapter.getOrCreateActiveUser(userEmail, userName)
 
-            assertThat(dto).isEqualTo(UserInfoDTO(id = userId, email = userEmail, name = userName))
-            verify { userDomainService.createUser(userEmail, userName) }
-        }
-    }
-
-    @Nested
-    @DisplayName("사용자 조회 또는 생성")
-    inner class GetOrCreate {
-        @Test
-        @DisplayName("기존 사용자가 존재하면 그대로 반환한다")
-        fun `get or create when user exists expect existing returned`() {
-            val userId = faker.number().numberBetween(1L, 100L)
-            val userEmail = faker.internet().emailAddress()
-            val userName = faker.name().fullName()
-
-            val existing = UserInfoDTO(id = userId, email = userEmail, name = userName)
-            every { userRepository.findByEmailAndDeletedAtIsNull(existing.email) } returns
-                UserEntity(
-                    id = userId,
-                    email = existing.email,
-                    username = existing.name,
-                )
-
-            val result = adapter.getOrCreate(existing.email, existing.name)
-
-            assertThat(result).isEqualTo(existing)
+            assertThat(result).isEqualTo(UserInfoDTO(id = userId, email = userEmail, name = userName))
+            verify { userDomainService.getOrCreateActiveUser(userEmail, userName) }
         }
 
         @Test
         @DisplayName("기존 사용자가 없으면 새로 생성하고 UserInfoDTO로 반환한다")
-        fun `get or create when user not exists expect created and returned`() {
+        fun `get or create active user when user not exists expect created and returned`() {
             val userEmail = faker.internet().emailAddress()
             val userName = faker.name().fullName()
             val userId = faker.number().numberBetween(1L, 100L)
 
-            every { userRepository.findByEmailAndDeletedAtIsNull(userEmail) } returns null
             val created = UserEntity(id = userId, email = userEmail, username = userName)
-            every { userDomainService.createUser(userEmail, userName) } returns created
+            every { userDomainService.getOrCreateActiveUser(userEmail, userName) } returns created
 
-            val result = adapter.getOrCreate(userEmail, userName)
+            val result = adapter.getOrCreateActiveUser(userEmail, userName)
 
             assertThat(result).isEqualTo(UserInfoDTO(id = userId, email = userEmail, name = userName))
+            verify { userDomainService.getOrCreateActiveUser(userEmail, userName) }
         }
     }
 

@@ -19,44 +19,19 @@ class UserDomainAdapter(
             id = user.id,
             email = user.email,
             name = user.username,
-            isActivated = user.isActivated(),
         )
     }
 
-    override fun findByEmail(email: String): UserInfoDTO? {
-        val user = userRepository.findByEmail(email) ?: return null
-        return UserInfoDTO(
-            id = user.id,
-            email = user.email,
-            name = user.username,
-            isActivated = user.isActivated(),
-        )
-    }
-
-    override fun create(
+    override fun getOrCreateActiveUser(
         email: String,
         name: String?,
     ): UserInfoDTO {
-        val user = userDomainService.createUser(email, name ?: "")
-        require(user.isActivated())
+        val user = userDomainService.getOrCreateActiveUser(email, name ?: "")
 
         return UserInfoDTO(
             id = user.id,
             email = user.email,
             name = user.username,
-            isActivated = user.isActivated(),
-        )
-    }
-
-    override fun getOrCreate(
-        email: String,
-        name: String?,
-    ): UserInfoDTO {
-        val existingUser = findActiveByEmail(email)
-
-        return existingUser ?: create(
-            email = email,
-            name = name,
         )
     }
 

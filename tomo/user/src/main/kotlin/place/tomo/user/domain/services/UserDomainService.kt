@@ -2,6 +2,7 @@ package place.tomo.user.domain.services
 
 import org.springframework.stereotype.Service
 import place.tomo.user.domain.entities.UserEntity
+import place.tomo.user.domain.exception.DeactivatedUserException
 import place.tomo.user.domain.exception.DuplicateEmailException
 import place.tomo.user.infra.repositories.UserRepository
 
@@ -21,5 +22,18 @@ class UserDomainService(
         userRepository.save(userEntity)
 
         return userEntity
+    }
+
+    fun getOrCreateActiveUser(
+        email: String,
+        name: String,
+    ): UserEntity {
+        val existingUser = userRepository.findByEmail(email)
+
+        return when {
+            existingUser == null -> createUser(email, name)
+            !existingUser.isActivated() -> throw DeactivatedUserException(email)
+            else -> existingUser
+        }
     }
 }

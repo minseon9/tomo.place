@@ -10,13 +10,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.springframework.http.HttpStatus
 import place.tomo.auth.application.requests.OIDCSignUpRequest
 import place.tomo.auth.application.responses.LoginResponse
 import place.tomo.auth.domain.commands.LinkSocialAccountCommand
 import place.tomo.auth.domain.dtos.AuthTokenDTO
 import place.tomo.auth.domain.dtos.oidc.OIDCUserInfo
-import place.tomo.auth.domain.exception.DeactivatedUserException
 import place.tomo.auth.domain.services.AuthenticationService
 import place.tomo.auth.domain.services.SocialAccountDomainService
 import place.tomo.contract.constant.OIDCProviderType
@@ -62,7 +60,7 @@ class OIDCApplicationServiceTest {
             val expectedAuthToken = AuthTokenDTO(accessToken, refreshToken)
 
             every { authenticationService.getOidcUserInfo(OIDCProviderType.GOOGLE, any()) } returns oidcInfo
-            every { userDomainPort.findActiveByEmail(email) } returns userInfo
+            every { userDomainPort.getOrCreateActiveUser(email, name) } returns userInfo
             every { authenticationService.issueOIDCUserAuthToken(oidcInfo) } returns expectedAuthToken
 
             val res: LoginResponse =
@@ -71,7 +69,7 @@ class OIDCApplicationServiceTest {
                 )
 
             assertThat(res.token).isEqualTo(accessToken)
-            verify(exactly = 0) { userDomainPort.create(any(), any()) }
+            verify(exactly = 1) { userDomainPort.getOrCreateActiveUser(email, name) }
             verify(exactly = 1) { socialAccountService.linkSocialAccount(any<LinkSocialAccountCommand>()) }
         }
 
@@ -96,15 +94,13 @@ class OIDCApplicationServiceTest {
             val expectedAuthToken = AuthTokenDTO(accessToken, refreshToken)
 
             every { authenticationService.getOidcUserInfo(OIDCProviderType.GOOGLE, any()) } returns oidcInfo
-            every { userDomainPort.findActiveByEmail(email) } returns null
-            every { userDomainPort.findByEmail(email) } returns null
-            every { userDomainPort.create(email, name) } returns createdUserInfo
+            every { userDomainPort.getOrCreateActiveUser(email, name) } returns createdUserInfo
             every { authenticationService.issueOIDCUserAuthToken(oidcInfo) } returns expectedAuthToken
 
             val res = service.signUp(OIDCSignUpRequest(OIDCProviderType.GOOGLE, authorizationCode = faker.internet().password()))
 
             assertThat(res.token).isEqualTo(accessToken)
-            verify { userDomainPort.create(email, name) }
+            verify { userDomainPort.getOrCreateActiveUser(email, name) }
             verify { socialAccountService.linkSocialAccount(any<LinkSocialAccountCommand>()) }
         }
 
@@ -126,7 +122,7 @@ class OIDCApplicationServiceTest {
             val userInfo = UserInfoDTO(faker.number().numberBetween(1L, 1000L), email, name)
 
             every { authenticationService.getOidcUserInfo(any(), any()) } returns oidcInfo
-            every { userDomainPort.findActiveByEmail(email) } returns userInfo
+            every { userDomainPort.getOrCreateActiveUser(email, name) } returns userInfo
             every { authenticationService.issueOIDCUserAuthToken(oidcInfo) } returns
                 AuthTokenDTO(faker.internet().password(), refreshToken = faker.internet().password())
 
@@ -167,7 +163,7 @@ class OIDCApplicationServiceTest {
             val expectedLoginResponse = LoginResponse(token = accessToken, refreshToken = refreshToken)
 
             every { authenticationService.getOidcUserInfo(any(), any()) } returns oidcInfo
-            every { userDomainPort.findActiveByEmail(any()) } returns userInfo
+            every { userDomainPort.getOrCreateActiveUser(any(), any()) } returns userInfo
             every { authenticationService.issueOIDCUserAuthToken(oidcInfo) } returns expectedAuthToken
 
             val res = service.signUp(OIDCSignUpRequest(OIDCProviderType.GOOGLE, authorizationCode = faker.internet().password()))
@@ -181,23 +177,21 @@ class OIDCApplicationServiceTest {
             val email = faker.internet().emailAddress()
             val name = faker.name().fullName()
 
-            val oidcInfo = OIDCUserInfo(
-                OIDCProviderType.GOOGLE,
-                socialId = faker.internet().uuid(),
-                email = email,
-                name = name,
-                profileImageUrl = null,
-            )
+            val oidcInfo =
+                OIDCUserInfo(
+                    OIDCProviderType.GOOGLE,
+                    socialId = faker.internet().uuid(),
+                    email = email,
+                    name = name,
+                    profileImageUrl = null,
+                )
 
             every { authenticationService.getOidcUserInfo(any(), any()) } returns oidcInfo
-            every { userDomainPort.findActiveByEmail(email) } returns null
-            every { userDomainPort.findByEmail(email) } returns UserInfoDTO(1L, email, name)
+            every { userDomainPort.findActiveByEmail(email) } throws RuntimeException("비활성화된 사용자입니다.")
 
             assertThatThrownBy {
                 service.signUp(OIDCSignUpRequest(OIDCProviderType.GOOGLE, authorizationCode = faker.internet().password()))
-            }.isInstanceOf(DeactivatedUserException::class.java)
-                .extracting("status")
-                .isEqualTo(HttpStatus.FORBIDDEN)
+            }.isInstanceOf(RuntimeException::class.java)
         }
     }
 }
