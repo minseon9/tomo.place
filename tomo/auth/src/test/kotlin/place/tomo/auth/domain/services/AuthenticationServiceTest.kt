@@ -28,7 +28,7 @@ class AuthenticationServiceTest {
     private lateinit var authenticationManager: AuthenticationManager
     private lateinit var socialAccountService: SocialAccountDomainService
     private lateinit var oidcProviderFactory: OIDCProviderFactory
-    private lateinit var jwtTokenProvider: JwtTokenProvider
+    private lateinit var jwtTokenProvider: JwtProvider
     private lateinit var service: AuthenticationService
 
     @BeforeEach

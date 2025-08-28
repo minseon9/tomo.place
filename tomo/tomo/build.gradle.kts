@@ -8,6 +8,7 @@ dependencies {
     // 번들 그룹 활용
     implementation(libs.bundles.app.runtime)
     implementation(libs.bundles.webflux.common)
+    implementation(libs.spring.boot.starter.oauth2.resource.server)
 
     developmentOnly(libs.spring.boot.devtools)
 }

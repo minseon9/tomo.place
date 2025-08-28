@@ -56,7 +56,7 @@ class LiquibasePathResolver(
      */
     fun getSearchPaths(): String =
         buildList {
-            add(project.relativePath(project.rootProject.projectDir))
+            add(project.rootProject.projectDir.absolutePath)
             if (isMainProject) {
                 val enabledModules =
                     project.rootProject.subprojects.filter {
@@ -64,11 +64,11 @@ class LiquibasePathResolver(
                     }
                 addAll(
                     enabledModules.map {
-                        project.relativePath(it.projectDir.resolve(LiquibaseConstants.CHANGELOG_DIR))
+                        it.projectDir.resolve(LiquibaseConstants.CHANGELOG_DIR).absolutePath
                     },
                 )
             } else {
-                add(project.relativePath(project.projectDir.resolve(LiquibaseConstants.CHANGELOG_DIR)))
+                add(project.projectDir.resolve(LiquibaseConstants.CHANGELOG_DIR).absolutePath)
             }
         }.joinToString(",")
 }
