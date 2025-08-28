@@ -3,12 +3,8 @@ package place.tomo.infra.config.security
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
-import org.springframework.security.authentication.AuthenticationManager
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
-import org.springframework.security.core.userdetails.UserDetailsService
-import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.oauth2.jwt.JwtDecoder
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
@@ -27,19 +23,6 @@ class SecurityFilterChainConfig {
             "/swagger-ui.html",
             "/v3/api-docs/**",
         )
-
-    @Bean
-    fun authenticationManager(
-        http: HttpSecurity,
-        passwordEncoder: PasswordEncoder,
-        userDetailsService: UserDetailsService,
-    ): AuthenticationManager {
-        val builder = http.getSharedObject(AuthenticationManagerBuilder::class.java)
-        builder
-            .userDetailsService(userDetailsService)
-            .passwordEncoder(passwordEncoder)
-        return builder.build()
-    }
 
     @Bean
     fun securityFilterChain(
