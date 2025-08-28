@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'dart:convert';
 
 /// 사용자 도메인 엔티티
 /// 
@@ -13,6 +14,8 @@ class User extends Equatable {
     this.provider,
     required this.createdAt,
     this.updatedAt,
+    this.accessToken,
+    this.refreshToken,
   });
 
   final String id;
@@ -22,6 +25,8 @@ class User extends Equatable {
   final String? provider; // 'kakao', 'google', 'apple', 'email'
   final DateTime createdAt;
   final DateTime? updatedAt;
+  final String? accessToken;
+  final String? refreshToken;
 
   /// 사용자가 소셜 로그인으로 가입했는지 확인
   bool get isSocialUser => provider != null && provider != 'email';
@@ -38,6 +43,8 @@ class User extends Equatable {
     String? provider,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? accessToken,
+    String? refreshToken,
   }) {
     return User(
       id: id ?? this.id,
@@ -47,6 +54,8 @@ class User extends Equatable {
       provider: provider ?? this.provider,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      accessToken: accessToken ?? this.accessToken,
+      refreshToken: refreshToken ?? this.refreshToken,
     );
   }
 
@@ -59,10 +68,44 @@ class User extends Equatable {
         provider,
         createdAt,
         updatedAt,
+        accessToken,
+        refreshToken,
       ];
 
   @override
   String toString() {
     return 'User(id: $id, email: $email, name: $name, provider: $provider)';
+  }
+  
+  /// JSON에서 User 객체 생성
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      id: json['id'] as String,
+      email: json['email'] as String,
+      name: json['name'] as String?,
+      profileImageUrl: json['profileImageUrl'] as String?,
+      provider: json['provider'] as String?,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: json['updatedAt'] != null 
+          ? DateTime.parse(json['updatedAt'] as String) 
+          : null,
+      accessToken: json['accessToken'] as String?,
+      refreshToken: json['refreshToken'] as String?,
+    );
+  }
+  
+  /// User 객체를 JSON으로 변환
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'email': email,
+      'name': name,
+      'profileImageUrl': profileImageUrl,
+      'provider': provider,
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt?.toIso8601String(),
+      'accessToken': accessToken,
+      'refreshToken': refreshToken,
+    };
   }
 }
