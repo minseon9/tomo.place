@@ -11,13 +11,12 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
-import place.tomo.auth.application.requests.OIDCAuthenticateRequest
 import place.tomo.auth.application.requests.OIDCSignUpRequest
 import place.tomo.auth.application.responses.LoginResponse
 import place.tomo.auth.domain.commands.LinkSocialAccountCommand
 import place.tomo.auth.domain.dtos.AuthTokenDTO
 import place.tomo.auth.domain.dtos.oidc.OIDCUserInfo
-import place.tomo.auth.domain.exception.SocialAccountNotLinkedException
+import place.tomo.auth.domain.exception.DeactivatedUserException
 import place.tomo.auth.domain.services.AuthenticationService
 import place.tomo.auth.domain.services.SocialAccountDomainService
 import place.tomo.contract.constant.OIDCProviderType
@@ -41,7 +40,7 @@ class OIDCApplicationServiceTest {
     }
 
     @Nested
-    @DisplayName("OIDC 회원가입")
+    @DisplayName("OIDC 회원가입/로그인 통합")
     inner class SignUpWithOIDC {
         @Test
         @DisplayName("OIDC 사용자 정보 조회 후 기존 사용자가 존재하면 새 사용자를 생성하지 않고 소셜 계정만 연결한다")
@@ -98,6 +97,7 @@ class OIDCApplicationServiceTest {
 
             every { authenticationService.getOidcUserInfo(OIDCProviderType.GOOGLE, any()) } returns oidcInfo
             every { userDomainPort.findActiveByEmail(email) } returns null
+            every { userDomainPort.findByEmail(email) } returns null
             every { userDomainPort.create(email, name) } returns createdUserInfo
             every { authenticationService.issueOIDCUserAuthToken(oidcInfo) } returns expectedAuthToken
 
@@ -174,41 +174,30 @@ class OIDCApplicationServiceTest {
 
             assertThat(res).isEqualTo(expectedLoginResponse)
         }
-    }
-
-    @Nested
-    @DisplayName("OIDC 로그인")
-    inner class AuthenticateWithOIDC {
-        @Test
-        @DisplayName("OIDC 인증 성공 시 토큰 정보를 반환한다")
-        fun `authenticate oidc when authorization code valid expect tokens returned`() {
-            val accessToken = faker.internet().password()
-            val refreshToken = faker.internet().password()
-            val expectedAuthToken = AuthTokenDTO(accessToken, refreshToken)
-            val expectedLoginResponse = LoginResponse(token = accessToken, refreshToken = refreshToken)
-
-            every { authenticationService.authenticateOIDC(OIDCProviderType.GOOGLE, any()) } returns expectedAuthToken
-
-            val res =
-                service.authenticate(
-                    OIDCAuthenticateRequest(OIDCProviderType.GOOGLE, authorizationCode = faker.internet().password()),
-                )
-
-            assertThat(res).isEqualTo(expectedLoginResponse)
-        }
 
         @Test
-        @DisplayName("연결되지 않은 소셜 계정일 경우 접근 거부 예외를 전달한다")
-        fun `authenticate oidc when social account inactive or missing expect 403 forbidden`() {
-            val expectedException = SocialAccountNotLinkedException(OIDCProviderType.GOOGLE)
+        @DisplayName("비활성화된 사용자 OIDC 인증 시 403 Forbidden 예외 발생")
+        fun `signup when deactivated user expect 403 forbidden exception`() {
+            val email = faker.internet().emailAddress()
+            val name = faker.name().fullName()
 
-            every { authenticationService.authenticateOIDC(any(), any()) } throws expectedException
+            val oidcInfo = OIDCUserInfo(
+                OIDCProviderType.GOOGLE,
+                socialId = faker.internet().uuid(),
+                email = email,
+                name = name,
+                profileImageUrl = null,
+            )
+
+            every { authenticationService.getOidcUserInfo(any(), any()) } returns oidcInfo
+            every { userDomainPort.findActiveByEmail(email) } returns null
+            every { userDomainPort.findByEmail(email) } returns UserInfoDTO(1L, email, name)
 
             assertThatThrownBy {
-                service.authenticate(OIDCAuthenticateRequest(OIDCProviderType.GOOGLE, authorizationCode = faker.internet().password()))
-            }.isInstanceOf(SocialAccountNotLinkedException::class.java)
+                service.signUp(OIDCSignUpRequest(OIDCProviderType.GOOGLE, authorizationCode = faker.internet().password()))
+            }.isInstanceOf(DeactivatedUserException::class.java)
                 .extracting("status")
-                .isEqualTo(HttpStatus.UNAUTHORIZED)
+                .isEqualTo(HttpStatus.FORBIDDEN)
         }
     }
 }

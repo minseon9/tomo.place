@@ -42,7 +42,6 @@ class DummyController {
     fun needAuthenticationGet() {}
 
     @PostMapping(
-        "/api/auth/login",
         "/api/auth/signup",
     )
     fun postAllAllowed() {}
@@ -75,7 +74,6 @@ class SecurityFilterChainConfigTest {
 
     private val publicPostEndpoints =
         arrayOf(
-            "/api/auth/login",
             "/api/auth/signup",
         )
 
