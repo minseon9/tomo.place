@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1016804314663",
+    "project_id": "tomo-place",
+    "storage_bucket": "tomo-place.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1016804314663:android:xxxxxxxxxxxxxxxxxxxx",
+        "android_client_info": {
+          "package_name": "place.tomo.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1016804314663-ohn3uaavjj58ig51f1hnhr4cf7510o15.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1016804314663-31vke1m4f00tspni83e19cghoed4j4ns.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

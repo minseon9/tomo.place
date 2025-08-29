@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../shared/design_system/tokens/colors.dart';
 import '../../../../shared/design_system/tokens/spacing.dart';
@@ -51,7 +50,7 @@ class _SignupPageState extends State<SignupPage> {
     if (state is AuthSuccess) {
       // 인증 성공 시 홈 화면으로 이동
       // 토큰은 이미 AuthService에서 저장되었으므로 바로 이동
-      context.go('/home');
+      Navigator.of(context).pushReplacementNamed('/home');
     } else if (state is AuthFailure) {
       // 인증 실패 시 에러 메시지 표시
       _showErrorSnackBar(context, state.message);
@@ -97,12 +96,25 @@ class _SignupPageContent extends StatelessWidget {
           const Spacer(),
           // 좌우 중앙 정렬을 위한 Center 위젯
           Center(
-            child: SocialLoginSection(
-              labelVariant: isSignupMode 
-                  ? SocialLabelVariant.signup 
-                  : SocialLabelVariant.login,
-              onProviderPressed: (provider) => 
-                  context.read<AuthController>().signupWithProvider(provider),
+            child: Column(
+              children: [
+                SocialLoginSection(
+                  labelVariant: isSignupMode 
+                      ? SocialLabelVariant.signup 
+                      : SocialLabelVariant.login,
+                  onProviderPressed: (provider) => 
+                      context.read<AuthController>().signupWithProvider(provider),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                // Google Sign-In 테스트 버튼
+                ElevatedButton(
+                  onPressed: () {
+                    print('Google Sign-In 테스트 버튼 클릭됨');
+                    Navigator.of(context).pushNamed('/google-auth-test');
+                  },
+                  child: const Text('Google Sign-In 테스트'),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
