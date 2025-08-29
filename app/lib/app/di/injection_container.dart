@@ -53,5 +53,3 @@ Future<void> initializeDependencies() async {
     authService: sl(),
   ));
 }
-
-// Mock 구현체들은 제거 - 실제 구현체 사용

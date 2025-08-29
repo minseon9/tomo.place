@@ -8,20 +8,12 @@ import 'social_login_button.dart';
 class SocialLoginSection extends StatelessWidget {
   const SocialLoginSection({
     super.key,
-    this.includeEmail = false,
     this.labelVariant = SocialLabelVariant.signup,
-    this.onKakaoPressed,
-    this.onApplePressed,
-    this.onGooglePressed,
-    this.onEmailPressed,
+    this.onProviderPressed,
   });
 
-  final bool includeEmail;
   final SocialLabelVariant labelVariant;
-  final VoidCallback? onKakaoPressed;
-  final VoidCallback? onApplePressed;
-  final VoidCallback? onGooglePressed;
-  final VoidCallback? onEmailPressed;
+  final void Function(String provider)? onProviderPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -29,29 +21,27 @@ class SocialLoginSection extends StatelessWidget {
       children: [
         SocialLoginButton(
           provider: SocialProvider.kakao,
-          onPressed: onKakaoPressed,
+          onPressed: onProviderPressed != null 
+              ? () => onProviderPressed!('kakao')
+              : null,
           labelVariant: labelVariant,
         ),
         const SizedBox(height: AppSpacing.md),
         SocialLoginButton(
           provider: SocialProvider.apple,
-          onPressed: onApplePressed,
+          onPressed: onProviderPressed != null 
+              ? () => onProviderPressed!('apple')
+              : null,
           labelVariant: labelVariant,
         ),
         const SizedBox(height: AppSpacing.md),
         SocialLoginButton(
           provider: SocialProvider.google,
-          onPressed: onGooglePressed,
+          onPressed: onProviderPressed != null 
+              ? () => onProviderPressed!('google')
+              : null,
           labelVariant: labelVariant,
         ),
-        if (includeEmail) ...[
-          const SizedBox(height: AppSpacing.md),
-          SocialLoginButton(
-            provider: SocialProvider.email,
-            onPressed: onEmailPressed,
-            labelVariant: labelVariant,
-          ),
-        ],
       ],
     );
   }

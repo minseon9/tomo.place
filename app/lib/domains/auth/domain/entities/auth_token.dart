@@ -30,6 +30,26 @@ class AuthToken extends Equatable {
   /// Authorization 헤더에 사용할 형식
   String get authorizationHeader => '$tokenType $accessToken';
 
+  /// JSON에서 AuthToken 객체 생성
+  factory AuthToken.fromJson(Map<String, dynamic> json) {
+    return AuthToken(
+      accessToken: json['accessToken'] as String,
+      refreshToken: json['refreshToken'] as String,
+      expiresAt: DateTime.parse(json['expiresAt'] as String),
+      tokenType: json['tokenType'] as String? ?? 'Bearer',
+    );
+  }
+
+  /// AuthToken 객체를 JSON으로 변환
+  Map<String, dynamic> toJson() {
+    return {
+      'accessToken': accessToken,
+      'refreshToken': refreshToken,
+      'expiresAt': expiresAt.toIso8601String(),
+      'tokenType': tokenType,
+    };
+  }
+
   /// 토큰 업데이트를 위한 copyWith 메서드
   AuthToken copyWith({
     String? accessToken,

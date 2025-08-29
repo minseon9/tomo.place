@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 
-import '../../domain/entities/user.dart';
+import '../models/login_response.dart';
 import '../../services/auth_service.dart';
 
 /// 인증 상태 관리를 위한 Cubit
@@ -16,65 +16,28 @@ class AuthController extends Cubit<AuthState> {
 
   final AuthService _authService;
 
-  /// 구글 로그인 실행
-  Future<void> loginWithGoogle() async {
+  /// 통합된 소셜 인증 실행
+  /// 
+  /// provider에 따라 적절한 인증 메서드를 호출합니다.
+  /// OIDC 기반으로 로그인과 회원가입을 통합 처리합니다.
+  Future<void> signupWithProvider(String provider) async {
     await _performSocialAuth(
-      authMethod: () => _authService.loginWithGoogle(),
-      provider: 'Google',
+      authMethod: () => _authService.signupWithProvider(provider),
+      provider: provider,
     );
-  }
-
-  /// 구글 회원가입 실행
-  Future<void> signupWithGoogle() async {
-    await _performSocialAuth(
-      authMethod: () => _authService.signupWithGoogle(),
-      provider: 'Google',
-    );
-  }
-
-  /// 카카오 로그인 실행 (준비 중)
-  Future<void> loginWithKakao() async {
-    emit(const AuthFailure(
-      message: '카카오 로그인은 아직 지원하지 않습니다.',
-      provider: 'kakao',
-    ));
-  }
-
-  /// 카카오 회원가입 실행 (준비 중)
-  Future<void> signupWithKakao() async {
-    emit(const AuthFailure(
-      message: '카카오 회원가입은 아직 지원하지 않습니다.',
-      provider: 'kakao',
-    ));
-  }
-
-  /// 애플 로그인 실행 (준비 중)
-  Future<void> loginWithApple() async {
-    emit(const AuthFailure(
-      message: '애플 로그인은 아직 지원하지 않습니다.',
-      provider: 'apple',
-    ));
-  }
-
-  /// 애플 회원가입 실행 (준비 중)
-  Future<void> signupWithApple() async {
-    emit(const AuthFailure(
-      message: '애플 회원가입은 아직 지원하지 않습니다.',
-      provider: 'apple',
-    ));
   }
 
   /// 소셜 인증 공통 로직
   Future<void> _performSocialAuth({
-    required Future<User> Function() authMethod,
+    required Future<LoginResponse> Function() authMethod,
     required String provider,
   }) async {
     try {
       emit(const AuthLoading());
       
-      final user = await authMethod();
+      final loginResponse = await authMethod();
       
-      emit(AuthSuccess(user: user));
+      emit(AuthSuccess(loginResponse: loginResponse));
     } catch (e) {
       emit(AuthFailure(
         message: '$provider 인증에 실패했습니다: ${e.toString()}',
@@ -83,32 +46,6 @@ class AuthController extends Cubit<AuthState> {
       
       // TODO: 팝업 메시지 표시 로직 추가
     }
-  }
-
-  /// 이메일 로그인 (추후 구현)
-  Future<void> loginWithEmail(String email, String password) async {
-    emit(const AuthLoading());
-    
-    // TODO: 이메일 로그인 UseCase 구현 후 연결
-    await Future.delayed(const Duration(seconds: 1));
-    
-    emit(const AuthFailure(
-      message: '이메일 로그인은 아직 구현되지 않았습니다.',
-      provider: 'email',
-    ));
-  }
-
-  /// 이메일 회원가입 (추후 구현)
-  Future<void> signupWithEmail(String email, String password) async {
-    emit(const AuthLoading());
-    
-    // TODO: 이메일 회원가입 UseCase 구현 후 연결
-    await Future.delayed(const Duration(seconds: 1));
-    
-    emit(const AuthFailure(
-      message: '이메일 회원가입은 아직 구현되지 않았습니다.',
-      provider: 'email',
-    ));
   }
 
   /// 로그아웃
@@ -154,12 +91,12 @@ class AuthLoading extends AuthState {
 
 /// 인증 성공 상태
 class AuthSuccess extends AuthState {
-  const AuthSuccess({required this.user});
+  const AuthSuccess({required this.loginResponse});
 
-  final User user;
+  final LoginResponse loginResponse;
 
   @override
-  List<Object> get props => [user];
+  List<Object> get props => [loginResponse];
 }
 
 /// 인증 실패 상태

@@ -1,5 +1,5 @@
 import '../../domain/repositories/auth_repository.dart';
-import '../../domain/entities/user.dart';
+import '../../domain/entities/auth_token.dart';
 import '../../../../shared/infrastructure/network/api_client.dart';
 
 /// AuthRepository 구현체
@@ -12,15 +12,15 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl(this._apiClient);
   
   @override
-  Future<User> authenticate(String provider, String code) async {
+  Future<Map<String, dynamic>> authenticate(String provider, String code) async {
     try {
       final data = await _apiClient.post(
-        '/api/oidc/login',
+        '/api/auth/signup',
         {
           'provider': provider,
           'authorizationCode': code,
         },
-        (json) => User.fromJson(json),
+        (json) => json,
       );
       return data;
     } catch (e) {
@@ -29,33 +29,18 @@ class AuthRepositoryImpl implements AuthRepository {
   }
   
   @override
-  Future<User> register(String provider, String code) async {
+  Future<AuthToken> refreshToken(String refreshToken) async {
     try {
       final data = await _apiClient.post(
-        '/api/oidc/signup',
+        '/api/auth/refresh',
         {
-          'provider': provider,
-          'authorizationCode': code,
+          'refreshToken': refreshToken,
         },
-        (json) => User.fromJson(json),
+        (json) => AuthToken.fromJson(json),
       );
       return data;
     } catch (e) {
-      throw AuthException('OAuth 회원가입에 실패했습니다: ${e.toString()}');
-    }
-  }
-  
-  @override
-  Future<User?> getCurrentUser() async {
-    try {
-      final data = await _apiClient.get(
-        '/api/users/me',
-        (json) => User.fromJson(json),
-      );
-      return data;
-    } catch (e) {
-      // 인증되지 않은 경우 null 반환
-      return null;
+      throw AuthException('토큰 갱신에 실패했습니다: ${e.toString()}');
     }
   }
   

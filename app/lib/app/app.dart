@@ -30,7 +30,7 @@ class TomoPlaceApp extends StatelessWidget {
           scaffoldBackgroundColor: DesignTokens.appColors['background'],
         ),
         onGenerateRoute: AppRouter.generateRoute,
-        initialRoute: '/login',
+        initialRoute: '/signup',
       ),
     );
   }

@@ -1,6 +1,6 @@
 /// 로그인 응답 모델
 /// 
-/// 서버의 `/api/oidc/login` 또는 `/api/oidc/signup` 엔드포인트로부터 받는 응답 데이터입니다.
+/// 서버의 `/api/oidc/signup` 엔드포인트로부터 받는 응답 데이터입니다.
 /// access token과 refresh token을 포함합니다.
 class LoginResponse {
   final String token;
