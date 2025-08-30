@@ -4,7 +4,6 @@ import 'package:equatable/equatable.dart';
 import '../models/login_response.dart';
 import '../../services/auth_service.dart';
 import '../../consts/social_provider.dart';
-import '../../../../shared/exceptions/oauth_exception.dart';
 
 class AuthController extends Cubit<AuthState> {
   AuthController({
@@ -22,7 +21,7 @@ class AuthController extends Cubit<AuthState> {
   }
 
   Future<void> _performSocialAuth({
-    required Future<LoginResponse> Function() authMethod,
+    required Future<LoginResponse?> Function() authMethod,
     required SocialProvider provider,
   }) async {
     try {
@@ -30,18 +29,18 @@ class AuthController extends Cubit<AuthState> {
       
       final loginResponse = await authMethod();
       
+      // 사용자가 취소한 경우 (loginResponse가 null)
+      if (loginResponse == null) {
+        emit(const AuthInitial()); // Return to initial state
+        return;
+      }
+      
       emit(AuthSuccess(loginResponse: loginResponse));
     } catch (e) {
       // Log the exception for debugging
       print('Auth error: $e');
       
-      // Don't treat UserCancelled as an error
-      if (e is OAuthException && e.message.contains('cancelled')) {
-        emit(const AuthInitial()); // Return to initial state
-        return;
-      }
-      
-      // For other errors, emit failure state
+      // For errors, emit failure state
       emit(AuthFailure(exception: e as Exception));
     }
   }

@@ -16,13 +16,18 @@ class AuthService {
   }) : _repository = repository,
        _tokenStorage = tokenStorage;
   
-  Future<LoginResponse> signupWithProvider(SocialProvider provider) async {
+  Future<LoginResponse?> signupWithProvider(SocialProvider provider) async {
     try {
       OAuthProviderRegistry.initialize();
       
       final oauthProvider = OAuthProviderRegistry.createProvider(provider.code);
       
       final oauthResult = await oauthProvider.signIn();
+      
+      // 사용자가 취소한 경우 예외를 던지지 않고 null 반환
+      if (oauthResult.cancelled) {
+        return null;
+      }
       
       if (!oauthResult.success) {
         throw OAuthException.authenticationFailed(

@@ -54,18 +54,41 @@ class GoogleAuthProvider implements OAuthProvider {
         authorizationCode: authorizationCode,
       );
     } catch (error) {
-      // 에러 타입에 따른 분기 처리
-      if (error.toString().contains('network')) {
-        throw OAuthException.networkError(
-          message: 'Google Sign-In network error: $error',
-          provider: providerId,
-          originalError: error,
-        );
-      } else if (error.toString().contains('cancelled')) {
-        throw OAuthException.userCancelled(
-          provider: providerId,
-        );
+      // GoogleSignInException 타입 체크 및 코드 기반 분기 처리
+      if (error is GoogleSignInException) {
+        switch (error.code) {
+          case GoogleSignInExceptionCode.cancelled:
+            // 사용자 취소는 exception이 아닌 정상적인 결과로 처리
+            return OAuthResult.cancelled();
+          case GoogleSignInExceptionCode.networkError:
+            throw OAuthException.networkError(
+              message: 'Google Sign-In network error: ${error.message}',
+              provider: providerId,
+              originalError: error,
+            );
+          case GoogleSignInExceptionCode.signInRequired:
+            throw OAuthException.authenticationFailed(
+              message: 'Google Sign-In required: ${error.message}',
+              provider: providerId,
+              errorCode: error.code.name,
+              originalError: error,
+            );
+          case GoogleSignInExceptionCode.apiNotConnected:
+            throw OAuthException.serverError(
+              message: 'Google API not connected: ${error.message}',
+              provider: providerId,
+              errorCode: error.code.name,
+              originalError: error,
+            );
+          default:
+            throw OAuthException.unknown(
+              message: 'Google Sign-In failed: ${error.message}',
+              provider: providerId,
+              originalError: error,
+            );
+        }
       } else {
+        // GoogleSignInException이 아닌 다른 에러
         throw OAuthException.unknown(
           message: 'Google OIDC Sign-In 실패: $error',
           provider: providerId,
