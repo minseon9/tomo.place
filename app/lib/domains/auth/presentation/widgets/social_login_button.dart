@@ -29,7 +29,6 @@ class SocialLoginButton extends StatelessWidget {
       case SocialProvider.apple:
         return true; // 아직 지원하지 않음
       case SocialProvider.google:
-      case SocialProvider.email:
         return false;
     }
   }
@@ -83,7 +82,6 @@ class SocialLoginButton extends StatelessWidget {
         return DesignTokens.kakaoYellow;
       case SocialProvider.apple:
       case SocialProvider.google:
-      case SocialProvider.email:
         return DesignTokens.white;
     }
   }
@@ -98,7 +96,6 @@ class SocialLoginButton extends StatelessWidget {
     switch (provider) {
       case SocialProvider.kakao:
       case SocialProvider.google:
-      case SocialProvider.email:
         return AppTypography.button;
       case SocialProvider.apple:
         return AppTypography.body; // 애플은 16px Regular 사용
@@ -134,10 +131,6 @@ class SocialLoginButton extends StatelessWidget {
         return labelVariant == SocialLabelVariant.login 
             ? '구글 로그인' 
             : '구글로 시작하기';
-      case SocialProvider.email:
-        return labelVariant == SocialLabelVariant.login 
-            ? '이메일로 로그인' 
-            : '이메일로 시작하기';
     }
   }
 
@@ -157,8 +150,6 @@ class SocialLoginButton extends StatelessWidget {
         return SvgPicture.asset('assets/icons/apple_logo.svg');
       case SocialProvider.google:
         return SvgPicture.asset('assets/icons/google_logo.svg');
-      case SocialProvider.email:
-        return const SizedBox.shrink(); // 이메일 버튼은 아이콘 없음
     }
   }
 }

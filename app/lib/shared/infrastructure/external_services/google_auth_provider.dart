@@ -38,7 +38,7 @@ class GoogleAuthProvider implements OAuthProvider {
 
       final GoogleSignInServerAuthorization? serverAuth =
           await GoogleSignIn.instance.authorizationClient.authorizeServer(
-        const <String>['email', 'profile', 'openid'],
+        const <String>['email', 'profile'],
       );
 
       final String? authorizationCode = serverAuth?.serverAuthCode;
@@ -53,9 +53,6 @@ class GoogleAuthProvider implements OAuthProvider {
         authorizationCode: authorizationCode,
       );
     } catch (error) {
-      // TODO: 공통 에러 처리 로직으로 이동
-      print('Google OIDC Sign-In 실패: $error');
-      
       // 에러 타입에 따른 분기 처리
       if (error.toString().contains('network')) {
         throw OAuthException.networkError(
@@ -82,6 +79,7 @@ class GoogleAuthProvider implements OAuthProvider {
   Future<void> signOut() async {
     try {
       await _ensureInitialized();
+
       await GoogleSignIn.instance.signOut();
       
       // TODO: 공통 로깅 시스템으로 이동
@@ -102,12 +100,7 @@ class GoogleAuthProvider implements OAuthProvider {
     try {
       await _ensureInitialized();
       await GoogleSignIn.instance.disconnect();
-      
-      // TODO: 공통 로깅 시스템으로 이동
-      print('Google 계정 연결 해제 성공');
     } catch (error) {
-      // TODO: 공통 에러 처리 로직으로 이동
-      print('Google 계정 연결 해제 실패: $error');
       throw OAuthException.unknown(
         message: 'Google 계정 연결 해제 실패: $error',
         provider: providerId,

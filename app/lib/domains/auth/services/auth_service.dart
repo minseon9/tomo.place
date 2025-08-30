@@ -26,7 +26,7 @@ class AuthService {
         throw AuthException('OAuth 인증 실패: ${oauthResult.error}');
       }
       
-      final responseData = await _repository.authenticateWithOAuth(
+      final responseData = await _repository.authenticate(
         provider: provider,
         authorizationCode: oauthResult.authorizationCode!,
       );
@@ -43,7 +43,7 @@ class AuthService {
       throw AuthException('$provider 인증에 실패했습니다: ${e.toString()}');
     }
   }
-  
+
   Future<void> logout() async {
     try {
       // 1. 서버에 로그아웃 요청

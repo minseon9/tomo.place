@@ -6,15 +6,6 @@ import '../../../../shared/infrastructure/external_services/oauth_models.dart';
 /// 개선된 아키텍처에 따라 단순한 데이터 접근만 담당합니다.
 /// 비즈니스 로직은 Service Layer에서 처리합니다.
 abstract class AuthRepository {
-  /// OAuth 인증 (통합된 회원가입/로그인) - 기존 방식
-  /// 
-  /// [provider] OAuth Provider (예: 'GOOGLE', 'KAKAO', 'APPLE')
-  /// [code] OAuth 인증 코드
-  /// 
-  /// Returns: 인증 응답 (토큰 포함)
-  /// Throws: [AuthException] 인증 실패 시
-  Future<Map<String, dynamic>> authenticate(String provider, String code);
-
   /// OAuth 인증 (통합된 회원가입/로그인) - 새로운 방식
   /// 
   /// [provider] OAuth Provider (예: 'google', 'kakao', 'apple')
@@ -22,7 +13,7 @@ abstract class AuthRepository {
   ///
   /// Returns: 인증 응답 (토큰 포함)
   /// Throws: [AuthException] 인증 실패 시
-  Future<Map<String, dynamic>> authenticateWithOAuth({
+  Future<Map<String, dynamic>> authenticate({
     required String provider,
     required String authorizationCode,
   });

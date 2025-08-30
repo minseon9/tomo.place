@@ -13,32 +13,15 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl(this._apiClient);
   
   @override
-  Future<Map<String, dynamic>> authenticate(String provider, String code) async {
-    try {
-      final data = await _apiClient.post(
-        '/api/auth/signup',
-        {
-          'provider': provider,
-          'authorizationCode': code,
-        },
-        (json) => json,
-      );
-      return data;
-    } catch (e) {
-      throw AuthException('OAuth 인증에 실패했습니다: ${e.toString()}');
-    }
-  }
-
-  @override
-  Future<Map<String, dynamic>> authenticateWithOAuth({
+  Future<Map<String, dynamic>> authenticate({
     required String provider,
     required String authorizationCode,
   }) async {
     try {
       final data = await _apiClient.post(
-        '/api/auth/oauth',
+        '/api/auth/signup',
         {
-          'provider': provider,
+          'provider': provider.toUpperCase(),
           'authorizationCode': authorizationCode,
         },
         (json) => json,
