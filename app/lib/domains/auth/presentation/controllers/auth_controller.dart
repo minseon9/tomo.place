@@ -4,10 +4,6 @@ import 'package:equatable/equatable.dart';
 import '../models/login_response.dart';
 import '../../services/auth_service.dart';
 
-/// 인증 상태 관리를 위한 Cubit
-/// 
-/// UI와 비즈니스 로직을 연결하는 Presentation Layer의 컨트롤러입니다.
-/// 개선된 아키텍처에 따라 Service Layer를 사용합니다.
 class AuthController extends Cubit<AuthState> {
   AuthController({
     required AuthService authService,
@@ -16,10 +12,6 @@ class AuthController extends Cubit<AuthState> {
 
   final AuthService _authService;
 
-  /// 통합된 소셜 인증 실행
-  /// 
-  /// provider에 따라 적절한 인증 메서드를 호출합니다.
-  /// OIDC 기반으로 로그인과 회원가입을 통합 처리합니다.
   Future<void> signupWithProvider(String provider) async {
     await _performSocialAuth(
       authMethod: () => _authService.signupWithProvider(provider),
@@ -27,7 +19,6 @@ class AuthController extends Cubit<AuthState> {
     );
   }
 
-  /// 소셜 인증 공통 로직
   Future<void> _performSocialAuth({
     required Future<LoginResponse> Function() authMethod,
     required String provider,

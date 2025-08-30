@@ -19,22 +19,21 @@ class SocialLoginSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
+        // Kakao 로그인 (비활성화)
         SocialLoginButton(
           provider: SocialProvider.kakao,
-          onPressed: onProviderPressed != null 
-              ? () => onProviderPressed!('kakao')
-              : null,
+          onPressed: null, // 비활성화
           labelVariant: labelVariant,
         ),
         const SizedBox(height: AppSpacing.md),
+        // Apple 로그인 (비활성화)
         SocialLoginButton(
           provider: SocialProvider.apple,
-          onPressed: onProviderPressed != null 
-              ? () => onProviderPressed!('apple')
-              : null,
+          onPressed: null, // 비활성화
           labelVariant: labelVariant,
         ),
         const SizedBox(height: AppSpacing.md),
+        // Google 로그인 (활성화)
         SocialLoginButton(
           provider: SocialProvider.google,
           onPressed: onProviderPressed != null 

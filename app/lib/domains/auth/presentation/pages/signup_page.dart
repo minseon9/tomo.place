@@ -77,7 +77,6 @@ class _SignupPageState extends State<SignupPage> {
   }
 }
 
-/// 통합된 인증 페이지 콘텐츠
 class _SignupPageContent extends StatelessWidget {
   const _SignupPageContent({
     required this.isSignupMode,
@@ -94,7 +93,6 @@ class _SignupPageContent extends StatelessWidget {
       child: Column(
         children: [
           const Spacer(),
-          // 좌우 중앙 정렬을 위한 Center 위젯
           Center(
             child: Column(
               children: [
@@ -104,15 +102,6 @@ class _SignupPageContent extends StatelessWidget {
                       : SocialLabelVariant.login,
                   onProviderPressed: (provider) => 
                       context.read<AuthController>().signupWithProvider(provider),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                // Google Sign-In 테스트 버튼
-                ElevatedButton(
-                  onPressed: () {
-                    print('Google Sign-In 테스트 버튼 클릭됨');
-                    Navigator.of(context).pushNamed('/google-auth-test');
-                  },
-                  child: const Text('Google Sign-In 테스트'),
                 ),
               ],
             ),

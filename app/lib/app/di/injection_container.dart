@@ -3,7 +3,6 @@ import 'package:get_it/get_it.dart';
 // Shared infrastructure imports
 import '../../shared/infrastructure/network/api_client.dart';
 import '../../shared/infrastructure/storage/token_storage_service.dart';
-import '../../shared/infrastructure/external_services/oauth_service.dart';
 import '../../shared/config/app_config.dart';
 
 // Domain layer imports
@@ -36,7 +35,6 @@ Future<void> initializeDependencies() async {
   // 공통 인프라 서비스
   sl.registerLazySingleton<ApiClient>(() => ApiClient());
   sl.registerLazySingleton<TokenStorageService>(() => TokenStorageService());
-  sl.registerLazySingleton<OAuthService>(() => OAuthServiceImpl());
   
   // ===== Data Layer =====
   sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(sl()));
@@ -45,7 +43,6 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton<AuthService>(() => AuthService(
     repository: sl(),
     tokenStorage: sl(),
-    oauthService: sl(),
   ));
   
   // ===== Presentation Layer =====

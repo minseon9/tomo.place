@@ -1,6 +1,7 @@
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/entities/auth_token.dart';
 import '../../../../shared/infrastructure/network/api_client.dart';
+import '../../../../shared/infrastructure/external_services/oauth_models.dart';
 
 /// AuthRepository 구현체
 /// 
@@ -19,6 +20,26 @@ class AuthRepositoryImpl implements AuthRepository {
         {
           'provider': provider,
           'authorizationCode': code,
+        },
+        (json) => json,
+      );
+      return data;
+    } catch (e) {
+      throw AuthException('OAuth 인증에 실패했습니다: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> authenticateWithOAuth({
+    required String provider,
+    required String authorizationCode,
+  }) async {
+    try {
+      final data = await _apiClient.post(
+        '/api/auth/oauth',
+        {
+          'provider': provider,
+          'authorizationCode': authorizationCode,
         },
         (json) => json,
       );

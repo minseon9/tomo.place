@@ -1,3 +1,5 @@
+// FIXME: 여기서 다 관리하는게 아니라 폴더를 나눠서 관리하는게 읽기 더 좋아보임
+
 import 'app_config.dart';
 
 /// OAuth 설정 관리 클래스
