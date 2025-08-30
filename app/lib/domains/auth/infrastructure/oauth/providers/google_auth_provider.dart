@@ -1,8 +1,8 @@
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:app/shared/config/oauth_config.dart';
-import 'oauth_provider.dart';
-import 'oauth_models.dart';
-import '../../exceptions/oauth_exception.dart';
+import '../../../../../shared/config/oauth_config.dart';
+import '../oauth_provider.dart';
+import '../../../../../shared/exceptions/oauth_result.dart';
+import '../../../../../shared/exceptions/oauth_exception.dart';
 
 class GoogleAuthProvider implements OAuthProvider {
   static bool _isInitialized = false;
@@ -55,46 +55,16 @@ class GoogleAuthProvider implements OAuthProvider {
       );
     } catch (error) {
       // GoogleSignInException 타입 체크 및 코드 기반 분기 처리
-      if (error is GoogleSignInException) {
-        switch (error.code) {
-          case GoogleSignInExceptionCode.cancelled:
-            // 사용자 취소는 exception이 아닌 정상적인 결과로 처리
-            return OAuthResult.cancelled();
-          case GoogleSignInExceptionCode.networkError:
-            throw OAuthException.networkError(
-              message: 'Google Sign-In network error: ${error.message}',
-              provider: providerId,
-              originalError: error,
-            );
-          case GoogleSignInExceptionCode.signInRequired:
-            throw OAuthException.authenticationFailed(
-              message: 'Google Sign-In required: ${error.message}',
-              provider: providerId,
-              errorCode: error.code.name,
-              originalError: error,
-            );
-          case GoogleSignInExceptionCode.apiNotConnected:
-            throw OAuthException.serverError(
-              message: 'Google API not connected: ${error.message}',
-              provider: providerId,
-              errorCode: error.code.name,
-              originalError: error,
-            );
-          default:
-            throw OAuthException.unknown(
-              message: 'Google Sign-In failed: ${error.message}',
-              provider: providerId,
-              originalError: error,
-            );
-        }
-      } else {
-        // GoogleSignInException이 아닌 다른 에러
-        throw OAuthException.unknown(
-          message: 'Google OIDC Sign-In 실패: $error',
-          provider: providerId,
-          originalError: error,
-        );
+      // FIXME: canceled 외에는 error를 그대로 받아서 처리하도록 수정
+      if (error is GoogleSignInException && error.code == GoogleSignInExceptionCode.canceled) {
+        // 사용자 취소는 exception이 아닌 정상적인 결과로 처리
+        return OAuthResult.cancelled();
       }
+
+      throw OAuthException.authenticationFailed(
+        message: error.toString(),
+        provider: providerId,
+      );
     }
   }
 
@@ -104,16 +74,10 @@ class GoogleAuthProvider implements OAuthProvider {
       await _ensureInitialized();
 
       await GoogleSignIn.instance.signOut();
-      
-      // TODO: 공통 로깅 시스템으로 이동
-      print('Google Sign-Out 성공');
     } catch (error) {
-      // TODO: 공통 에러 처리 로직으로 이동
-      print('Google Sign-Out 실패: $error');
-      throw OAuthException.unknown(
-        message: 'Google Sign-Out 실패: $error',
+      throw OAuthException.signOutFailed(
+        message: error.toString(),
         provider: providerId,
-        originalError: error,
       );
     }
   }
@@ -125,7 +89,7 @@ class GoogleAuthProvider implements OAuthProvider {
       await GoogleSignIn.instance.disconnect();
     } catch (error) {
       throw OAuthException.unknown(
-        message: 'Google 계정 연결 해제 실패: $error',
+        message: error.toString(),
         provider: providerId,
         originalError: error,
       );

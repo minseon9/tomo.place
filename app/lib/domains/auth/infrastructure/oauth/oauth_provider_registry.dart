@@ -1,8 +1,10 @@
-import 'package:app/domains/auth/consts/social_provider.dart';
-
+import '../../consts/social_provider.dart';
 import 'oauth_provider.dart';
-import 'google_auth_provider.dart';
+import 'providers/google_auth_provider.dart';
 
+/// OAuth Provider 레지스트리
+/// 
+/// Auth 도메인 내에서 사용 가능한 OAuth Provider들을 관리합니다.
 class OAuthProviderRegistry {
   static bool _isInitialized = false;
   static final Map<String, OAuthProvider Function()> _providers = {};

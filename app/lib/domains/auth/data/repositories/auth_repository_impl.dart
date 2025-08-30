@@ -1,7 +1,6 @@
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/entities/auth_token.dart';
 import '../../../../shared/infrastructure/network/api_client.dart';
-import '../../../../shared/infrastructure/external_services/oauth_models.dart';
 
 /// AuthRepository 구현체
 /// 
@@ -17,35 +16,29 @@ class AuthRepositoryImpl implements AuthRepository {
     required String provider,
     required String authorizationCode,
   }) async {
-    try {
-      final data = await _apiClient.post(
-        '/api/auth/signup',
-        {
-          'provider': provider.toUpperCase(),
-          'authorizationCode': authorizationCode,
-        },
-        (json) => json,
-      );
-      return data;
-    } catch (e) {
-      throw AuthException('OAuth 인증에 실패했습니다: ${e.toString()}');
-    }
+    // ApiClient에서 이미 적절한 예외 변환을 하므로 그대로 전파
+    final data = await _apiClient.post(
+      '/api/auth/signup',
+      {
+        'provider': provider.toUpperCase(),
+        'authorizationCode': authorizationCode,
+      },
+      (json) => json,
+    );
+    return data;
   }
   
   @override
   Future<AuthToken> refreshToken(String refreshToken) async {
-    try {
-      final data = await _apiClient.post(
-        '/api/auth/refresh',
-        {
-          'refreshToken': refreshToken,
-        },
-        (json) => AuthToken.fromJson(json),
-      );
-      return data;
-    } catch (e) {
-      throw AuthException('토큰 갱신에 실패했습니다: ${e.toString()}');
-    }
+    // ApiClient에서 이미 적절한 예외 변환을 하므로 그대로 전파
+    final data = await _apiClient.post(
+      '/api/auth/refresh',
+      {
+        'refreshToken': refreshToken,
+      },
+      (json) => AuthToken.fromJson(json),
+    );
+    return data;
   }
   
   @override

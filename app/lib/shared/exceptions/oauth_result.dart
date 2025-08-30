@@ -1,6 +1,3 @@
-// FIXME: models 들이 하나에 통합되어있어 구조 파악이 어렵고 가독이 좋지 않음
-// FIXME: 에러는 아예 별개로 관리하도록
-
 /// OAuth 결과 통합 모델
 /// 
 /// 모든 OAuth Provider의 인증 결과를 통일된 형태로 표현합니다.
@@ -50,17 +47,4 @@ class OAuthResult {
       errorCode: 'USER_CANCELLED',
     );
   }
-}
-
-/// OAuth 에러 타입 열거형
-/// 
-/// 공통 에러 타입을 정의하여 일관된 에러 처리를 제공합니다.
-enum OAuthErrorType {
-  networkError,
-  userCancelled,
-  invalidCredentials,
-  serverError,
-  tokenExpired,
-  permissionDenied,
-  unknown,
 }
