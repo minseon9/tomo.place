@@ -1,3 +1,5 @@
+import 'package:app/domains/auth/consts/social_provider.dart';
+
 import 'oauth_provider.dart';
 import 'google_auth_provider.dart';
 
@@ -39,7 +41,7 @@ class OAuthProviderRegistry {
   }
   
   static void _registerGoogleProvider() {
-      registerProvider('google', () => GoogleAuthProvider());
+      registerProvider(SocialProvider.google.code, () => GoogleAuthProvider());
   }
   
   /// Apple Auth Provider 등록 (iOS에서만)

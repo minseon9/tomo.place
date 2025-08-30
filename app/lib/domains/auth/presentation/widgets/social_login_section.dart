@@ -13,7 +13,7 @@ class SocialLoginSection extends StatelessWidget {
   });
 
   final SocialLabelVariant labelVariant;
-  final void Function(String provider)? onProviderPressed;
+  final void Function(SocialProvider provider)? onProviderPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +37,7 @@ class SocialLoginSection extends StatelessWidget {
         SocialLoginButton(
           provider: SocialProvider.google,
           onPressed: onProviderPressed != null 
-              ? () => onProviderPressed!('google')
+              ? () => onProviderPressed!(SocialProvider.google)
               : null,
           labelVariant: labelVariant,
         ),

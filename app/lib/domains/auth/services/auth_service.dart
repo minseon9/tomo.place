@@ -3,6 +3,7 @@ import '../presentation/models/login_response.dart';
 import '../../../../shared/infrastructure/storage/token_storage_service.dart';
 import '../../../../shared/infrastructure/external_services/oauth_provider_registry.dart';
 import '../../../../shared/infrastructure/external_services/oauth_models.dart';
+import '../consts/social_provider.dart';
 
 class AuthService {
   final AuthRepository _repository;
@@ -14,11 +15,11 @@ class AuthService {
   }) : _repository = repository,
        _tokenStorage = tokenStorage;
   
-  Future<LoginResponse> signupWithProvider(String provider) async {
+  Future<LoginResponse> signupWithProvider(SocialProvider provider) async {
     try {
       OAuthProviderRegistry.initialize();
       
-      final oauthProvider = OAuthProviderRegistry.createProvider(provider);
+      final oauthProvider = OAuthProviderRegistry.createProvider(provider.code);
       
       final oauthResult = await oauthProvider.signIn();
       
@@ -27,7 +28,7 @@ class AuthService {
       }
       
       final responseData = await _repository.authenticate(
-        provider: provider,
+        provider: provider.code,
         authorizationCode: oauthResult.authorizationCode!,
       );
       
@@ -40,7 +41,7 @@ class AuthService {
       
       return loginResponse;
     } catch (e) {
-      throw AuthException('$provider 인증에 실패했습니다: ${e.toString()}');
+      throw AuthException('${provider.code} 인증에 실패했습니다: ${e.toString()}');
     }
   }
 

@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 
 import '../models/login_response.dart';
 import '../../services/auth_service.dart';
+import '../../consts/social_provider.dart';
 
 class AuthController extends Cubit<AuthState> {
   AuthController({
@@ -12,7 +13,7 @@ class AuthController extends Cubit<AuthState> {
 
   final AuthService _authService;
 
-  Future<void> signupWithProvider(String provider) async {
+  Future<void> signupWithProvider(SocialProvider provider) async {
     await _performSocialAuth(
       authMethod: () => _authService.signupWithProvider(provider),
       provider: provider,
@@ -21,7 +22,7 @@ class AuthController extends Cubit<AuthState> {
 
   Future<void> _performSocialAuth({
     required Future<LoginResponse> Function() authMethod,
-    required String provider,
+    required SocialProvider provider,
   }) async {
     try {
       emit(const AuthLoading());
@@ -31,8 +32,8 @@ class AuthController extends Cubit<AuthState> {
       emit(AuthSuccess(loginResponse: loginResponse));
     } catch (e) {
       emit(AuthFailure(
-        message: '$provider 인증에 실패했습니다: ${e.toString()}',
-        provider: provider.toLowerCase(),
+        message: '${provider.code} 인증에 실패했습니다: ${e.toString()}',
+        provider: provider.code,
       ));
       
       // TODO: 팝업 메시지 표시 로직 추가

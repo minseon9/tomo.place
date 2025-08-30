@@ -5,6 +5,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i4;
 
+import 'package:app/domains/auth/consts/social_provider.dart' as _i5;
 import 'package:app/domains/auth/presentation/models/login_response.dart'
     as _i2;
 import 'package:app/domains/auth/services/auth_service.dart' as _i3;
@@ -42,7 +43,8 @@ class MockAuthService extends _i1.Mock implements _i3.AuthService {
   }
 
   @override
-  _i4.Future<_i2.LoginResponse> signupWithProvider(String? provider) =>
+  _i4.Future<_i2.LoginResponse> signupWithProvider(
+          _i5.SocialProvider? provider) =>
       (super.noSuchMethod(
         Invocation.method(
           #signupWithProvider,
