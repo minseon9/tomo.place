@@ -1,8 +1,8 @@
 import 'package:google_sign_in/google_sign_in.dart';
-import '../../../../../shared/config/oauth_config.dart';
 import '../oauth_provider.dart';
 import '../../../../../shared/exceptions/oauth_result.dart';
 import '../../../../../shared/exceptions/oauth_exception.dart';
+import '../../config/oauth_config.dart';
 
 class GoogleAuthProvider implements OAuthProvider {
   static bool _isInitialized = false;
@@ -10,13 +10,15 @@ class GoogleAuthProvider implements OAuthProvider {
   static Future<void> _ensureInitialized() async {
     if (_isInitialized) return;
 
-    // FIXME: serverClientId, clientId 모두 config를 통해 가져오도록(6버전에서는 ios, android에 각각 추가해줘야했음)
+    // Auth 도메인의 OAuth 설정을 사용
     final googleConfig = OAuthConfig.getProviderConfig('GOOGLE');
-    final String serverClientId = "1016804314663-ji2taqsu14c3sqfg0u60jfni9shg3dja.apps.googleusercontent.com";
+    if (googleConfig == null) {
+      throw ArgumentError('Google OAuth 설정을 찾을 수 없습니다.');
+    }
 
     await GoogleSignIn.instance.initialize(
-      clientId: "1016804314663-31vke1m4f00tspni83e19cghoed4j4ns.apps.googleusercontent.com",
-      serverClientId: serverClientId,
+      clientId: googleConfig.clientId,
+      serverClientId: googleConfig.serverClientId,
     );
 
     _isInitialized = true;
@@ -37,10 +39,11 @@ class GoogleAuthProvider implements OAuthProvider {
     try {
       await _ensureInitialized();
 
+      final googleConfig = OAuthConfig.getProviderConfig('GOOGLE');
+      final scopes = googleConfig?.scope.split(' ') ?? ['email', 'profile'];
+      
       final GoogleSignInServerAuthorization? serverAuth =
-          await GoogleSignIn.instance.authorizationClient.authorizeServer(
-        const <String>['email', 'profile'],
-      );
+          await GoogleSignIn.instance.authorizationClient.authorizeServer(scopes);
 
       final String? authorizationCode = serverAuth?.serverAuthCode;
       if (authorizationCode == null) {
