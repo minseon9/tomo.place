@@ -5,14 +5,15 @@ import '../../shared/infrastructure/network/api_client.dart';
 import '../../shared/infrastructure/storage/token_storage_service.dart';
 import '../../shared/config/app_config.dart';
 
-// Domain layer imports
-import '../../domains/auth/domain/repositories/auth_repository.dart';
+// Core layer imports (Domain)
+import '../../domains/auth/core/repositories/auth_repository.dart';
+import '../../domains/auth/core/usecases/login_with_social_usecase.dart';
+import '../../domains/auth/core/usecases/logout_usecase.dart';
+import '../../domains/auth/core/usecases/refresh_token_usecase.dart';
+import '../../domains/auth/core/usecases/check_auth_status_usecase.dart';
 
-// Data layer imports
-import '../../domains/auth/data/repositories/auth_repository_impl.dart';
-
-// Service layer imports
-import '../../domains/auth/services/auth_service.dart';
+// Infrastructure layer imports
+import '../../domains/auth/infrastructure/repositories/auth_repository_impl.dart';
 
 // Presentation layer imports
 import '../../domains/auth/presentation/controllers/auth_controller.dart';
@@ -26,7 +27,7 @@ final GetIt sl = GetIt.instance;
 /// 의존성 초기화
 /// 
 /// 앱 시작 시 호출되어 모든 의존성을 등록합니다.
-/// 개선된 아키텍처에 따라 등록 순서: Shared Infrastructure → Data → Service → Presentation
+/// Clean Architecture에 따른 등록 순서: Shared Infrastructure → Infrastructure → Core → Presentation
 Future<void> initializeDependencies() async {
   // ===== Shared Infrastructure =====
   // 앱 설정 초기화
@@ -36,17 +37,35 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton<ApiClient>(() => ApiClient());
   sl.registerLazySingleton<TokenStorageService>(() => TokenStorageService());
   
-  // ===== Data Layer =====
+  // ===== Infrastructure Layer =====
+  // Repository 구현체들
   sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(sl()));
   
-  // ===== Service Layer =====
-  sl.registerLazySingleton<AuthService>(() => AuthService(
+  // ===== Core Layer (UseCases) =====
+  // 각 UseCase들은 필요한 의존성을 주입받아 등록
+  sl.registerLazySingleton<LoginWithSocialUseCase>(() => LoginWithSocialUseCase(
     repository: sl(),
     tokenStorage: sl(),
   ));
   
+  sl.registerLazySingleton<LogoutUseCase>(() => LogoutUseCase(
+    repository: sl(),
+    tokenStorage: sl(),
+  ));
+  
+  sl.registerLazySingleton<RefreshTokenUseCase>(() => RefreshTokenUseCase(
+    repository: sl(),
+    tokenStorage: sl(),
+  ));
+  
+  sl.registerLazySingleton<CheckAuthStatusUseCase>(() => CheckAuthStatusUseCase(
+    tokenStorage: sl(),
+  ));
+  
   // ===== Presentation Layer =====
+  // Controller는 UseCase들을 주입받아 등록
   sl.registerFactory<AuthController>(() => AuthController(
-    authService: sl(),
+    loginWithSocialUseCase: sl(),
+    logoutUseCase: sl(),
   ));
 }

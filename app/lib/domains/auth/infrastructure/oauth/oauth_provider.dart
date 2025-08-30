@@ -32,10 +32,6 @@ abstract class OAuthProvider {
   /// 현재 로그인된 사용자를 로그아웃시킵니다.
   Future<void> signOut();
   
-  /// Provider와의 연결을 완전히 해제합니다.
-  /// 로그아웃과 달리 계정 연결 자체를 해제합니다.
-  Future<void> disconnect();
-  
   /// Provider 사용 전 필요한 초기화 작업을 수행합니다.
   /// 대부분의 Provider는 자동으로 초기화되므로 기본 구현은 빈 메서드입니다.
   Future<void> initialize() async {

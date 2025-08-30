@@ -7,5 +7,3 @@ enum SocialProvider {
   const SocialProvider(this.code);
   final String code;
 }
-
-

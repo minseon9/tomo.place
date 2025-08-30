@@ -1,4 +1,4 @@
-import '../../consts/social_provider.dart';
+import '../../core/entities/social_provider.dart';
 import 'oauth_provider.dart';
 import 'providers/google_auth_provider.dart';
 

@@ -83,20 +83,6 @@ class GoogleAuthProvider implements OAuthProvider {
   }
 
   @override
-  Future<void> disconnect() async {
-    try {
-      await _ensureInitialized();
-      await GoogleSignIn.instance.disconnect();
-    } catch (error) {
-      throw OAuthException.unknown(
-        message: error.toString(),
-        provider: providerId,
-        originalError: error,
-      );
-    }
-  }
-
-  @override
   Future<void> initialize() async {
     await _ensureInitialized();
   }

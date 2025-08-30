@@ -1,21 +1,25 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../core/entities/social_provider.dart';
+import '../../core/usecases/login_with_social_usecase.dart';
+import '../../core/usecases/logout_usecase.dart';
 import '../models/login_response.dart';
-import '../../services/auth_service.dart';
-import '../../consts/social_provider.dart';
 
 class AuthController extends Cubit<AuthState> {
   AuthController({
-    required AuthService authService,
-  }) : _authService = authService,
+    required LoginWithSocialUseCase loginWithSocialUseCase,
+    required LogoutUseCase logoutUseCase,
+  }) : _loginWithSocialUseCase = loginWithSocialUseCase,
+       _logoutUseCase = logoutUseCase,
        super(const AuthInitial());
 
-  final AuthService _authService;
+  final LoginWithSocialUseCase _loginWithSocialUseCase;
+  final LogoutUseCase _logoutUseCase;
 
   Future<void> signupWithProvider(SocialProvider provider) async {
     await _performSocialAuth(
-      authMethod: () => _authService.signupWithProvider(provider),
+      authMethod: () => _loginWithSocialUseCase.execute(provider),
       provider: provider,
     );
   }
@@ -50,7 +54,7 @@ class AuthController extends Cubit<AuthState> {
     try {
       emit(const AuthLoading());
       
-      await _authService.logout();
+      await _logoutUseCase.execute();
       
       emit(const AuthInitial());
     } catch (e) {
