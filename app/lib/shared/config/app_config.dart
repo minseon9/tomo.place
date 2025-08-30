@@ -1,28 +1,26 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'env_config.dart';
 
 /// 앱 설정 관리 클래스
 /// 
-/// 환경별 설정을 관리하며, 런타임에 설정을 업데이트할 수 있습니다.
-/// 보안이 중요한 설정은 서버에서 동적으로 제공받습니다.
+/// 환경별 공통 설정을 관리하며, 런타임에 설정을 업데이트할 수 있습니다.
+/// OAuth 관련 설정은 auth 도메인에서 별도로 관리합니다.
 class AppConfig {
   static const String _configKey = 'app_config';
   
-  // 기본값 (개발 환경)
-  static const String _defaultApiUrl = 'http://127.0.0.1:8080';
-  static const String _defaultOAuthRedirectUri = 'http://localhost:8080/api/auth/social-login';
-  
   // 런타임 설정 (서버에서 업데이트 가능)
   static String? _apiUrl;
-  static String? _oauthClientId;
-  static String? _oauthRedirectUri;
   
   /// 초기화
   static Future<void> initialize() async {
-    // 1. 로컬 저장소에서 설정 로드
+    // 1. 환경 설정 로드 (.env 파일)
+    await EnvConfig.initialize();
+    
+    // 2. 로컬 저장소에서 설정 로드
     await _loadFromLocal();
     
-    // 2. 서버에서 최신 설정 가져오기 (선택적)
+    // 3. 서버에서 최신 설정 가져오기 (선택적)
     await _loadFromServer();
   }
   
@@ -35,8 +33,6 @@ class AppConfig {
       if (configJson != null) {
         final config = jsonDecode(configJson) as Map<String, dynamic>;
         _apiUrl = config['api_url'] as String?;
-        _oauthClientId = config['oauth_client_id'] as String?;
-        _oauthRedirectUri = config['oauth_redirect_uri'] as String?;
       }
     } catch (e) {
       // 로컬 설정 로드 실패 시 기본값 사용
@@ -68,29 +64,19 @@ class AppConfig {
   }
   
   /// API URL 조회
-  static String get apiUrl => _apiUrl ?? _defaultApiUrl;
-  
-  /// OAuth Client ID 조회
-  static String? get oauthClientId => _oauthClientId;
-  
-  /// OAuth Redirect URI 조회
-  static String get oauthRedirectUri => _oauthRedirectUri ?? _defaultOAuthRedirectUri;
+  /// 
+  /// 우선순위: 런타임 설정 > .env 파일 > 기본값
+  static String get apiUrl => _apiUrl ?? EnvConfig.apiUrl;
   
   /// 설정 업데이트
   static Future<void> updateConfig({
     String? apiUrl,
-    String? oauthClientId,
-    String? oauthRedirectUri,
   }) async {
     if (apiUrl != null) _apiUrl = apiUrl;
-    if (oauthClientId != null) _oauthClientId = oauthClientId;
-    if (oauthRedirectUri != null) _oauthRedirectUri = oauthRedirectUri;
     
     // 로컬에 저장
     await _saveToLocal({
       'api_url': _apiUrl,
-      'oauth_client_id': _oauthClientId,
-      'oauth_redirect_uri': _oauthRedirectUri,
     });
   }
 }
