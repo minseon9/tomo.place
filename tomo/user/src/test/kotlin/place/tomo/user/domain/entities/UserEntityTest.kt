@@ -21,14 +21,11 @@ class UserEntityTest {
             val user =
                 UserEntity.create(
                     email = "user@example.com",
-                    password = HashedPassword("hashed"),
                     username = "Tomo",
-                    status = UserStatus.ACTIVATED,
                 )
 
             assertThat(user).isNotNull()
             assertThat(user.email).isEqualTo("user@example.com")
-            assertThat(user.password.value).isEqualTo("hashed")
             assertThat(user.username).isEqualTo("Tomo")
             assertThat(user.status).isEqualTo(UserStatus.ACTIVATED)
         }
@@ -39,7 +36,6 @@ class UserEntityTest {
             assertThatThrownBy {
                 UserEntity.create(
                     email = "invalid-email",
-                    password = HashedPassword("hashed"),
                     username = "Tomo",
                 )
             }.isInstanceOf(InvalidEmailException::class.java)
@@ -53,7 +49,6 @@ class UserEntityTest {
             assertThatThrownBy {
                 UserEntity.create(
                     email = "user@example.com",
-                    password = HashedPassword("hashed"),
                     username = "",
                 )
             }.isInstanceOf(InvalidUsernameException::class.java)

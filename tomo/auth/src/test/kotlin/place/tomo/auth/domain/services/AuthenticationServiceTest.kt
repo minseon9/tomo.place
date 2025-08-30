@@ -3,7 +3,6 @@ package place.tomo.auth.domain.services
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
@@ -11,13 +10,8 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
-import org.springframework.security.authentication.AuthenticationManager
-import org.springframework.security.authentication.BadCredentialsException
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.Authentication
 import place.tomo.auth.domain.dtos.AuthTokenDTO
 import place.tomo.auth.domain.dtos.oidc.OIDCUserInfo
-import place.tomo.auth.domain.exception.AuthenticationFailedException
 import place.tomo.auth.domain.exception.SocialAccountNotLinkedException
 import place.tomo.auth.domain.services.oidc.OIDCProvider
 import place.tomo.auth.domain.services.oidc.OIDCProviderFactory
@@ -25,7 +19,6 @@ import place.tomo.contract.constant.OIDCProviderType
 
 @DisplayName("AuthenticationService")
 class AuthenticationServiceTest {
-    private lateinit var authenticationManager: AuthenticationManager
     private lateinit var socialAccountService: SocialAccountDomainService
     private lateinit var oidcProviderFactory: OIDCProviderFactory
     private lateinit var jwtTokenProvider: JwtProvider
@@ -33,38 +26,10 @@ class AuthenticationServiceTest {
 
     @BeforeEach
     fun setUp() {
-        authenticationManager = mockk()
         socialAccountService = mockk()
         oidcProviderFactory = mockk()
         jwtTokenProvider = mockk()
-        service = AuthenticationService(authenticationManager, socialAccountService, jwtTokenProvider, oidcProviderFactory)
-    }
-
-    @Nested
-    @DisplayName("이메일/비밀번호 인증")
-    inner class EmailPasswordAuth {
-        @Test
-        @DisplayName("유효한 이메일/비밀번호로 인증 성공 시 Access/Refresh 토큰을 발급한다")
-        fun `authenticate email password when credentials valid expect access and refresh issued`() {
-            val auth: Authentication = UsernamePasswordAuthenticationToken("user@example.com", "", emptyList())
-            every { authenticationManager.authenticate(any()) } returns auth
-            every { jwtTokenProvider.issueAccessToken("user@example.com") } returns "access"
-            every { jwtTokenProvider.issueRefreshToken("user@example.com") } returns "refresh"
-
-            val token: AuthTokenDTO = service.authenticateEmailPassword("user@example.com", "secret")
-
-            assertThat(token).isEqualTo(AuthTokenDTO("access", "refresh"))
-            verify { authenticationManager.authenticate(any()) }
-        }
-
-        @Test
-        @DisplayName("잘못된 이메일/비밀번호로 인증 실패 시 예외를 전달한다")
-        fun `authenticate email password when credentials invalid expect throws`() {
-            every { authenticationManager.authenticate(any()) } throws BadCredentialsException("bad")
-
-            assertThatThrownBy { service.authenticateEmailPassword("user@example.com", "bad") }
-                .isInstanceOf(AuthenticationFailedException::class.java)
-        }
+        service = AuthenticationService(socialAccountService, jwtTokenProvider, oidcProviderFactory)
     }
 
     @Nested

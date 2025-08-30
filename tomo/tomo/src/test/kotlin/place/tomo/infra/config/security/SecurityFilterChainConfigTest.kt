@@ -29,10 +29,8 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.context.WebApplicationContext
-import place.tomo.auth.application.services.CustomUserDetailsService
 import place.tomo.auth.domain.services.JwtProvider
 import place.tomo.auth.ui.controllers.AuthController
-import place.tomo.auth.ui.controllers.OIDCController
 
 @RestController
 class DummyController {
@@ -43,16 +41,13 @@ class DummyController {
     fun needAuthenticationGet() {}
 
     @PostMapping(
-        "/api/auth/login",
         "/api/auth/signup",
-        "/api/oidc/login",
-        "/api/oidc/signup",
     )
     fun postAllAllowed() {}
 }
 
 @WebMvcTest(
-    controllers = [DummyController::class, AuthController::class, OIDCController::class],
+    controllers = [DummyController::class, AuthController::class, AuthController::class],
     excludeAutoConfiguration = [
         HibernateJpaAutoConfiguration::class,
         JpaRepositoriesAutoConfiguration::class,
@@ -78,10 +73,7 @@ class SecurityFilterChainConfigTest {
 
     private val publicPostEndpoints =
         arrayOf(
-            "/api/auth/login",
             "/api/auth/signup",
-            "/api/oidc/login",
-            "/api/oidc/signup",
         )
 
     @BeforeEach
@@ -113,10 +105,6 @@ class SecurityFilterChainConfigTest {
             val securityFilterChain = applicationContext.getBean(SecurityFilterChain::class.java)
             assertThat(securityFilterChain).isNotNull()
             assertThat(securityFilterChain).isInstanceOf(SecurityFilterChain::class.java)
-
-            val userDetailsService = applicationContext.getBean(UserDetailsService::class.java)
-            assertThat(userDetailsService).isNotNull()
-            assertThat(userDetailsService).isInstanceOf(CustomUserDetailsService::class.java)
         }
     }
 
