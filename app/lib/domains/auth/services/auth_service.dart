@@ -4,6 +4,7 @@ import '../../../../shared/infrastructure/storage/token_storage_service.dart';
 import '../../../../shared/infrastructure/external_services/oauth_provider_registry.dart';
 import '../../../../shared/infrastructure/external_services/oauth_models.dart';
 import '../consts/social_provider.dart';
+import '../../../../shared/exceptions/oauth_exception.dart';
 
 class AuthService {
   final AuthRepository _repository;
@@ -24,7 +25,11 @@ class AuthService {
       final oauthResult = await oauthProvider.signIn();
       
       if (!oauthResult.success) {
-        throw AuthException('OAuth 인증 실패: ${oauthResult.error}');
+        throw OAuthException.authenticationFailed(
+          message: 'OAuth authentication failed: ${oauthResult.error}',
+          provider: provider.code,
+          errorCode: oauthResult.errorCode,
+        );
       }
       
       final responseData = await _repository.authenticate(
@@ -41,7 +46,17 @@ class AuthService {
       
       return loginResponse;
     } catch (e) {
-      throw AuthException('${provider.code} 인증에 실패했습니다: ${e.toString()}');
+      // 이미 OAuthException인 경우 그대로 re-throw
+      if (e is OAuthException) {
+        rethrow;
+      }
+      
+      // 다른 예외는 OAuthException으로 래핑
+      throw OAuthException.unknown(
+        message: '${provider.code} authentication failed: ${e.toString()}',
+        provider: provider.code,
+        originalError: e,
+      );
     }
   }
 

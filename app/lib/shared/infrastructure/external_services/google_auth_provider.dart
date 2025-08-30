@@ -2,6 +2,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:app/shared/config/oauth_config.dart';
 import 'oauth_provider.dart';
 import 'oauth_models.dart';
+import '../../exceptions/oauth_exception.dart';
 
 class GoogleAuthProvider implements OAuthProvider {
   static bool _isInitialized = false;
@@ -56,14 +57,13 @@ class GoogleAuthProvider implements OAuthProvider {
       // 에러 타입에 따른 분기 처리
       if (error.toString().contains('network')) {
         throw OAuthException.networkError(
-          message: '네트워크 오류가 발생했습니다.',
+          message: 'Google Sign-In network error: $error',
           provider: providerId,
           originalError: error,
         );
       } else if (error.toString().contains('cancelled')) {
         throw OAuthException.userCancelled(
           provider: providerId,
-          originalError: error,
         );
       } else {
         throw OAuthException.unknown(

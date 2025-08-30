@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 import '../../config/app_config.dart';
+import '../../exceptions/network_exception.dart';
+import '../../exceptions/server_exception.dart';
 
 /// 공통 API 클라이언트
 /// 
@@ -72,33 +74,40 @@ class ApiClient {
     }
   }
   
-  /// DioException을 ApiException으로 변환
-  ApiException _handleDioException(DioException e) {
+  /// DioException을 적절한 예외로 변환
+  Exception _handleDioException(DioException e) {
     switch (e.type) {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
+        return NetworkException.connectionTimeout();
       case DioExceptionType.receiveTimeout:
-        return ApiException('네트워크 연결 시간이 초과되었습니다.', statusCode: 408);
+        return NetworkException.receiveTimeout();
       case DioExceptionType.badResponse:
-        return ApiException(
-          '서버 오류가 발생했습니다: ${e.response?.statusCode}',
-          statusCode: e.response?.statusCode,
-        );
+        final statusCode = e.response?.statusCode;
+        final message = e.response?.data?.toString() ?? e.message ?? 'Unknown error';
+        if (statusCode != null) {
+          return ServerException.fromStatusCode(
+            statusCode: statusCode,
+            message: message,
+          );
+        } else {
+          return NetworkException(
+            'Bad response: $message',
+            userMessage: '서버 응답 오류가 발생했습니다.',
+          );
+        }
       case DioExceptionType.cancel:
-        return ApiException('요청이 취소되었습니다.');
+        return NetworkException(
+          'Request cancelled: ${e.message}',
+          userMessage: '요청이 취소되었습니다.',
+        );
+      case DioExceptionType.connectionError:
+        return NetworkException.noConnection();
       default:
-        return ApiException('네트워크 오류가 발생했습니다: ${e.message}');
+        return NetworkException(
+          'Network error: ${e.message}',
+          userMessage: '네트워크 오류가 발생했습니다.',
+        );
     }
   }
-}
-
-/// API 예외 클래스
-class ApiException implements Exception {
-  final String message;
-  final int? statusCode;
-  
-  const ApiException(this.message, {this.statusCode});
-  
-  @override
-  String toString() => 'ApiException: $message${statusCode != null ? ' (status: $statusCode)' : ''}';
 }
