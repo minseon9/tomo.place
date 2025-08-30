@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../shared/design_system/tokens/colors.dart';
 import '../../../../shared/design_system/tokens/spacing.dart';
+import '../../../../shared/widgets/error_dialog.dart';
 import '../../consts/social_label_variant.dart';
 import '../controllers/auth_controller.dart';
 import '../widgets/social_login_section.dart';
@@ -52,29 +53,16 @@ class _SignupPageState extends State<SignupPage> {
       // 토큰은 이미 AuthService에서 저장되었으므로 바로 이동
       Navigator.of(context).pushReplacementNamed('/home');
     } else if (state is AuthFailure) {
-      // 인증 실패 시 에러 메시지 표시
-      _showErrorSnackBar(context, state.message);
+      // 인증 실패 시 에러 다이얼로그 표시
+      ErrorDialog.show(
+        context: context,
+        exception: state.exception,
+        onDismiss: () => context.read<AuthController>().clearError(),
+      );
     }
   }
 
-  /// 에러 메시지 스낵바 표시
-  void _showErrorSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: DesignTokens.error,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        action: SnackBarAction(
-          label: '확인',
-          textColor: Colors.white,
-          onPressed: () => context.read<AuthController>().clearError(),
-        ),
-      ),
-    );
-  }
+
 }
 
 class _SignupPageContent extends StatelessWidget {

@@ -4,6 +4,7 @@ import 'package:equatable/equatable.dart';
 import '../models/login_response.dart';
 import '../../services/auth_service.dart';
 import '../../consts/social_provider.dart';
+import '../../../../shared/exceptions/oauth_exception.dart';
 
 class AuthController extends Cubit<AuthState> {
   AuthController({
@@ -31,12 +32,17 @@ class AuthController extends Cubit<AuthState> {
       
       emit(AuthSuccess(loginResponse: loginResponse));
     } catch (e) {
-      emit(AuthFailure(
-        message: '${provider.code} 인증에 실패했습니다: ${e.toString()}',
-        provider: provider.code,
-      ));
+      // Log the exception for debugging
+      print('Auth error: $e');
       
-      // TODO: 팝업 메시지 표시 로직 추가
+      // Don't treat UserCancelled as an error
+      if (e is OAuthException && e.message.contains('cancelled')) {
+        emit(const AuthInitial()); // Return to initial state
+        return;
+      }
+      
+      // For other errors, emit failure state
+      emit(AuthFailure(exception: e as Exception));
     }
   }
 
@@ -49,9 +55,7 @@ class AuthController extends Cubit<AuthState> {
       
       emit(const AuthInitial());
     } catch (e) {
-      emit(AuthFailure(
-        message: '로그아웃에 실패했습니다: ${e.toString()}',
-      ));
+      emit(AuthFailure(exception: e as Exception));
     }
   }
 
@@ -93,16 +97,10 @@ class AuthSuccess extends AuthState {
 
 /// 인증 실패 상태
 class AuthFailure extends AuthState {
-  const AuthFailure({
-    required this.message,
-    this.provider,
-    this.code,
-  });
+  const AuthFailure({required this.exception});
 
-  final String message;
-  final String? provider;
-  final String? code;
+  final Exception exception;
 
   @override
-  List<Object?> get props => [message, provider, code];
+  List<Object> get props => [exception];
 }
