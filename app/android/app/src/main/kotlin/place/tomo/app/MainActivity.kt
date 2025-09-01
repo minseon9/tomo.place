@@ -1,4 +1,4 @@
-package tomo.place.app
+package place.tomo.app
 
 import io.flutter.embedding.android.FlutterActivity
 
