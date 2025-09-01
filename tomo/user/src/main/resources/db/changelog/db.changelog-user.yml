@@ -1,3 +1,5 @@
 databaseChangeLog:
 - include:
     file: migrations/1754875217375-change-changelog-user.yml
+- include:
+    file: migrations/1756385599740-change-changelog-user.yml

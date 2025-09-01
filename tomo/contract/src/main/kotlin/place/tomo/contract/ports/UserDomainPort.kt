@@ -6,15 +6,8 @@ import place.tomo.contract.vo.UserId
 interface UserDomainPort {
     fun findActiveByEmail(email: String): UserInfoDTO?
 
-    fun create(
+    fun getOrCreateActiveUser(
         email: String,
-        rawPassword: String,
-        name: String?,
-    ): UserInfoDTO
-
-    fun getOrCreate(
-        email: String,
-        rawPassword: String,
         name: String?,
     ): UserInfoDTO
 

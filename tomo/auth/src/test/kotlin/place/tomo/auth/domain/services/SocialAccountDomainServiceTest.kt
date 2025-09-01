@@ -173,7 +173,7 @@ class SocialAccountDomainServiceTest {
     }
 
     private fun createLinkSocialAccountCommand(email: String): LinkSocialAccountCommand {
-        val userInfo = UserInfoDTO(1, email, faker.internet().password(), faker.name().username())
+        val userInfo = UserInfoDTO(1, email, faker.name().username())
 
         return LinkSocialAccountCommand(
             userInfo,

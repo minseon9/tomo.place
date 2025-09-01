@@ -58,6 +58,7 @@ subprojects {
         implementation(libs.bundles.spring.boot.core)
         implementation(libs.bundles.spring.boot.web.services)
         implementation(libs.bundles.spring.boot.data)
+        implementation(libs.bundles.api.docs)
         runtimeOnly(libs.postgresql)
 
         testImplementation(libs.bundles.testing.core)
