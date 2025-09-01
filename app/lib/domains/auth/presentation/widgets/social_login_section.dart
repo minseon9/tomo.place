@@ -2,56 +2,45 @@ import 'package:flutter/material.dart';
 
 import '../../../../shared/design_system/tokens/spacing.dart';
 import '../../consts/social_label_variant.dart';
-import '../../consts/social_provider.dart';
+import '../../core/entities/social_provider.dart';
 import 'social_login_button.dart';
 
 class SocialLoginSection extends StatelessWidget {
   const SocialLoginSection({
     super.key,
-    this.includeEmail = false,
     this.labelVariant = SocialLabelVariant.signup,
-    this.onKakaoPressed,
-    this.onApplePressed,
-    this.onGooglePressed,
-    this.onEmailPressed,
+    this.onProviderPressed,
   });
 
-  final bool includeEmail;
   final SocialLabelVariant labelVariant;
-  final VoidCallback? onKakaoPressed;
-  final VoidCallback? onApplePressed;
-  final VoidCallback? onGooglePressed;
-  final VoidCallback? onEmailPressed;
+  final void Function(SocialProvider provider)? onProviderPressed;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
+        // Kakao 로그인 (비활성화)
         SocialLoginButton(
           provider: SocialProvider.kakao,
-          onPressed: onKakaoPressed,
+          onPressed: null, // 비활성화
           labelVariant: labelVariant,
         ),
         const SizedBox(height: AppSpacing.md),
+        // Apple 로그인 (비활성화)
         SocialLoginButton(
           provider: SocialProvider.apple,
-          onPressed: onApplePressed,
+          onPressed: null, // 비활성화
           labelVariant: labelVariant,
         ),
         const SizedBox(height: AppSpacing.md),
+        // Google 로그인 (활성화)
         SocialLoginButton(
           provider: SocialProvider.google,
-          onPressed: onGooglePressed,
+          onPressed: onProviderPressed != null 
+              ? () => onProviderPressed!(SocialProvider.google)
+              : null,
           labelVariant: labelVariant,
         ),
-        if (includeEmail) ...[
-          const SizedBox(height: AppSpacing.md),
-          SocialLoginButton(
-            provider: SocialProvider.email,
-            onPressed: onEmailPressed,
-            labelVariant: labelVariant,
-          ),
-        ],
       ],
     );
   }

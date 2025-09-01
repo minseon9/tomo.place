@@ -1,19 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
-import '../controllers/auth_controller.dart';
-import '../widgets/social_login_section.dart';
-import '../widgets/signup_bottom_links_group.dart';
 import '../../../../shared/design_system/tokens/colors.dart';
 import '../../../../shared/design_system/tokens/spacing.dart';
+import '../../../../shared/widgets/error_dialog.dart';
 import '../../consts/social_label_variant.dart';
+import '../controllers/auth_controller.dart';
+import '../widgets/social_login_section.dart';
 
-/// 회원가입 화면
+/// 통합된 인증 화면
 /// 
-/// 피그마 디자인에 맞게 단순화된 회원가입 화면입니다.
-class SignupPage extends StatelessWidget {
+/// 로그인과 회원가입을 하나의 페이지에서 처리하는 통합된 인증 화면입니다.
+/// OIDC 기반 소셜 로그인만 지원하며, 이메일 인증은 제거되었습니다.
+class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
+
+  @override
+  State<SignupPage> createState() => _SignupPageState();
+}
+
+class _SignupPageState extends State<SignupPage> {
+  bool _isSignupMode = true;
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +32,14 @@ class SignupPage extends StatelessWidget {
             _handleStateChange(context, state);
           },
           builder: (context, state) {
-            return const _SignupPageContent();
+            return _SignupPageContent(
+              isSignupMode: _isSignupMode,
+              onToggleMode: () {
+                setState(() {
+                  _isSignupMode = !_isSignupMode;
+                });
+              },
+            );
           },
         ),
       ),
@@ -35,37 +49,30 @@ class SignupPage extends StatelessWidget {
   /// 상태 변화에 따른 UI 처리
   void _handleStateChange(BuildContext context, AuthState state) {
     if (state is AuthSuccess) {
-      // 회원가입 성공 시 홈 화면으로 이동
-      context.go('/home');
+      // 인증 성공 시 홈 화면으로 이동
+      // 토큰은 이미 AuthService에서 저장되었으므로 바로 이동
+      Navigator.of(context).pushReplacementNamed('/home');
     } else if (state is AuthFailure) {
-      // 회원가입 실패 시 에러 메시지 표시
-      _showErrorSnackBar(context, state.message);
+      // 인증 실패 시 에러 다이얼로그 표시
+      ErrorDialog.show(
+        context: context,
+        exception: state.exception,
+        onDismiss: () => context.read<AuthController>().clearError(),
+      );
     }
   }
 
-  /// 에러 메시지 스낵바 표시
-  void _showErrorSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: DesignTokens.error,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        action: SnackBarAction(
-          label: '확인',
-          textColor: Colors.white,
-          onPressed: () => context.read<AuthController>().clearError(),
-        ),
-      ),
-    );
-  }
+
 }
 
-/// 회원가입 페이지 콘텐츠
 class _SignupPageContent extends StatelessWidget {
-  const _SignupPageContent();
+  const _SignupPageContent({
+    required this.isSignupMode,
+    required this.onToggleMode,
+  });
+
+  final bool isSignupMode;
+  final VoidCallback onToggleMode;
 
   @override
   Widget build(BuildContext context) {
@@ -74,24 +81,20 @@ class _SignupPageContent extends StatelessWidget {
       child: Column(
         children: [
           const Spacer(),
-          // 좌우 중앙 정렬을 위한 Center 위젯
           Center(
-            child: SocialLoginSection(
-              includeEmail: true,
-              labelVariant: SocialLabelVariant.signup,
-              onKakaoPressed: () => context.read<AuthController>().signupWithKakao(),
-              onApplePressed: () => context.read<AuthController>().signupWithApple(),
-              onGooglePressed: () => context.read<AuthController>().signupWithGoogle(),
-              onEmailPressed: () => context.push('/email-signup'),
+            child: Column(
+              children: [
+                SocialLoginSection(
+                  labelVariant: isSignupMode 
+                      ? SocialLabelVariant.signup 
+                      : SocialLabelVariant.login,
+                  onProviderPressed: (provider) => 
+                      context.read<AuthController>().signupWithProvider(provider),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
-          // 좌우 중앙 정렬을 위한 Center 위젯
-          Center(
-            child: SignupBottomLinksGroup(
-              onEmailLogin: () => context.go('/login'),
-            ),
-          ),
           const SizedBox(height: AppSpacing.lg),
         ],
       ),

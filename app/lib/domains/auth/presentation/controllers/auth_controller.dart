@@ -1,152 +1,52 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../domain/entities/user.dart';
-import '../../domain/usecases/authenticate_with_social.dart';
-import '../../../social_login/domain/usecases/kakao_login.dart';
-import '../../../social_login/domain/usecases/google_login.dart';
-import '../../../social_login/domain/usecases/apple_login.dart';
+import '../../core/entities/social_provider.dart';
+import '../../core/usecases/login_with_social_usecase.dart';
+import '../../core/usecases/logout_usecase.dart';
+import '../models/login_response.dart';
 
-/// 인증 상태 관리를 위한 Cubit
-/// 
-/// UI와 비즈니스 로직을 연결하는 Presentation Layer의 컨트롤러입니다.
-/// 순수한 상태 관리만 담당하며, 비즈니스 로직은 UseCase에 위임합니다.
 class AuthController extends Cubit<AuthState> {
   AuthController({
-    required KakaoLoginUseCase kakaoLoginUseCase,
-    required GoogleLoginUseCase googleLoginUseCase,
-    required AppleLoginUseCase appleLoginUseCase,
-    required AuthenticateWithSocialUseCase authenticateUseCase,
-  }) : _kakaoLoginUseCase = kakaoLoginUseCase,
-       _googleLoginUseCase = googleLoginUseCase,
-       _appleLoginUseCase = appleLoginUseCase,
-       _authenticateUseCase = authenticateUseCase,
+    required LoginWithSocialUseCase loginWithSocialUseCase,
+    required LogoutUseCase logoutUseCase,
+  }) : _loginWithSocialUseCase = loginWithSocialUseCase,
+       _logoutUseCase = logoutUseCase,
        super(const AuthInitial());
 
-  final KakaoLoginUseCase _kakaoLoginUseCase;
-  final GoogleLoginUseCase _googleLoginUseCase;
-  final AppleLoginUseCase _appleLoginUseCase;
-  final AuthenticateWithSocialUseCase _authenticateUseCase;
+  final LoginWithSocialUseCase _loginWithSocialUseCase;
+  final LogoutUseCase _logoutUseCase;
 
-  /// 카카오 로그인 실행
-  Future<void> loginWithKakao() async {
-    await _performSocialLogin(
-      socialLoginUseCase: _kakaoLoginUseCase,
-      provider: 'Kakao',
+  Future<void> signupWithProvider(SocialProvider provider) async {
+    await _performSocialAuth(
+      authMethod: () => _loginWithSocialUseCase.execute(provider),
+      provider: provider,
     );
   }
 
-  /// 구글 로그인 실행
-  Future<void> loginWithGoogle() async {
-    await _performSocialLogin(
-      socialLoginUseCase: _googleLoginUseCase,
-      provider: 'Google',
-    );
-  }
-
-  /// 애플 로그인 실행
-  Future<void> loginWithApple() async {
-    await _performSocialLogin(
-      socialLoginUseCase: _appleLoginUseCase,
-      provider: 'Apple',
-    );
-  }
-
-  /// 카카오 회원가입 실행
-  Future<void> signupWithKakao() async {
-    await _performSocialSignup(
-      socialLoginUseCase: _kakaoLoginUseCase,
-      provider: 'Kakao',
-    );
-  }
-
-  /// 구글 회원가입 실행
-  Future<void> signupWithGoogle() async {
-    await _performSocialSignup(
-      socialLoginUseCase: _googleLoginUseCase,
-      provider: 'Google',
-    );
-  }
-
-  /// 애플 회원가입 실행
-  Future<void> signupWithApple() async {
-    await _performSocialSignup(
-      socialLoginUseCase: _appleLoginUseCase,
-      provider: 'Apple',
-    );
-  }
-
-  /// 소셜 로그인 공통 로직
-  Future<void> _performSocialLogin({
-    required Future<dynamic> Function() socialLoginUseCase,
-    required String provider,
+  Future<void> _performSocialAuth({
+    required Future<LoginResponse?> Function() authMethod,
+    required SocialProvider provider,
   }) async {
     try {
       emit(const AuthLoading());
       
-      // 1단계: 소셜 로그인으로 계정 정보 획득
-      final socialAccount = await socialLoginUseCase();
+      final loginResponse = await authMethod();
       
-      // 2단계: 소셜 계정 정보로 서버 인증
-      final user = await _authenticateUseCase(socialAccount);
+      // 사용자가 취소한 경우 (loginResponse가 null)
+      if (loginResponse == null) {
+        emit(const AuthInitial()); // Return to initial state
+        return;
+      }
       
-      emit(AuthSuccess(user: user));
+      emit(AuthSuccess(loginResponse: loginResponse));
     } catch (e) {
-      emit(AuthFailure(
-        message: '$provider 로그인에 실패했습니다: ${e.toString()}',
-        provider: provider.toLowerCase(),
-      ));
+      // Log the exception for debugging
+      print('Auth error: $e');
+      
+      // For errors, emit failure state
+      emit(AuthFailure(exception: e as Exception));
     }
-  }
-
-  /// 소셜 회원가입 공통 로직
-  Future<void> _performSocialSignup({
-    required Future<dynamic> Function() socialLoginUseCase,
-    required String provider,
-  }) async {
-    try {
-      emit(const AuthLoading());
-      
-      // 1단계: 소셜 로그인으로 계정 정보 획득
-      final socialAccount = await socialLoginUseCase();
-      
-      // 2단계: 소셜 계정 정보로 서버 회원가입 및 인증
-      // TODO: 회원가입 UseCase 구현 후 연결
-      final user = await _authenticateUseCase(socialAccount);
-      
-      emit(AuthSuccess(user: user));
-    } catch (e) {
-      emit(AuthFailure(
-        message: '$provider 회원가입에 실패했습니다: ${e.toString()}',
-        provider: provider.toLowerCase(),
-      ));
-    }
-  }
-
-  /// 이메일 로그인 (추후 구현)
-  Future<void> loginWithEmail(String email, String password) async {
-    emit(const AuthLoading());
-    
-    // TODO: 이메일 로그인 UseCase 구현 후 연결
-    await Future.delayed(const Duration(seconds: 1));
-    
-    emit(const AuthFailure(
-      message: '이메일 로그인은 아직 구현되지 않았습니다.',
-      provider: 'email',
-    ));
-  }
-
-  /// 이메일 회원가입 (추후 구현)
-  Future<void> signupWithEmail(String email, String password) async {
-    emit(const AuthLoading());
-    
-    // TODO: 이메일 회원가입 UseCase 구현 후 연결
-    await Future.delayed(const Duration(seconds: 1));
-    
-    emit(const AuthFailure(
-      message: '이메일 회원가입은 아직 구현되지 않았습니다.',
-      provider: 'email',
-    ));
   }
 
   /// 로그아웃
@@ -154,14 +54,11 @@ class AuthController extends Cubit<AuthState> {
     try {
       emit(const AuthLoading());
       
-      // TODO: 로그아웃 UseCase 구현 후 연결
-      await Future.delayed(const Duration(milliseconds: 500));
+      await _logoutUseCase.execute();
       
       emit(const AuthInitial());
     } catch (e) {
-      emit(AuthFailure(
-        message: '로그아웃에 실패했습니다: ${e.toString()}',
-      ));
+      emit(AuthFailure(exception: e as Exception));
     }
   }
 
@@ -193,26 +90,20 @@ class AuthLoading extends AuthState {
 
 /// 인증 성공 상태
 class AuthSuccess extends AuthState {
-  const AuthSuccess({required this.user});
+  const AuthSuccess({required this.loginResponse});
 
-  final User user;
+  final LoginResponse loginResponse;
 
   @override
-  List<Object> get props => [user];
+  List<Object> get props => [loginResponse];
 }
 
 /// 인증 실패 상태
 class AuthFailure extends AuthState {
-  const AuthFailure({
-    required this.message,
-    this.provider,
-    this.code,
-  });
+  const AuthFailure({required this.exception});
 
-  final String message;
-  final String? provider;
-  final String? code;
+  final Exception exception;
 
   @override
-  List<Object?> get props => [message, provider, code];
+  List<Object> get props => [exception];
 }

@@ -1,124 +1,388 @@
-# 토모플레이스 (Tomo.Place) Flutter App
+# Tomo.place
 
-> “누가 읽어도 구조와 규칙이 한눈에 보이는” 아키텍처 문서
+Flutter 기반의 소셜 로그인 앱으로, **Clean Architecture + Domain-Driven Design** 패턴을 적용하여 구조화된 프로젝트입니다.
 
-## 📌 아키텍처 개요
+## 🏗️ 프로젝트 아키텍처
 
-이 프로젝트는 기능(도메인) 중심으로 구조화되며, UI/비즈니스/인프라 의존성을 명확히 분리합니다. 전역 라우팅은 `go_router`를 사용하고, 도메인별 라우트/상수는 각 도메인 내부에서 정의합니다. Design System은 도메인에 독립적이어야 하며, 비즈니스 타입/상수는 각 도메인의 `consts/`에 둡니다.
-
-### 계층과 의존성 규칙
-```
-Presentation (UI, go_router routes)
-          ↓
-Domain (consts, usecases, entities, repositories [interfaces])
-          ↓
-Data (datasources, models, repository impls)
-          ↓
-Infrastructure (framework adapters, storage, network clients)
-```
-- **금지 규칙**
-  - Domain → Presentation 역의존 금지
-  - Design System → Domain 의존 금지(반대는 허용)
-  - Presentation 내부에서 비즈니스 타입/상수 정의 금지(모두 `consts/`로)
-  - 전역 라우터에 개별 페이지 직접 import 금지(가능한 도메인 라우트 조립)
-
-## 📁 디렉터리 구조와 책임
+### Clean Architecture 레이어 구조
 
 ```
-lib/
-├── main.dart                    # 앱 진입점
-├── app/
-│   ├── app.dart                 # MaterialApp.router + 전역 테마
-│   ├── router/                  # go_router 조립(도메인 라우트 합성)
-│   └── di/                      # 의존성 주입(GetIt)
-├── shared/
-│   ├── design_system/           # 도메인-독립 UI(토큰/atoms/molecules)
-│   ├── utils/                   # 순수 유틸리티
-│   └── widgets/                 # 범용 위젯(비즈니스 로직 없음)
-├── domains/
-│   ├── auth/
-│   │   ├── consts/              # enum/상수/경로 등
-│   │   ├── domain/              # 엔티티/유스케이스/레포 인터페이스
-│   │   ├── data/                # 데이터소스/모델/레포 구현체
-│   │   └── presentation/        # 페이지/컨트롤러/도메인 위젯/라우트
-│   └── user_profile/            # (동일한 패턴)
-└── infrastructure/
-    ├── network/                 # dio/retrofit 설정, 인터셉터
-    ├── storage/                 # secure storage, shared pref
-    └── external_services/       # 외부 SDK 래퍼
+🏛️ Clean Architecture (의존성 방향: 안쪽 → 바깥쪽)
+
+┌─────────────────────────────────────────────────────────┐
+│                    Presentation                         │  ← UI Layer
+│  ┌─────────────────────────────────────────────────┐   │
+│  │                 Infrastructure                   │   │  ← External Layer
+│  │  ┌─────────────────────────────────────────────┐ │   │
+│  │  │              Core (Domain)                   │ │   │  ← Business Layer
+│  │  │  • Entities • UseCases • Repositories       │ │   │
+│  │  └─────────────────────────────────────────────┘ │   │
+│  └─────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### 각 디렉터리의 책임
-- **app/**: 앱 전역 부트스트랩. 라우터 조립, 테마, DI
-- **shared/design_system/**: 색/타이포/spacing/버튼 등 “도메인 독립” UI
-- **domains/<feature>/consts/**: enum/상수/경로/키(비즈니스 고정값)
-- **domains/<feature>/domain/**: 엔티티/유스케이스/레포 인터페이스(순수 Dart)
-- **domains/<feature>/data/**: 외부 의존 구현체(dio/SDK/DB)
-- **domains/<feature>/presentation/**: 페이지/위젯/상태(go_router 빌더 포함)
-- **infrastructure/**: 네트워크/저장/외부 서비스 어댑터
-
-### 해야 할 것 / 하지 말아야 할 것(Do / Don’t)
-- **Do**
-  - UI는 도메인 `consts/`와 `domain/`만 참조
-  - 도메인별 라우트를 각 도메인 내부에 정의하고 앱 라우터에서 합성
-  - 재사용 가능한 UI는 Design System에 배치(도메인 의존 금지)
-- **Don’t**
-  - UI 파일 안에 enum/상수/에러 정의 금지
-  - Design System에서 특정 도메인 타입 import 금지
-  - 전역 라우터에 모든 페이지를 직접 나열 금지
-
-## 🧭 라우팅 전략(go_router)
-
-앱 레벨은 `MaterialApp.router` + `GoRouter` 조합을 사용합니다. 도메인별로 라우트 상수/빌더를 갖고, 전역 라우터는 이들을 합성합니다.
-
-```dart
-// lib/app/app.dart (요약)
-MaterialApp.router(
-  routerConfig: AppRouter.router,
-)
-
-// lib/app/router/app_router.dart (요약)
-final GoRouter router = GoRouter(
-  initialLocation: '/login',
-  routes: [
-    // 도메인 라우트들을 여기로 합성하는 것이 원칙
-  ],
-);
-```
-
-### 도메인 라우트 작성 원칙
-- 경로 상수는 `domains/<feature>/consts/routes.dart`
-- `GoRoute` 목록은 `domains/<feature>/presentation/routes/<feature>_routes.dart`
-- 앱 라우터는 각 도메인의 `routes`를 합성만 수행
-
-## 🎨 Design System 규칙
-- DS는 도메인 모듈을 import하지 않음
-- DS 컴포넌트는 props만으로 동작(비즈니스 타입/레포 주입 금지)
-- 도메인 종속 UI(예: SocialLoginButton)는 해당 도메인 `presentation/widgets/`로 이동
-
-## 📦 비즈니스 상수/타입 관리
-- 모든 enum/상수/경로/키는 `domains/<feature>/consts/` 하위에 배치
-- UI/Controller는 반드시 `consts`를 import하여 사용
-
-## 🔧 개발 및 품질 규칙
-- 상태 관리: `flutter_bloc`(Cubit) 기준. UI-도메인 간 의존은 인터페이스/DTO 중심
-- DI: `get_it`에서 도메인 경계별 등록. 프레젠테이션에서 구현체 직접 의존 금지
-- 네이밍: 기능을 드러내는 풀워드 사용, 축약 지양
-- 에러 처리: 공통 에러 타입은 도메인별로 정의, UI에서 메시지 변환
-
-## 🚀 시작하기
-```bash
-flutter pub get
-flutter run
-```
-
-코드 생성 등을 사용하는 모듈에서만 별도 스텝(`build_runner`)을 수행하세요.
-
-## 🧪 테스트 전략(요약)
-- Unit: 유스케이스/레포 인터페이스/유틸
-- Widget: DS 컴포넌트/도메인 위젯
-- Integration: 인증 플로우 등 E2E
+**🎯 핵심 원칙:**
+- **의존성 역전**: 바깥 레이어가 안쪽 레이어에 의존 (반대 불가)
+- **단일 책임**: 각 레이어는 하나의 명확한 책임만 가짐
+- **인터페이스 분리**: Core는 추상화에만 의존, 구체적 구현 모름
 
 ---
 
-문서를 기준으로 구조를 유지하세요. 위 규칙을 위반하면 리팩토링으로 되돌립니다.
+## 📁 디렉토리 구조
+
+### Flutter App (`app/`)
+
+```
+app/lib/
+├── domains/auth/                   # 🎯 인증 도메인
+│   ├── core/                       # 📚 Core Business Logic (가장 중요)
+│   │   ├── entities/               # 🏷️ 도메인 엔티티 (비즈니스 객체)
+│   │   │   ├── auth_token.dart     # JWT 토큰 관리
+│   │   │   ├── social_provider.dart # 소셜 로그인 제공자 enum
+│   │   │   ├── login_request.dart   # 로그인 요청 모델
+│   │   │   └── signup_request.dart  # 회원가입 요청 모델
+│   │   ├── usecases/               # 🎯 애플리케이션 비즈니스 로직
+│   │   │   ├── login_with_social_usecase.dart    # 소셜 로그인 처리
+│   │   │   ├── logout_usecase.dart               # 로그아웃 처리
+│   │   │   ├── refresh_token_usecase.dart        # 토큰 갱신 처리
+│   │   │   └── check_auth_status_usecase.dart    # 인증 상태 확인
+│   │   └── repositories/           # 📝 Repository 인터페이스 (추상화)
+│   │       └── auth_repository.dart
+│   │
+│   ├── infrastructure/             # 🔌 External Dependencies
+│   │   ├── repositories/           # 💾 Repository 구현체
+│   │   │   └── auth_repository_impl.dart
+│   │   └── oauth/                  # 🔐 OAuth 구현체들
+│   │       ├── oauth_provider.dart          # OAuth Provider 인터페이스
+│   │       ├── oauth_provider_registry.dart # Provider 팩토리
+│   │       └── providers/
+│   │           └── google_auth_provider.dart # Google OAuth 구현
+│   │
+│   └── presentation/               # 🎨 UI Layer
+│       ├── controllers/            # 🎮 상태 관리 (Cubit/Bloc)
+│       │   └── auth_controller.dart
+│       ├── pages/                  # 📱 화면들
+│       │   └── signup_page.dart
+│       ├── widgets/                # 🧩 재사용 위젯들
+│       │   ├── social_login_button.dart
+│       │   └── social_login_section.dart
+│       └── models/                 # 📊 UI 전용 모델들 (DTO)
+│           └── login_response.dart
+│
+├── shared/                         # 🤝 공통 모듈
+│   ├── config/                     # ⚙️ 앱 설정
+│   ├── design_system/              # 🎨 디자인 시스템
+│   ├── exceptions/                 # ⚠️ 공통 예외 처리
+│   │   ├── network_exception.dart
+│   │   ├── server_exception.dart
+│   │   ├── oauth_exception.dart
+│   │   └── oauth_result.dart
+│   ├── infrastructure/             # 🏗️ 공통 인프라
+│   │   ├── network/api_client.dart # HTTP 클라이언트
+│   │   └── storage/                # 로컬 저장소
+│   └── widgets/                    # 🔧 공통 위젯들
+│       └── error_dialog.dart
+│
+└── main.dart                       # 🚀 앱 진입점
+```
+
+### Backend (`tomo/`)
+
+```
+tomo/
+├── auth/                           # 🔐 인증 모듈
+├── user/                           # 👤 사용자 모듈  
+├── common/                         # 🤝 공통 모듈
+└── contract/                       # 📋 API 계약
+```
+
+---
+
+## 🎯 각 레이어의 책임과 역할
+
+### 1. **Core Layer** (가장 안쪽 - 비즈니스 규칙)
+
+> **"순수한 비즈니스 로직만 포함, 외부 세계를 전혀 모름"**
+
+#### 🏷️ **Entities** (`core/entities/`)
+- **책임**: 비즈니스 핵심 객체와 규칙을 정의
+- **특징**:
+  - 외부 의존성 없음 (Flutter SDK도 최소한만 사용)
+  - 비즈니스 로직과 데이터를 함께 캡슐화
+  - 불변성(immutable) 원칙 준수
+
+```dart
+// ✅ Good: 비즈니스 로직이 포함된 Entity
+class AuthToken {
+  // 비즈니스 규칙: 토큰 만료 여부 판단
+  bool get isExpired => DateTime.now().isAfter(expiresAt);
+  bool get isAboutToExpire => /* 5분 전 만료 로직 */;
+}
+```
+
+#### 🎯 **UseCases** (`core/usecases/`)
+- **책임**: 애플리케이션의 특정 비즈니스 액션 수행
+- **원칙**:
+  - 1 UseCase = 1 사용자 의도 (Single Responsibility)
+  - Repository 인터페이스에만 의존
+  - UI나 외부 시스템을 알지 못함
+
+```dart
+// ✅ Good: 단일 책임을 가진 UseCase
+class LoginWithSocialUseCase {
+  Future<LoginResponse?> execute(SocialProvider provider) async {
+    // 1. OAuth 인증
+    // 2. 서버 인증  
+    // 3. 토큰 저장
+    // 4. 사용자 정보 반환
+  }
+}
+```
+
+#### 📝 **Repositories** (`core/repositories/`)
+- **책임**: 데이터 접근 계약 정의 (인터페이스만)
+- **특징**:
+  - 추상 클래스나 인터페이스만 포함
+  - 구체적인 구현은 Infrastructure Layer에서 담당
+
+---
+
+### 2. **Infrastructure Layer** (가장 바깥쪽 - 구체적 구현)
+
+> **"Core의 인터페이스를 구체적으로 구현, 외부 세계와 연결"**
+
+#### 💾 **Repositories** (`infrastructure/repositories/`)
+- **책임**: Core의 Repository 인터페이스를 실제로 구현
+- **특징**:
+  - API 호출, 데이터베이스 접근 등 구체적 구현
+  - Core에서 정의한 인터페이스에 의존
+
+```dart
+// ✅ Good: 인터페이스를 구현하는 구체적 클래스
+class AuthRepositoryImpl implements AuthRepository {
+  final ApiClient _apiClient; // 외부 의존성 주입
+  
+  @override
+  Future<AuthToken> authenticate(...) async {
+    // API 호출 구체적 구현
+  }
+}
+```
+
+#### 🔐 **OAuth** (`infrastructure/oauth/`)
+- **책임**: 소셜 로그인 제공자들과의 연동 구현
+- **구조**:
+  - `OAuthProvider`: 공통 인터페이스
+  - `providers/`: 각 제공자별 구체적 구현 (Google, Apple, Kakao)
+  - `OAuthProviderRegistry`: Provider 팩토리
+
+---
+
+### 3. **Presentation Layer** (UI 레이어)
+
+> **"사용자와의 상호작용 처리, UseCase 호출하여 비즈니스 로직 실행"**
+
+#### 🎮 **Controllers** (`presentation/controllers/`)
+- **책임**: UI 상태 관리 및 UseCase와 UI 연결
+- **특징**:
+  - Cubit/Bloc 패턴 사용
+  - UseCase들을 조합하여 복잡한 플로우 처리
+  - UI 상태만 관리, 비즈니스 로직은 UseCase에 위임
+
+```dart
+// ✅ Good: UseCase를 호출하는 Controller
+class AuthController extends Cubit<AuthState> {
+  final LoginWithSocialUseCase _loginUseCase;
+  
+  Future<void> loginWithSocial(SocialProvider provider) async {
+    emit(AuthLoading());
+    final result = await _loginUseCase.execute(provider);
+    // 결과에 따른 상태 변경
+  }
+}
+```
+
+#### 📱 **Pages & Widgets** (`presentation/pages/`, `presentation/widgets/`)
+- **책임**: 사용자 인터페이스 렌더링
+- **특징**:
+  - Controller의 상태를 구독하여 UI 업데이트
+  - 사용자 액션을 Controller에 전달
+
+---
+
+## 🔄 데이터 흐름 (Data Flow)
+
+```
+👤 User Input
+    ↓
+🎨 Presentation (Controller)
+    ↓
+🎯 Core (UseCase)
+    ↓
+📝 Core (Repository Interface)
+    ↓
+🔌 Infrastructure (Repository Implementation)
+    ↓
+🌐 External API/Services
+```
+
+### 예시: 소셜 로그인 플로우
+
+```
+1. 사용자가 "구글로 로그인" 버튼 클릭
+   └── SocialLoginButton (Widget)
+
+2. UI 이벤트가 Controller로 전달
+   └── AuthController.loginWithSocial(SocialProvider.google)
+
+3. Controller가 해당 UseCase 호출
+   └── LoginWithSocialUseCase.execute(provider)
+
+4. UseCase가 Repository 인터페이스 호출
+   └── AuthRepository.authenticate(...)
+
+5. Infrastructure가 실제 API 호출
+   └── AuthRepositoryImpl → ApiClient → 서버
+
+6. 결과가 역순으로 전파되어 UI 업데이트
+   └── 성공 시: AuthSuccess 상태 → 홈 화면 이동
+   └── 실패 시: AuthFailure 상태 → 에러 다이얼로그 표시
+```
+
+---
+
+## 📏 개발 가이드라인
+
+### ✅ **좋은 예시 (Do's)**
+
+#### 의존성 방향 준수
+```dart
+// ✅ Core → Infrastructure (OK)
+class LoginUseCase {
+  final AuthRepository repository; // 인터페이스에 의존
+}
+
+// ✅ Presentation → Core (OK)  
+class AuthController {
+  final LoginUseCase loginUseCase; // UseCase에 의존
+}
+```
+
+#### 단일 책임 원칙
+```dart
+// ✅ 하나의 명확한 책임
+class LoginWithSocialUseCase {
+  Future<Result> execute(SocialProvider provider) => ...;
+}
+
+class LogoutUseCase {
+  Future<void> execute() => ...;
+}
+```
+
+### ❌ **나쁜 예시 (Don'ts)**
+
+#### 잘못된 의존성 방향
+```dart
+// ❌ Infrastructure → Presentation (절대 금지)
+class AuthRepositoryImpl {
+  final AuthController controller; // UI에 의존하면 안됨!
+}
+
+// ❌ Core → Infrastructure (절대 금지)
+class LoginUseCase {
+  final ApiClient apiClient; // 구체적 구현에 의존하면 안됨!
+}
+```
+
+#### 책임 혼재
+```dart
+// ❌ UseCase에 UI 로직 포함
+class LoginUseCase {
+  Future<void> execute() {
+    // 비즈니스 로직
+    final result = await repository.login();
+    
+    // ❌ UI 처리는 UseCase 책임 아님
+    if (result.success) {
+      Navigator.pushReplacementNamed('/home');
+    }
+  }
+}
+```
+
+---
+
+## 🧪 테스트 전략
+
+### Core Layer 테스트
+```dart
+// UseCase는 Repository를 Mock하여 독립적으로 테스트
+test('로그인 성공 시 토큰을 저장해야 한다', () async {
+  // Given
+  final mockRepository = MockAuthRepository();
+  final useCase = LoginWithSocialUseCase(mockRepository);
+  
+  // When
+  final result = await useCase.execute(SocialProvider.google);
+  
+  // Then
+  expect(result, isA<LoginResponse>());
+  verify(mockRepository.authenticate).called(1);
+});
+```
+
+### Presentation Layer 테스트
+```dart
+// Controller는 UseCase를 Mock하여 테스트
+testWidgets('로그인 실패 시 에러 다이얼로그를 표시해야 한다', (tester) async {
+  // Given
+  final mockUseCase = MockLoginUseCase();
+  when(mockUseCase.execute(any)).thenThrow(NetworkException());
+  
+  // When & Then
+  // 위젯 테스트 로직
+});
+```
+
+---
+
+## 🚀 시작하기
+
+### 개발 환경 설정
+```bash
+# Flutter 프로젝트 의존성 설치
+cd app
+flutter pub get
+
+# 백엔드 빌드
+cd ../tomo
+./gradlew build
+```
+
+### 새로운 기능 추가 시 고려사항
+
+1. **Entity 추가**: 새로운 비즈니스 개념이 필요한가?
+2. **UseCase 추가**: 새로운 사용자 의도/액션이 있는가?
+3. **Repository 확장**: 새로운 데이터 접근이 필요한가?
+4. **Infrastructure 구현**: 외부 서비스 연동이 필요한가?
+
+### 코드 리뷰 체크리스트
+
+- [ ] 의존성 방향이 올바른가? (안쪽 → 바깥쪽)
+- [ ] 각 클래스가 단일 책임을 갖는가?
+- [ ] Core Layer에 외부 의존성이 없는가?
+- [ ] UseCase가 비즈니스 로직만 포함하는가?
+- [ ] 적절한 추상화가 적용되었는가?
+
+---
+
+## 🤝 기여하기
+
+1. 이 문서를 먼저 읽고 아키텍처를 이해해주세요
+2. 새로운 기능은 Clean Architecture 원칙을 준수해주세요
+3. 코드 리뷰 시 아키텍처 가이드라인을 확인해주세요
+
+---
+
+**"좋은 아키텍처는 개발자의 생산성을 높이고, 버그를 줄이며, 코드의 수명을 연장합니다."**
