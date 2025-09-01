@@ -13,3 +13,4 @@ class DeactivatedUserException(
         parameters = mapOf("email" to email),
         cause = cause,
     )
+
