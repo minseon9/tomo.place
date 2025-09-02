@@ -1,6 +1,8 @@
 package place.tomo.auth.application.responses
 
 data class LoginResponse(
-    val token: String,
+    val accessToken: String,
     val refreshToken: String,
+    val accessTokenExpiresAt: Long,
+    val refreshTokenExpiresAt: Long,
 )

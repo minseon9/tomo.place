@@ -7,22 +7,25 @@ import org.springframework.security.oauth2.jwt.JwtEncoder
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters
 import org.springframework.stereotype.Service
 import place.tomo.auth.domain.dtos.JwtPropertiesDTO
+import place.tomo.auth.domain.dtos.JwtTokenVO
 import java.time.Instant
+import java.util.Date
 
 @Service
 class JwtProvider(
     private val properties: JwtPropertiesDTO,
     private val jwtEncoder: JwtEncoder,
 ) {
-    fun issueAccessToken(subject: String): String = issueToken(subject, properties.accessTtlSeconds)
+    fun issueAccessToken(subject: String): JwtTokenVO = issueToken(subject, properties.accessTtlSeconds)
 
-    fun issueRefreshToken(subject: String): String = issueToken(subject, properties.refreshTtlSeconds)
+    fun issueRefreshToken(subject: String): JwtTokenVO = issueToken(subject, properties.refreshTtlSeconds)
 
     private fun issueToken(
         subject: String,
         expiration: Long,
-    ): String {
+    ): JwtTokenVO {
         val nowInstant = Instant.now()
+        val expiresAt = nowInstant.plusSeconds(expiration)
 
         val jwtClaims =
             JwtClaimsSet
@@ -31,11 +34,14 @@ class JwtProvider(
                 .audience(properties.audiences)
                 .issuer(properties.issuer)
                 .issuedAt(nowInstant)
-                .expiresAt(nowInstant.plusSeconds(expiration))
+                .expiresAt(expiresAt)
                 .build()
 
         val jwsHeader = JwsHeader.with(MacAlgorithm.HS256).build()
 
-        return jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, jwtClaims)).tokenValue
+        val token = jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, jwtClaims)).tokenValue
+        Date.from(expiresAt).time
+
+        return JwtTokenVO(token = token, expiresAt = expiresAt.toEpochMilli())
     }
 }

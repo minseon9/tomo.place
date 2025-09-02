@@ -30,7 +30,12 @@ class AuthenticationService(
         val accessToken = jwtProvider.issueAccessToken(oidcUserInfo.email)
         val refreshToken = jwtProvider.issueRefreshToken(oidcUserInfo.email)
 
-        return AuthTokenDTO(accessToken = accessToken, refreshToken = refreshToken)
+        return AuthTokenDTO(
+            accessToken = accessToken.token,
+            refreshToken = refreshToken.token,
+            accessTokenExpiresAt = accessToken.expiresAt,
+            refreshTokenExpiresAt = refreshToken.expiresAt
+        )
     }
 
     fun getOidcUserInfo(

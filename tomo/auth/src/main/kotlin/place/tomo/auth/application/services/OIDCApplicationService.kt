@@ -34,6 +34,11 @@ class OIDCApplicationService(
 
         val authToken = authenticateService.issueOIDCUserAuthToken(oidcUserInfo)
 
-        return LoginResponse(token = authToken.accessToken, refreshToken = authToken.refreshToken)
+        return LoginResponse(
+            accessToken = authToken.accessToken,
+            refreshToken = authToken.refreshToken,
+            accessTokenExpiresAt = authToken.accessTokenExpiresAt,
+            refreshTokenExpiresAt = authToken.refreshTokenExpiresAt,
+        )
     }
 }
