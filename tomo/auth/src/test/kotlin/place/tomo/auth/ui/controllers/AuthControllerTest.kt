@@ -48,8 +48,14 @@ class AuthControllerTest
             fun `signup when valid authorization code expect 200 ok`() {
                 val provider = OIDCProviderType.GOOGLE
                 val authorizationCode = "valid code"
-                every { oidcAuthService.signUp(OIDCSignUpRequest(provider, authorizationCode)) } returns
-                    LoginResponse(token = "access-token", refreshToken = "refresh-token")
+                val mockedResponse =
+                    LoginResponse(
+                        accessToken = "access-token",
+                        accessTokenExpiresAt = 1000L,
+                        refreshToken = "refresh-token",
+                        refreshTokenExpiresAt = 1000L,
+                    )
+                every { oidcAuthService.signUp(OIDCSignUpRequest(provider, authorizationCode)) } returns mockedResponse
 
                 mockMvc
                     .perform(
@@ -58,8 +64,10 @@ class AuthControllerTest
                             .content(objectMapper.writeValueAsString(SignupRequestBody(provider, authorizationCode))),
                     ).andExpect(status().isOk)
                     .andExpect(header().doesNotExist("Set-Cookie"))
-                    .andExpect(jsonPath("$.token", equalTo("access-token")))
-                    .andExpect(jsonPath("$.refreshToken", equalTo("refresh-token")))
+                    .andExpect(jsonPath("$.token", equalTo(mockedResponse.accessToken)))
+                    .andExpect(jsonPath("$.tokenExpiresAt", equalTo(mockedResponse.accessTokenExpiresAt)))
+                    .andExpect(jsonPath("$.refreshToken", equalTo(mockedResponse.refreshToken)))
+                    .andExpect(jsonPath("$.refreshTokenExpiresAt", equalTo(mockedResponse.refreshTokenExpiresAt)))
             }
 
             @Test

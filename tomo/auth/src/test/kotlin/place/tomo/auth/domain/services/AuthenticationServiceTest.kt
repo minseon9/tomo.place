@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
 import place.tomo.auth.domain.dtos.AuthTokenDTO
+import place.tomo.auth.domain.dtos.JwtTokenVO
 import place.tomo.auth.domain.dtos.oidc.OIDCUserInfo
 import place.tomo.auth.domain.exception.SocialAccountNotLinkedException
 import place.tomo.auth.domain.services.oidc.OIDCProvider
@@ -44,12 +45,17 @@ class AuthenticationServiceTest {
             every { oidcProviderFactory.getService(OIDCProviderType.GOOGLE) } returns provider
             coEvery { provider.getOIDCUserInfo("code") } returns info
             every { socialAccountService.checkSocialAccount(OIDCProviderType.GOOGLE, "sid") } returns true
-            every { jwtTokenProvider.issueAccessToken("user@example.com") } returns "a"
-            every { jwtTokenProvider.issueRefreshToken("user@example.com") } returns "r"
+            val accessToken = JwtTokenVO("a", Instant.now().plusSeconds(3600))
+            val refreshToken = JwtTokenVO("r", Instant.now().plusSeconds(86400))
+            every { jwtTokenProvider.issueAccessToken("user@example.com") } returns accessToken
+            every { jwtTokenProvider.issueRefreshToken("user@example.com") } returns refreshToken
 
             val token = service.authenticateOIDC(OIDCProviderType.GOOGLE, "code")
 
-            assertThat(token).isEqualTo(AuthTokenDTO("a", "r"))
+            assertThat(token.accessToken).isEqualTo("a")
+            assertThat(token.refreshToken).isEqualTo("r")
+            assertThat(token.accessTokenExpiresAt).isEqualTo(accessToken.expiresAt)
+            assertThat(token.refreshTokenExpiresAt).isEqualTo(refreshToken.expiresAt)
         }
 
         @Test
@@ -77,12 +83,17 @@ class AuthenticationServiceTest {
         fun `issue access token when oidc user info provided expect access and refresh issued`() {
             val info =
                 OIDCUserInfo(OIDCProviderType.GOOGLE, socialId = "sid", email = "user@example.com", name = "User", profileImageUrl = null)
-            every { jwtTokenProvider.issueAccessToken("user@example.com") } returns "a"
-            every { jwtTokenProvider.issueRefreshToken("user@example.com") } returns "r"
+            val accessToken = JwtTokenVO("a", Instant.now().plusSeconds(3600))
+            val refreshToken = JwtTokenVO("r", Instant.now().plusSeconds(86400))
+            every { jwtTokenProvider.issueAccessToken("user@example.com") } returns accessToken
+            every { jwtTokenProvider.issueRefreshToken("user@example.com") } returns refreshToken
 
             val token = service.issueOIDCUserAuthToken(info)
 
-            assertThat(token).isEqualTo(AuthTokenDTO("a", "r"))
+            assertThat(token.accessToken).isEqualTo("a")
+            assertThat(token.refreshToken).isEqualTo("r")
+            assertThat(token.accessTokenExpiresAt).isEqualTo(accessToken.expiresAt)
+            assertThat(token.refreshTokenExpiresAt).isEqualTo(refreshToken.expiresAt)
         }
     }
 
