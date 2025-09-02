@@ -2,14 +2,16 @@ package place.tomo.auth.ui.controllers
 
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import place.tomo.auth.application.requests.OIDCSignUpRequest
 import place.tomo.auth.application.requests.RefreshTokenRequest
-import place.tomo.auth.application.services.OIDCApplicationService
-import place.tomo.auth.application.services.RefreshTokenApplicationService
+import place.tomo.auth.application.services.AuthenticationApplicationService
+import place.tomo.auth.ui.requests.RefreshTokenRequestBody
 import place.tomo.auth.ui.requests.SignupRequestBody
 import place.tomo.auth.ui.responses.LoginResponseBody
 import place.tomo.auth.ui.responses.RefreshTokenResponseBody
@@ -17,14 +19,13 @@ import place.tomo.auth.ui.responses.RefreshTokenResponseBody
 @RestController
 @RequestMapping("/api/auth")
 class AuthController(
-    private val oidcAuthService: OIDCApplicationService,
-    private val refreshTokenService: RefreshTokenApplicationService,
+    private val authService: AuthenticationApplicationService,
 ) {
     @PostMapping("/signup")
     fun signUp(
         @RequestBody @Valid body: SignupRequestBody,
     ): ResponseEntity<LoginResponseBody> {
-        val response = oidcAuthService.signUp(OIDCSignUpRequest(body.provider, body.authorizationCode))
+        val response = authService.signUp(OIDCSignUpRequest(body.provider, body.authorizationCode))
 
         return ResponseEntity.ok(
             LoginResponseBody(
@@ -38,9 +39,10 @@ class AuthController(
 
     @PostMapping("/refresh")
     fun refreshToken(
-        @RequestBody @Valid body: RefreshTokenRequest,
+        @AuthenticationPrincipal user: UserDetails,
+        @RequestBody @Valid body: RefreshTokenRequestBody,
     ): ResponseEntity<RefreshTokenResponseBody> {
-        val response = refreshTokenService.refreshToken(body)
+        val response = authService.refreshToken(RefreshTokenRequest(user.username, body.refreshToken))
 
         return ResponseEntity.ok(
             RefreshTokenResponseBody(
