@@ -3,6 +3,8 @@ package place.tomo.auth.application.requests
 import jakarta.validation.constraints.NotBlank
 
 data class RefreshTokenRequest(
-    @field:NotBlank(message = "Refresh token is required")
+    @field:NotBlank
+    val userEmail: String,
+    @field:NotBlank
     val refreshToken: String,
 )
