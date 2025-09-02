@@ -6,15 +6,14 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.FilterType
 import place.tomo.auth.domain.dtos.JwtPropertiesDTO
-import place.tomo.auth.domain.services.JwtProvider
+import place.tomo.auth.domain.services.jwt.JwtProvider
 import place.tomo.infra.config.PasswordConfig
 
 @SpringBootConfiguration
 @EnableAutoConfiguration
 @ComponentScan(
     basePackages = [
-        "place.tomo.auth.application.services",
-        "place.tomo.auth.domain.services",
+        "place.tomo.auth.domain.services.jwt",
         "place.tomo.infra.config.security",
         "place.tomo.infra.config",
     ],
@@ -34,8 +33,7 @@ import place.tomo.infra.config.PasswordConfig
         ComponentScan.Filter(
             type = FilterType.REGEX,
             pattern = [
-                "place\\.tomo\\.auth\\.domain\\.services\\.(?!JwtProvider).*",
-                "place\\.tomo\\.auth\\.application\\.services\\.(?!CustomUserDetailsService).*",
+                "place\\.tomo\\.auth\\.domain\\.services\\.jwt\\.(?!JwtProvider).*",
                 "place\\.tomo\\.infra\\.config\\.(?!PasswordConfig|security).*",
             ],
         ),

@@ -13,7 +13,6 @@ import org.springframework.boot.autoconfigure.web.reactive.WebFluxAutoConfigurat
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.context.ApplicationContext
 import org.springframework.http.MediaType
-import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
@@ -29,7 +28,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.context.WebApplicationContext
-import place.tomo.auth.domain.services.JwtProvider
+import place.tomo.auth.domain.services.jwt.JwtProvider
 import place.tomo.auth.ui.controllers.AuthController
 
 @RestController
@@ -162,7 +161,7 @@ class SecurityFilterChainConfigTest {
                 .perform(
                     MockMvcRequestBuilders
                         .get("/login")
-                        .header("Authorization", "Bearer $token"),
+                        .header("Authorization", "Bearer ${token.token}"),
                 ).andExpect(MockMvcResultMatchers.status().isNotFound)
         }
     }
@@ -194,7 +193,7 @@ class SecurityFilterChainConfigTest {
                 .perform(
                     MockMvcRequestBuilders
                         .post("/need-authentication")
-                        .header("Authorization", "Bearer $token"),
+                        .header("Authorization", "Bearer ${token.token}"),
                 ).andExpect(MockMvcResultMatchers.status().isOk)
         }
 
