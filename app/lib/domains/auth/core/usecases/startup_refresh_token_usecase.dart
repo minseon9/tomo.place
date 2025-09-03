@@ -19,12 +19,14 @@ class StartupRefreshTokenUseCase {
         return AuthenticationResult.unauthenticated();
       }
 
-      if (currentToken.isValid) {
+      if (currentToken.isRefreshTokenValid) {
         return AuthenticationResult.authenticated(currentToken);
       }
 
       // 토큰이 만료되었거나 곧 만료될 예정
-      final newToken = await _repository.refreshToken(currentToken.refreshToken);
+      final newToken = await _repository.refreshToken(
+        currentToken.refreshToken,
+      );
       await _tokenRepository.saveToken(newToken);
 
       return AuthenticationResult.authenticated(newToken);

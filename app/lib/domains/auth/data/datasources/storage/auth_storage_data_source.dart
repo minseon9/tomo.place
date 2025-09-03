@@ -8,10 +8,6 @@ abstract class AuthStorageDataSource {
   Future<void> saveToken(AuthToken token);
 
   Future<void> clearToken();
-
-  Future<bool> isTokenValid();
-
-  Future<String> getTokenStatus();
 }
 
 class AuthStorageDataSourceImpl implements AuthStorageDataSource {
@@ -28,17 +24,22 @@ class AuthStorageDataSourceImpl implements AuthStorageDataSource {
   Future<AuthToken?> getCurrentToken() async {
     try {
       final accessToken = _memoryStore.token;
+      final accessTokenExpiresAt = _memoryStore.expiresAt;
       final refreshToken = await _tokenStorage.getRefreshToken();
-      final expiresAt = _memoryStore.expiresAt;
+      final refreshTokenExpiresAt = await _tokenStorage.getRefreshTokenExpiry();
 
-      if (accessToken == null || refreshToken == null || expiresAt == null) {
+      if (accessToken == null ||
+          refreshToken == null ||
+          accessTokenExpiresAt == null ||
+          refreshTokenExpiresAt == null) {
         return null;
       }
 
       return AuthToken(
         accessToken: accessToken,
+        accessTokenExpiresAt: accessTokenExpiresAt,
         refreshToken: refreshToken,
-        expiresAt: expiresAt,
+        refreshTokenExpiresAt: refreshTokenExpiresAt,
         tokenType: 'Bearer',
       );
     } catch (e) {
@@ -50,26 +51,14 @@ class AuthStorageDataSourceImpl implements AuthStorageDataSource {
   Future<void> saveToken(AuthToken token) async {
     await _tokenStorage.saveRefreshToken(
       refreshToken: token.refreshToken,
-      refreshTokenExpiresAt: token.expiresAt,
+      refreshTokenExpiresAt: token.refreshTokenExpiresAt,
     );
-    _memoryStore.set(token.accessToken, token.expiresAt);
+    _memoryStore.set(token.accessToken, token.accessTokenExpiresAt);
   }
 
   @override
   Future<void> clearToken() async {
     await _tokenStorage.clearTokens();
     _memoryStore.clear();
-  }
-
-  @override
-  Future<bool> isTokenValid() async {
-    final token = await getCurrentToken();
-    return token?.isValid ?? false;
-  }
-
-  @override
-  Future<String> getTokenStatus() async {
-    final token = await getCurrentToken();
-    return token?.status ?? 'no_token';
   }
 }

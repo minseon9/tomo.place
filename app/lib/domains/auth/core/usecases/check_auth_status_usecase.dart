@@ -1,3 +1,4 @@
+import '../entities/auth_token.dart';
 import '../repositories/auth_token_repository.dart';
 
 class CheckAuthStatusUseCase {
@@ -8,18 +9,11 @@ class CheckAuthStatusUseCase {
 
   Future<bool> execute() async {
     try {
-      return await _authTokenRepository.isTokenValid();
+      AuthToken? authToken = await _authTokenRepository.getCurrentToken();
+
+      return authToken?.isAccessTokenValid ?? false;
     } catch (e) {
       return false;
-    }
-  }
-  
-  /// 토큰 상태 상세 조회
-  Future<String> getTokenStatus() async {
-    try {
-      return await _authTokenRepository.getTokenStatus();
-    } catch (e) {
-      return 'error';
     }
   }
 }

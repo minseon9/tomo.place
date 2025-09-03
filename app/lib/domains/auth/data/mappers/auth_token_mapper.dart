@@ -7,16 +7,26 @@ class AuthTokenMapper {
     return AuthToken(
       accessToken: response.accessToken,
       refreshToken: response.refreshToken,
-      expiresAt: response.accessTokenExpiresAt,
+      accessTokenExpiresAt: DateTime.fromMillisecondsSinceEpoch(
+        response.accessTokenExpiresAt,
+      ),
+      refreshTokenExpiresAt: DateTime.fromMillisecondsSinceEpoch(
+        response.refreshTokenExpiresAt,
+      ),
       tokenType: 'Bearer',
     );
   }
-  
+
   static AuthToken fromRefreshTokenResponse(RefreshTokenApiResponse response) {
     return AuthToken(
       accessToken: response.accessToken,
       refreshToken: response.refreshToken,
-      expiresAt: response.accessTokenExpiresAt,
+      accessTokenExpiresAt: DateTime.fromMillisecondsSinceEpoch(
+        response.accessTokenExpiresAt,
+      ),
+      refreshTokenExpiresAt: DateTime.fromMillisecondsSinceEpoch(
+        response.refreshTokenExpiresAt,
+      ),
       tokenType: 'Bearer',
     );
   }

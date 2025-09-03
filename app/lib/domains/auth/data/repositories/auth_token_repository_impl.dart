@@ -21,14 +21,4 @@ class AuthTokenRepositoryImpl implements AuthTokenRepository {
   Future<void> clearToken() async {
     await _storageDataSource.clearToken();
   }
-
-  @override
-  Future<bool> isTokenValid() async {
-    return await _storageDataSource.isTokenValid();
-  }
-
-  @override
-  Future<String> getTokenStatus() async {
-    return await _storageDataSource.getTokenStatus();
-  }
 }

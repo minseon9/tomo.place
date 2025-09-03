@@ -1,8 +1,8 @@
 class RefreshTokenApiResponse {
   final String accessToken;
-  final DateTime accessTokenExpiresAt;
+  final int accessTokenExpiresAt;
   final String refreshToken;
-  final DateTime refreshTokenExpiresAt;
+  final int refreshTokenExpiresAt;
 
   const RefreshTokenApiResponse({
     required this.accessToken,
@@ -14,9 +14,9 @@ class RefreshTokenApiResponse {
   factory RefreshTokenApiResponse.fromJson(Map<String, dynamic> json) {
     return RefreshTokenApiResponse(
       accessToken: json['accessToken'] as String,
-      accessTokenExpiresAt: json['accessTokenExpiresAt'] as DateTime,
+      accessTokenExpiresAt: json['accessTokenExpiresAt'] as int,
       refreshToken: json['refreshToken'] as String,
-      refreshTokenExpiresAt: json['refreshTokenExpiresAt'] as DateTime,
+      refreshTokenExpiresAt: json['refreshTokenExpiresAt'] as int,
     );
   }
 }

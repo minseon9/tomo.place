@@ -1,8 +1,8 @@
 class SignupApiResponse {
   final String accessToken;
-  final DateTime accessTokenExpiresAt;
+  final int accessTokenExpiresAt;
   final String refreshToken;
-  final DateTime refreshTokenExpiresAt;
+  final int refreshTokenExpiresAt;
 
   const SignupApiResponse({
     required this.accessToken,
@@ -14,9 +14,9 @@ class SignupApiResponse {
   factory SignupApiResponse.fromJson(Map<String, dynamic> json) {
     return SignupApiResponse(
       accessToken: json['accessToken'] as String,
-      accessTokenExpiresAt: json['accessTokenExpiresAt'] as DateTime,
+      accessTokenExpiresAt: json['accessTokenExpiresAt'] as int,
       refreshToken: json['refreshToken'] as String,
-      refreshTokenExpiresAt: json['refreshTokenExpiresAt'] as DateTime,
+      refreshTokenExpiresAt: json['refreshTokenExpiresAt'] as int,
     );
   }
 }

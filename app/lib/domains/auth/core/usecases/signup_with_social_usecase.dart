@@ -1,9 +1,9 @@
-import '../exceptions/oauth_exception.dart';
 import '../../../../shared/infrastructure/storage/access_token_memory_store.dart';
 import '../../../../shared/infrastructure/storage/token_storage_service.dart';
 import '../../consts/social_provider.dart';
 import '../../data/oauth/oauth_provider_registry.dart';
 import '../entities/auth_token.dart';
+import '../exceptions/oauth_exception.dart';
 import '../repositories/auth_repository.dart';
 
 class SignupWithSocialUseCase {
@@ -43,9 +43,9 @@ class SignupWithSocialUseCase {
 
     await _tokenStorage.saveRefreshToken(
       refreshToken: response.refreshToken,
-      refreshTokenExpiresAt: response.expiresAt,
+      refreshTokenExpiresAt: response.refreshTokenExpiresAt,
     );
-    _memoryStore.set(response.accessToken, response.expiresAt);
+    _memoryStore.set(response.accessToken, response.accessTokenExpiresAt);
 
     return response;
   }

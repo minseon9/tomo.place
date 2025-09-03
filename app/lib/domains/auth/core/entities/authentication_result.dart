@@ -32,6 +32,10 @@ class AuthenticationResult extends Equatable {
     );
   }
 
+  bool isAuthenticated() {
+    return status == AuthenticationStatus.authenticated;
+  }
+
   @override
   List<Object?> get props => [status, token, message];
 }
