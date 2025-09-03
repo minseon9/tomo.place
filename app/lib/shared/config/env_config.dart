@@ -57,7 +57,7 @@ class EnvConfig {
     if (missingVars.isNotEmpty) {
       throw StateError(
         'Required environment variables are missing: ${missingVars.join(', ')}\n'
-        'Please check your .env.${environment} file.',
+        'Please check your .env.$environment file.',
       );
     }
   }
