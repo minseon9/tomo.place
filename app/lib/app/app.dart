@@ -7,6 +7,7 @@ import '../shared/design_system/tokens/colors.dart';
 import '../shared/utils/global_context.dart';
 import '../domains/auth/presentation/controllers/auth_controller.dart';
 
+
 class TomoPlaceApp extends StatelessWidget {
   const TomoPlaceApp({super.key});
 
@@ -30,7 +31,7 @@ class TomoPlaceApp extends StatelessWidget {
           scaffoldBackgroundColor: DesignTokens.appColors['background'],
         ),
         onGenerateRoute: AppRouter.generateRoute,
-        initialRoute: '/signup',
+        initialRoute: '/splash',
       ),
     );
   }
