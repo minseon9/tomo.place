@@ -12,6 +12,7 @@ import '../../../../domains/auth/data/datasources/storage/auth_storage_data_sour
 import '../../../../domains/auth/data/repositories/auth_repository_impl.dart';
 import '../../../../domains/auth/data/repositories/auth_token_repository_impl.dart';
 import '../../../../domains/auth/presentation/controllers/auth_controller.dart';
+import '../../../../shared/services/error_reporter.dart';
 
 class AuthModule {
   static void register(GetIt sl) {
@@ -53,7 +54,11 @@ class AuthModule {
     );
 
     sl.registerFactory<AuthController>(
-      () => AuthController(loginWithSocialUseCase: sl(), logoutUseCase: sl()),
+      () => AuthController(
+        loginWithSocialUseCase: sl(),
+        logoutUseCase: sl(),
+        errorReporter: sl<ErrorReporter>(),
+      ),
     );
   }
 }
