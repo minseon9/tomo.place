@@ -1,8 +1,9 @@
 import 'package:google_sign_in/google_sign_in.dart';
+
+import '../../../core/exceptions/oauth_exception.dart';
+import '../config/oauth_config.dart';
 import '../oauth_provider.dart';
-import '../../../../../shared/exceptions/oauth_result.dart';
-import '../../../../../shared/exceptions/oauth_exception.dart';
-import '../../config/oauth_config.dart';
+import '../oauth_result.dart';
 
 class GoogleAuthProvider implements OAuthProvider {
   static bool _isInitialized = false;
@@ -41,9 +42,11 @@ class GoogleAuthProvider implements OAuthProvider {
 
       final googleConfig = OAuthConfig.getProviderConfig('GOOGLE');
       final scopes = googleConfig?.scope.split(' ') ?? ['email', 'profile'];
-      
-      final GoogleSignInServerAuthorization? serverAuth =
-          await GoogleSignIn.instance.authorizationClient.authorizeServer(scopes);
+
+      final GoogleSignInServerAuthorization? serverAuth = await GoogleSignIn
+          .instance
+          .authorizationClient
+          .authorizeServer(scopes);
 
       final String? authorizationCode = serverAuth?.serverAuthCode;
       if (authorizationCode == null) {
@@ -53,14 +56,10 @@ class GoogleAuthProvider implements OAuthProvider {
         );
       }
 
-      return OAuthResult.success(
-        authorizationCode: authorizationCode,
-      );
+      return OAuthResult.success(authorizationCode: authorizationCode);
     } catch (error) {
-      // GoogleSignInException 타입 체크 및 코드 기반 분기 처리
-      // FIXME: canceled 외에는 error를 그대로 받아서 처리하도록 수정
-      if (error is GoogleSignInException && error.code == GoogleSignInExceptionCode.canceled) {
-        // 사용자 취소는 exception이 아닌 정상적인 결과로 처리
+      if (error is GoogleSignInException &&
+          error.code == GoogleSignInExceptionCode.canceled) {
         return OAuthResult.cancelled();
       }
 

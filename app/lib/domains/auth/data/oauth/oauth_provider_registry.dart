@@ -1,53 +1,53 @@
-import '../../core/entities/social_provider.dart';
+import '../../consts/social_provider.dart';
 import 'oauth_provider.dart';
 import 'providers/google_auth_provider.dart';
 
-/// OAuth Provider 레지스트리
-/// 
-/// Auth 도메인 내에서 사용 가능한 OAuth Provider들을 관리합니다.
 class OAuthProviderRegistry {
   static bool _isInitialized = false;
   static final Map<String, OAuthProvider Function()> _providers = {};
-  
+
   static void initialize() {
     if (_isInitialized) {
       return;
     }
-    
+
     _registerGoogleProvider();
 
     // TODO: Apple Auth Provider 등록 (iOS에서만)
     // _registerAppleProvider();
     // TODO: Kakao Auth Provider 등록
     // _registerKakaoProvider();
-    
+
     _isInitialized = true;
   }
-  
-  static void registerProvider(String providerId, OAuthProvider Function() factory) {
+
+  static void registerProvider(
+    String providerId,
+    OAuthProvider Function() factory,
+  ) {
     _providers[providerId] = factory;
   }
-  
+
   static OAuthProvider createProvider(String providerId) {
     final factory = _providers[providerId];
     if (factory == null) {
       throw ArgumentError('지원하지 않는 Provider: $providerId');
     }
-    
+
     final provider = factory();
     if (!provider.isSupported) {
       throw ArgumentError('Provider $providerId는 현재 플랫폼에서 지원되지 않습니다.');
     }
-    
+
     return provider;
   }
-  
+
   static void _registerGoogleProvider() {
-      registerProvider(SocialProvider.google.code, () => GoogleAuthProvider());
+    registerProvider(SocialProvider.google.code, () => GoogleAuthProvider());
   }
-  
+
   /// Apple Auth Provider 등록 (iOS에서만)
-  /// 
+  ///
   /// TODO: Apple Sign-In 구현 시 활성화
   static void _registerAppleProvider() {
     // TODO: Apple Sign-In Provider 구현 후 등록
@@ -58,9 +58,9 @@ class OAuthProviderRegistry {
     //   print('Apple Auth Provider 등록 실패: $e');
     // }
   }
-  
+
   /// Kakao Auth Provider 등록
-  /// 
+  ///
   /// TODO: Kakao SDK 구현 시 활성화
   static void _registerKakaoProvider() {
     // TODO: Kakao Auth Provider 구현 후 등록
@@ -71,7 +71,7 @@ class OAuthProviderRegistry {
     //   print('Kakao Auth Provider 등록 실패: $e');
     // }
   }
-  
+
   /// 초기화 상태 확인
   static bool get isInitialized => _isInitialized;
 }
