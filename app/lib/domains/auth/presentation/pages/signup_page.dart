@@ -8,10 +8,6 @@ import '../../consts/social_label_variant.dart';
 import '../controllers/auth_controller.dart';
 import '../widgets/social_login_section.dart';
 
-/// 통합된 인증 화면
-/// 
-/// 로그인과 회원가입을 하나의 페이지에서 처리하는 통합된 인증 화면입니다.
-/// OIDC 기반 소셜 로그인만 지원하며, 이메일 인증은 제거되었습니다.
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
 
@@ -46,14 +42,10 @@ class _SignupPageState extends State<SignupPage> {
     );
   }
 
-  /// 상태 변화에 따른 UI 처리
   void _handleStateChange(BuildContext context, AuthState state) {
     if (state is AuthSuccess) {
-      // 인증 성공 시 홈 화면으로 이동
-      // 토큰은 이미 AuthService에서 저장되었으므로 바로 이동
       Navigator.of(context).pushReplacementNamed('/home');
     } else if (state is AuthFailure) {
-      // 인증 실패 시 에러 다이얼로그 표시
       ErrorDialog.show(
         context: context,
         exception: state.exception,
@@ -61,8 +53,6 @@ class _SignupPageState extends State<SignupPage> {
       );
     }
   }
-
-
 }
 
 class _SignupPageContent extends StatelessWidget {
@@ -85,11 +75,12 @@ class _SignupPageContent extends StatelessWidget {
             child: Column(
               children: [
                 SocialLoginSection(
-                  labelVariant: isSignupMode 
-                      ? SocialLabelVariant.signup 
+                  labelVariant: isSignupMode
+                      ? SocialLabelVariant.signup
                       : SocialLabelVariant.login,
-                  onProviderPressed: (provider) => 
-                      context.read<AuthController>().signupWithProvider(provider),
+                  onProviderPressed: (provider) => context
+                      .read<AuthController>()
+                      .signupWithProvider(provider),
                 ),
               ],
             ),
@@ -101,5 +92,3 @@ class _SignupPageContent extends StatelessWidget {
     );
   }
 }
-
-

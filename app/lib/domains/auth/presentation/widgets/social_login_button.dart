@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../shared/design_system/tokens/colors.dart';
-import '../../../../shared/design_system/tokens/spacing.dart';
 import '../../../../shared/design_system/tokens/sizes.dart';
+import '../../../../shared/design_system/tokens/spacing.dart';
 import '../../../../shared/design_system/tokens/typography.dart';
-import '../../core/entities/social_provider.dart';
 import '../../consts/social_label_variant.dart';
+import '../../consts/social_provider.dart';
 
 class SocialLoginButton extends StatelessWidget {
   const SocialLoginButton({
@@ -60,10 +60,7 @@ class SocialLoginButton extends StatelessWidget {
               children: [
                 _buildIcon(),
                 const SizedBox(width: AppSpacing.sm),
-                Text(
-                  _getText(),
-                  style: _getTextStyle(),
-                ),
+                Text(_getText(), style: _getTextStyle()),
               ],
             ),
           ),
@@ -76,7 +73,7 @@ class SocialLoginButton extends StatelessWidget {
     if (_isDisabled) {
       return DesignTokens.tomoDarkGray.withValues(alpha: 0.3);
     }
-    
+
     switch (provider) {
       case SocialProvider.kakao:
         return DesignTokens.kakaoYellow;
@@ -92,7 +89,7 @@ class SocialLoginButton extends StatelessWidget {
         color: DesignTokens.tomoDarkGray.withValues(alpha: 0.5),
       );
     }
-    
+
     switch (provider) {
       case SocialProvider.kakao:
       case SocialProvider.google:
@@ -106,31 +103,27 @@ class SocialLoginButton extends StatelessWidget {
     if (_isDisabled) {
       switch (provider) {
         case SocialProvider.kakao:
-          return labelVariant == SocialLabelVariant.login 
-              ? '카카오 로그인 (준비 중)' 
+          return labelVariant == SocialLabelVariant.login
+              ? '카카오 로그인 (준비 중)'
               : '카카오로 시작하기 (준비 중)';
         case SocialProvider.apple:
-          return labelVariant == SocialLabelVariant.login 
-              ? '애플 로그인 (준비 중)' 
+          return labelVariant == SocialLabelVariant.login
+              ? '애플 로그인 (준비 중)'
               : '애플로 시작하기 (준비 중)';
         default:
           return '';
       }
     }
-    
+
     switch (provider) {
       case SocialProvider.kakao:
-        return labelVariant == SocialLabelVariant.login 
-            ? '카카오 로그인' 
+        return labelVariant == SocialLabelVariant.login
+            ? '카카오 로그인'
             : '카카오로 시작하기';
       case SocialProvider.apple:
-        return labelVariant == SocialLabelVariant.login 
-            ? '애플 로그인' 
-            : '애플로 시작하기';
+        return labelVariant == SocialLabelVariant.login ? '애플 로그인' : '애플로 시작하기';
       case SocialProvider.google:
-        return labelVariant == SocialLabelVariant.login 
-            ? '구글 로그인' 
-            : '구글로 시작하기';
+        return labelVariant == SocialLabelVariant.login ? '구글 로그인' : '구글로 시작하기';
     }
   }
 
@@ -153,5 +146,3 @@ class SocialLoginButton extends StatelessWidget {
     }
   }
 }
-
-
