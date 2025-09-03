@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../shared/design_system/tokens/colors.dart';
 import '../../../../shared/design_system/tokens/spacing.dart';
-import '../../../../shared/widgets/error_dialog.dart';
+// 전역 에러 처리가 루트에서 수행되므로, 페이지에서 직접 다이얼로그 호출 제거
 import '../../consts/social_label_variant.dart';
 import '../controllers/auth_controller.dart';
 import '../models/auth_state.dart';
@@ -46,12 +46,6 @@ class _SignupPageState extends State<SignupPage> {
   void _handleStateChange(BuildContext context, AuthState state) {
     if (state is AuthSuccess) {
       Navigator.of(context).pushReplacementNamed('/home');
-    } else if (state is AuthFailure) {
-      ErrorDialog.show(
-        context: context,
-        error: state.error,
-        onDismiss: () => context.read<AuthController>().clearError(),
-      );
     }
   }
 }
