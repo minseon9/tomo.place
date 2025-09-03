@@ -1,8 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-/// 인증 토큰 도메인 엔티티
-/// 
-/// JWT 토큰과 관련된 정보를 관리하는 도메인 객체입니다.
+// FIXME: token 별 expiration
 class AuthToken extends Equatable {
   const AuthToken({
     required this.accessToken,
@@ -27,6 +25,21 @@ class AuthToken extends Equatable {
     return fiveMinutesFromNow.isAfter(expiresAt);
   }
 
+  /// 토큰이 유효한지 확인 (5분 여유 시간 포함)
+  bool get isValid {
+    if (isExpired) return false;
+
+    final fiveMinutesFromNow = DateTime.now().add(const Duration(minutes: 5));
+    return fiveMinutesFromNow.isBefore(expiresAt);
+  }
+
+  /// 토큰 상태를 문자열로 표현
+  String get status {
+    if (isExpired) return 'expired';
+    if (isAboutToExpire) return 'expiring_soon';
+    return 'valid';
+  }
+
   /// Authorization 헤더에 사용할 형식
   String get authorizationHeader => '$tokenType $accessToken';
 
@@ -39,6 +52,8 @@ class AuthToken extends Equatable {
       tokenType: json['tokenType'] as String? ?? 'Bearer',
     );
   }
+
+
 
   /// AuthToken 객체를 JSON으로 변환
   Map<String, dynamic> toJson() {
@@ -66,12 +81,7 @@ class AuthToken extends Equatable {
   }
 
   @override
-  List<Object> get props => [
-        accessToken,
-        refreshToken,
-        expiresAt,
-        tokenType,
-      ];
+  List<Object> get props => [accessToken, refreshToken, expiresAt, tokenType];
 
   @override
   String toString() {
