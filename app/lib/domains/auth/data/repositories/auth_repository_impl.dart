@@ -23,7 +23,10 @@ class AuthRepositoryImpl implements AuthRepository {
 
       return AuthTokenMapper.fromSignupResponse(response);
     } catch (e) {
-      throw AuthException('Authentication failed: $e');
+      throw AuthException.authenticationFailed(
+        message: 'Authentication failed: $e',
+        originalError: e,
+      );
     }
   }
 
@@ -34,7 +37,10 @@ class AuthRepositoryImpl implements AuthRepository {
 
       return AuthTokenMapper.fromRefreshTokenResponse(response);
     } catch (e) {
-      throw AuthException('Failed to refresh token: $e');
+      throw AuthException.tokenExpired(
+        message: 'Failed to refresh token: $e',
+        originalError: e,
+      );
     }
   }
 

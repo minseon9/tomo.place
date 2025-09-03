@@ -6,6 +6,7 @@ import '../../../../shared/design_system/tokens/spacing.dart';
 import '../../../../shared/widgets/error_dialog.dart';
 import '../../consts/social_label_variant.dart';
 import '../controllers/auth_controller.dart';
+import '../models/auth_state.dart';
 import '../widgets/social_login_section.dart';
 
 class SignupPage extends StatefulWidget {
@@ -48,7 +49,7 @@ class _SignupPageState extends State<SignupPage> {
     } else if (state is AuthFailure) {
       ErrorDialog.show(
         context: context,
-        exception: state.exception,
+        error: state.error,
         onDismiss: () => context.read<AuthController>().clearError(),
       );
     }
