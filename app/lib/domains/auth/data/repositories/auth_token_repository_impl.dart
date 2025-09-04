@@ -1,6 +1,9 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../core/entities/auth_token.dart';
 import '../../core/repositories/auth_token_repository.dart';
 import '../datasources/storage/auth_storage_data_source.dart';
+import '../datasources/storage/auth_storage_data_source_provider.dart';
 
 class AuthTokenRepositoryImpl implements AuthTokenRepository {
   final AuthStorageDataSource _storageDataSource;
@@ -22,3 +25,7 @@ class AuthTokenRepositoryImpl implements AuthTokenRepository {
     await _storageDataSource.clearToken();
   }
 }
+
+final authTokenRepositoryProvider = Provider<AuthTokenRepository>(
+  (ref) => AuthTokenRepositoryImpl(ref.read(authStorageDataSourceProvider)),
+);

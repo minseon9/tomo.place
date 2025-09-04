@@ -1,4 +1,3 @@
-// FIXME: exceptions가 아닌 auth infra의 result
 class OAuthResult {
   final bool success;
   final bool cancelled;

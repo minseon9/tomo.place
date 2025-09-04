@@ -1,52 +1,39 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../shared/design_system/tokens/colors.dart';
-import '../../../../shared/design_system/tokens/spacing.dart';
-// 전역 에러 처리가 루트에서 수행되므로, 페이지에서 직접 다이얼로그 호출 제거
+import '../../../../shared/ui/design_system/tokens/colors.dart';
+import '../../../../shared/ui/design_system/tokens/spacing.dart';
 import '../../consts/social_label_variant.dart';
-import '../controllers/auth_controller.dart';
-import '../models/auth_state.dart';
+import '../controllers/auth_notifier.dart';
 import '../widgets/social_login_section.dart';
 
-class SignupPage extends StatefulWidget {
+class SignupPage extends ConsumerStatefulWidget {
   const SignupPage({super.key});
 
   @override
-  State<SignupPage> createState() => _SignupPageState();
+  ConsumerState<SignupPage> createState() => _SignupPageState();
 }
 
-class _SignupPageState extends State<SignupPage> {
+class _SignupPageState extends ConsumerState<SignupPage> {
   bool _isSignupMode = true;
 
   @override
   Widget build(BuildContext context) {
+    // ✅ app.dart에서 중앙화된 네비게이션 처리하므로 직접 네비게이션 제거
     return Scaffold(
       backgroundColor: DesignTokens.background,
       body: SafeArea(
-        child: BlocConsumer<AuthController, AuthState>(
-          listener: (context, state) {
-            _handleStateChange(context, state);
+        child: _SignupPageContent(
+          isSignupMode: _isSignupMode,
+          onToggleMode: () {
+            setState(() {
+              _isSignupMode = !_isSignupMode;
+            });
           },
-          builder: (context, state) {
-            return _SignupPageContent(
-              isSignupMode: _isSignupMode,
-              onToggleMode: () {
-                setState(() {
-                  _isSignupMode = !_isSignupMode;
-                });
-              },
-            );
-          },
+          ref: ref,
         ),
       ),
     );
-  }
-
-  void _handleStateChange(BuildContext context, AuthState state) {
-    if (state is AuthSuccess) {
-      Navigator.of(context).pushReplacementNamed('/home');
-    }
   }
 }
 
@@ -54,10 +41,12 @@ class _SignupPageContent extends StatelessWidget {
   const _SignupPageContent({
     required this.isSignupMode,
     required this.onToggleMode,
+    required this.ref,
   });
 
   final bool isSignupMode;
   final VoidCallback onToggleMode;
+  final WidgetRef ref;
 
   @override
   Widget build(BuildContext context) {
@@ -73,8 +62,8 @@ class _SignupPageContent extends StatelessWidget {
                   labelVariant: isSignupMode
                       ? SocialLabelVariant.signup
                       : SocialLabelVariant.login,
-                  onProviderPressed: (provider) => context
-                      .read<AuthController>()
+                  onProviderPressed: (provider) => ref
+                      .read(authNotifierProvider.notifier)
                       .signupWithProvider(provider),
                 ),
               ],

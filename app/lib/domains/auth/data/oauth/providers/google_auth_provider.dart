@@ -41,7 +41,7 @@ class GoogleAuthProvider implements OAuthProvider {
       await _ensureInitialized();
 
       final googleConfig = OAuthConfig.getProviderConfig('GOOGLE');
-      final scopes = googleConfig?.scope.split(' ') ?? ['email', 'profile'];
+      final scopes = googleConfig?.scope ?? ['email', 'profile'];
 
       final GoogleSignInServerAuthorization? serverAuth = await GoogleSignIn
           .instance

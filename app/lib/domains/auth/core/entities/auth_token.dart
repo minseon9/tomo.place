@@ -33,9 +33,7 @@ class AuthToken {
   }
 
   bool get isAccessTokenValid {
-    if (isAccessTokenExpired) return false;
-
-    return isAccessTokenAboutToExpire;
+    return !isAccessTokenExpired && !isAccessTokenAboutToExpire;
   }
 
   bool get isRefreshTokenValid {

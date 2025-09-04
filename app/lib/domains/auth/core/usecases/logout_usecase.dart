@@ -1,24 +1,17 @@
-import '../../../../shared/infrastructure/storage/token_storage_service.dart';
 import '../repositories/auth_repository.dart';
+import '../repositories/auth_token_repository.dart';
 
 class LogoutUseCase {
-  LogoutUseCase({
-    required AuthRepository repository,
-    required TokenStorageService tokenStorage,
-  })  : _repository = repository,
-        _tokenStorage = tokenStorage;
+  LogoutUseCase(this._repository, this._tokenRepository);
 
   final AuthRepository _repository;
-  final TokenStorageService _tokenStorage;
+  final AuthTokenRepository _tokenRepository;
 
   Future<void> execute() async {
     try {
       await _repository.logout();
     } finally {
-      await _tokenStorage.clearTokens();
+      await _tokenRepository.clearToken();
     }
   }
 }
-
-
-

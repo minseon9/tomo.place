@@ -1,23 +1,15 @@
-import '../../../../shared/infrastructure/storage/access_token_memory_store.dart';
-import '../../../../shared/infrastructure/storage/token_storage_service.dart';
 import '../../consts/social_provider.dart';
 import '../../data/oauth/oauth_provider_registry.dart';
 import '../entities/auth_token.dart';
 import '../exceptions/oauth_exception.dart';
 import '../repositories/auth_repository.dart';
+import '../repositories/auth_token_repository.dart';
 
 class SignupWithSocialUseCase {
-  SignupWithSocialUseCase({
-    required AuthRepository repository,
-    required TokenStorageService tokenStorage,
-    required AccessTokenMemoryStore memoryStore,
-  }) : _repository = repository,
-       _tokenStorage = tokenStorage,
-       _memoryStore = memoryStore;
+  SignupWithSocialUseCase(this._repository, this._tokenRepository);
 
   final AuthRepository _repository;
-  final TokenStorageService _tokenStorage;
-  final AccessTokenMemoryStore _memoryStore;
+  final AuthTokenRepository _tokenRepository;
 
   Future<AuthToken?> execute(SocialProvider provider) async {
     OAuthProviderRegistry.initialize();
@@ -36,17 +28,13 @@ class SignupWithSocialUseCase {
       );
     }
 
-    final response = await _repository.authenticate(
+    final authToken = await _repository.authenticate(
       provider: provider.code,
       authorizationCode: oauthResult.authorizationCode!,
     );
 
-    await _tokenStorage.saveRefreshToken(
-      refreshToken: response.refreshToken,
-      refreshTokenExpiresAt: response.refreshTokenExpiresAt,
-    );
-    _memoryStore.set(response.accessToken, response.accessTokenExpiresAt);
+    await _tokenRepository.saveToken(authToken);
 
-    return response;
+    return authToken;
   }
 }

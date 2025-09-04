@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../../../../shared/design_system/tokens/colors.dart';
-import '../../../../shared/design_system/tokens/sizes.dart';
-import '../../../../shared/design_system/tokens/spacing.dart';
-import '../../../../shared/design_system/tokens/typography.dart';
+import '../../../../shared/ui/design_system/tokens/colors.dart';
+import '../../../../shared/ui/design_system/tokens/sizes.dart';
+import '../../../../shared/ui/design_system/tokens/spacing.dart';
+import '../../../../shared/ui/design_system/tokens/typography.dart';
 import '../../consts/social_label_variant.dart';
 import '../../consts/social_provider.dart';
 

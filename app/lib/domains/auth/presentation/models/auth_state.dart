@@ -1,23 +1,39 @@
-import '../../../../shared/exceptions/error_interface.dart';
+import 'package:equatable/equatable.dart';
 
-abstract class AuthState {
+import '../../../../shared/error_handling/models/exception_interface.dart';
+
+abstract class AuthState extends Equatable {
   const AuthState();
 }
 
 class AuthInitial extends AuthState {
   const AuthInitial();
+
+  @override
+  List<Object?> get props => [];
 }
 
 class AuthLoading extends AuthState {
   const AuthLoading();
+
+  @override
+  List<Object?> get props => [];
 }
 
 class AuthSuccess extends AuthState {
-  const AuthSuccess();
+  final bool isNavigateHome;
+
+  const AuthSuccess(this.isNavigateHome);
+
+  @override
+  List<Object?> get props => [isNavigateHome];
 }
 
 class AuthFailure extends AuthState {
   const AuthFailure({required this.error});
 
-  final ErrorInterface error;
+  final ExceptionInterface error;
+
+  @override
+  List<Object?> get props => [error];
 }

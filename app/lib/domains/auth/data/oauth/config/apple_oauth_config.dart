@@ -10,7 +10,7 @@ class AppleOAuthConfig {
 
   static const String tokenEndpoint = '/auth/token';
 
-  static const String defaultScope = 'name email';
+  static const List<String> defaultScope = ['name email'];
 
   static String get clientId => EnvConfig.appleClientId;
 

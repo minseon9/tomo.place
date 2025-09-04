@@ -1,60 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../app/di/injection_container.dart' as di;
-import '../../domains/auth/core/entities/authentication_result.dart';
-import '../../domains/auth/core/usecases/check_refresh_token_status_usecase.dart';
-import '../../domains/auth/core/usecases/startup_refresh_token_usecase.dart';
-import '../../shared/services/graceful_logout_handler.dart';
-import '../services/navigation_service.dart';
+import '../../domains/auth/presentation/controllers/auth_notifier.dart';
 
-class SplashPage extends StatefulWidget {
+class SplashPage extends ConsumerStatefulWidget {
   const SplashPage({super.key});
 
   @override
-  State<SplashPage> createState() => _SplashPageState();
+  ConsumerState<SplashPage> createState() => _SplashPageState();
 }
 
-class _SplashPageState extends State<SplashPage> {
+class _SplashPageState extends ConsumerState<SplashPage> {
   @override
   void initState() {
     super.initState();
-    _bootstrap();
+    Future(() => _checkAuthenticationStatus());
   }
 
-  Future<void> _bootstrap() async {
-    try {
-      final checkTokenUseCase = di.sl<CheckRefreshTokenStatusUseCase>();
-      final isTokenValid = await checkTokenUseCase.execute();
+  Future<void> _checkAuthenticationStatus() async {
+    if (!mounted) return;
 
-      if (!isTokenValid) {
-        if (!mounted) return;
-
-        NavigationService.showTokenExpiredSnackBar();
-
-        NavigationService.navigateToSignup();
-        return;
-      }
-
-      final useCase = di.sl<StartupRefreshTokenUseCase>();
-      final result = await useCase.execute();
-
-      if (!mounted) return;
-
-      switch (result.status) {
-        case AuthenticationStatus.authenticated:
-          NavigationService.navigateToHome();
-          break;
-        case AuthenticationStatus.unauthenticated:
-        case AuthenticationStatus.expired:
-          NavigationService.navigateToSignup();
-          break;
-      }
-    } catch (e) {
-      if (!mounted) return;
-
-      GracefulLogoutHandler.handleAuthError(e.toString());
-      NavigationService.navigateToSignup();
-    }
+    await ref.read(authNotifierProvider.notifier).refreshToken(true);
   }
 
   @override

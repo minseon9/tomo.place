@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../shared/design_system/tokens/spacing.dart';
+import '../../../../shared/ui/design_system/tokens/spacing.dart';
 import '../../consts/social_label_variant.dart';
 import '../../consts/social_provider.dart';
 import 'social_login_button.dart';

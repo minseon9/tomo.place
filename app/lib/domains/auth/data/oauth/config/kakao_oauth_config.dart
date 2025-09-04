@@ -10,8 +10,9 @@ class KakaoOAuthConfig {
 
   static const String tokenEndpoint = '/oauth/token';
 
-  static const String defaultScope =
-      'profile_nickname profile_image account_email';
+  static const List<String> defaultScope = [
+    'profile_nickname profile_image account_email',
+  ];
 
   static String get clientId => EnvConfig.kakaoClientId;
 

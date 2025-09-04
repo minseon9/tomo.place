@@ -9,7 +9,7 @@ class GoogleOAuthConfig {
 
   static const String tokenEndpoint = '/o/oauth2/token';
 
-  static const String defaultScope = 'email profile';
+  static const List<String> defaultScope = ['email', 'profile'];
 
   static String get clientId => EnvConfig.googleClientId;
 
@@ -36,7 +36,7 @@ class OAuthProviderConfig {
   final String baseUrl;
   final String authEndpoint;
   final String tokenEndpoint;
-  final String scope;
+  final List<String> scope;
   final String redirectUri;
 
   const OAuthProviderConfig({
@@ -49,33 +49,6 @@ class OAuthProviderConfig {
     required this.scope,
     required this.redirectUri,
   });
-
-  String buildAuthUrl({String? state}) {
-    final params = <String, String>{
-      'response_type': 'code',
-      'client_id': clientId,
-      'scope': scope,
-      'redirect_uri': redirectUri,
-    };
-
-    if (state != null) {
-      params['state'] = state;
-    }
-
-    if (providerId == 'GOOGLE') {
-      params['access_type'] = 'offline';
-      params['prompt'] = 'consent';
-    }
-
-    final queryString = params.entries
-        .map(
-          (e) =>
-              '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}',
-        )
-        .join('&');
-
-    return '$baseUrl$authEndpoint?$queryString';
-  }
 
   String get tokenUrl => '$baseUrl$tokenEndpoint';
 }

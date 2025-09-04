@@ -1,8 +1,8 @@
-import '../../../../shared/exceptions/error_interface.dart';
+import '../../../../shared/error_handling/models/exception_interface.dart';
 import 'error_codes.dart';
 import 'error_types.dart';
 
-class AuthException implements ErrorInterface {
+class AuthException implements ExceptionInterface {
   @override
   final String message;
 
