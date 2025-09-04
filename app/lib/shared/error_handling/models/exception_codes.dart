@@ -1,4 +1,4 @@
-class ErrorCodes {
+class ExceptionCodes {
   // Network 관련
   /// 연결 타임아웃
   static const String connectionTimeout = 'NET_001';

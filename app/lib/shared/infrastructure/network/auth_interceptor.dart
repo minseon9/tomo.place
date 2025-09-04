@@ -1,25 +1,23 @@
+import 'package:app/shared/infrastructure/ports/auth_token_dto.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../domains/auth/core/usecases/startup_refresh_token_usecase.dart';
-import '../../services/session_event_bus.dart';
-import '../storage/access_token_memory_store.dart';
+import '../../../domains/auth/core/infra/auth_domain_adapter_provider.dart';
+import '../ports/auth_domain_port.dart';
 
 class AuthInterceptor extends Interceptor {
-  AuthInterceptor(this._memoryStore, this._refreshUseCase, this._eventBus);
+  AuthInterceptor(this._authService);
 
-  final AccessTokenMemoryStore _memoryStore;
-  final StartupRefreshTokenUseCase _refreshUseCase;
-  final SessionEventBus _eventBus;
+  final AuthDomainPort _authService;
 
   @override
   Future<void> onRequest(
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    final result = await _refreshUseCase.execute();
+    AuthTokenDto? authToken = await _authService.getValidToken();
 
-    if (!result.isAuthenticated()) {
-      _eventBus.publish(SessionEvent.expired);
+    if (authToken == null) {
       handler.reject(
         DioException(
           requestOptions: options,
@@ -27,7 +25,7 @@ class AuthInterceptor extends Interceptor {
           response: Response(
             requestOptions: options,
             statusCode: 401,
-            data: {'message': "${result.message}"},
+            data: {'message': 'Authentication required'},
           ),
         ),
         true,
@@ -35,11 +33,11 @@ class AuthInterceptor extends Interceptor {
       return;
     }
 
-    final currentToken = _memoryStore.token;
-    if (currentToken != null) {
-      options.headers['Authorization'] = 'Bearer $currentToken';
-    }
-
+    options.headers['Authorization'] = authToken.authorizationHeader;
     handler.next(options);
   }
 }
+
+final authInterceptorProvider = Provider<AuthInterceptor>((ref) {
+  return AuthInterceptor(ref.read(authDomainAdapterProvider));
+});

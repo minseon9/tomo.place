@@ -1,6 +1,6 @@
-import 'error_interface.dart';
+import '../models/exception_interface.dart';
 
-class GenericException implements ErrorInterface {
+class GenericException implements ExceptionInterface {
   @override
   final String message;
 

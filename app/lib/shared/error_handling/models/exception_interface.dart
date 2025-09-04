@@ -1,4 +1,4 @@
-abstract class ErrorInterface implements Exception {
+abstract class ExceptionInterface implements Exception {
   /// 로깅용 에러 메시지 (개발자/디버깅용)
   String get message;
 

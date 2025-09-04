@@ -1,3 +1,5 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'env_config.dart';
 
 class AppConfig {
@@ -9,3 +11,5 @@ class AppConfig {
 
   static String get apiUrl => _apiUrl ?? EnvConfig.apiUrl;
 }
+
+final appConfigProvider = Provider<AppConfig>((ref) => AppConfig());

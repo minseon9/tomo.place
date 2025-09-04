@@ -1,29 +1,29 @@
-import 'error_interface.dart';
-import 'error_codes.dart';
-import 'error_types.dart';
+import '../models/exception_codes.dart';
+import '../models/exception_interface.dart';
+import '../models/exception_types.dart';
 
 /// 네트워크 관련 예외 클래스
-/// 
+///
 /// 네트워크 연결 및 통신 과정에서 발생하는 예외를 처리합니다.
-class NetworkException implements ErrorInterface {
+class NetworkException implements ExceptionInterface {
   @override
   final String message; // For logging
-  
+
   @override
   final String userMessage; // For UI display
-  
+
   @override
   final String title; // Error title
-  
+
   @override
   final String? errorCode;
-  
+
   @override
   final String errorType;
-  
+
   @override
   final String? suggestedAction;
-  
+
   final int? statusCode;
 
   const NetworkException({
@@ -42,8 +42,8 @@ class NetworkException implements ErrorInterface {
       message: 'Connection timeout occurred',
       userMessage: '네트워크 연결 시간이 초과되었습니다. 다시 시도해주세요.',
       title: '연결 시간 초과',
-      errorType: ErrorTypes.timeout,
-      errorCode: ErrorCodes.connectionTimeout,
+      errorType: ExceptionTypes.timeout,
+      errorCode: ExceptionCodes.connectionTimeout,
       suggestedAction: '네트워크 상태를 확인하고 다시 시도해주세요.',
     );
   }
@@ -54,8 +54,8 @@ class NetworkException implements ErrorInterface {
       message: 'Receive timeout occurred',
       userMessage: '서버 응답 시간이 초과되었습니다. 다시 시도해주세요.',
       title: '응답 시간 초과',
-      errorType: ErrorTypes.timeout,
-      errorCode: ErrorCodes.receiveTimeout,
+      errorType: ExceptionTypes.timeout,
+      errorCode: ExceptionCodes.receiveTimeout,
       suggestedAction: '잠시 후 다시 시도해주세요.',
     );
   }
@@ -66,8 +66,8 @@ class NetworkException implements ErrorInterface {
       message: 'No network connection available',
       userMessage: '네트워크 연결을 확인하고 다시 시도해주세요.',
       title: '네트워크 연결 없음',
-      errorType: ErrorTypes.connection,
-      errorCode: ErrorCodes.noConnection,
+      errorType: ExceptionTypes.connection,
+      errorCode: ExceptionCodes.noConnection,
       suggestedAction: 'Wi-Fi 또는 모바일 데이터 연결을 확인해주세요.',
     );
   }
@@ -78,8 +78,8 @@ class NetworkException implements ErrorInterface {
       message: 'DNS resolution failed',
       userMessage: '서버 주소를 찾을 수 없습니다.',
       title: '서버 연결 실패',
-      errorType: ErrorTypes.dns,
-      errorCode: ErrorCodes.dnsResolutionFailed,
+      errorType: ExceptionTypes.dns,
+      errorCode: ExceptionCodes.dnsResolutionFailed,
       suggestedAction: '인터넷 연결을 확인하고 다시 시도해주세요.',
     );
   }
@@ -90,8 +90,8 @@ class NetworkException implements ErrorInterface {
       message: 'SSL certificate error',
       userMessage: '보안 연결에 실패했습니다.',
       title: '보안 연결 오류',
-      errorType: ErrorTypes.ssl,
-      errorCode: ErrorCodes.sslCertificateError,
+      errorType: ExceptionTypes.ssl,
+      errorCode: ExceptionCodes.sslCertificateError,
       suggestedAction: '앱을 업데이트하거나 관리자에게 문의하세요.',
     );
   }
@@ -102,8 +102,8 @@ class NetworkException implements ErrorInterface {
       message: 'Request cancelled',
       userMessage: '요청이 취소되었습니다.',
       title: '요청 취소',
-      errorType: ErrorTypes.requestResponse,
-      errorCode: ErrorCodes.requestCancelled,
+      errorType: ExceptionTypes.requestResponse,
+      errorCode: ExceptionCodes.requestCancelled,
     );
   }
 
@@ -113,8 +113,8 @@ class NetworkException implements ErrorInterface {
       message: 'Bad response received',
       userMessage: '서버에서 잘못된 응답을 받았습니다.',
       title: '응답 오류',
-      errorType: ErrorTypes.requestResponse,
-      errorCode: ErrorCodes.badResponse,
+      errorType: ExceptionTypes.requestResponse,
+      errorCode: ExceptionCodes.badResponse,
       suggestedAction: '잠시 후 다시 시도해주세요.',
     );
   }
@@ -125,8 +125,8 @@ class NetworkException implements ErrorInterface {
       message: 'Connection error occurred',
       userMessage: '네트워크 연결에 오류가 발생했습니다.',
       title: '연결 오류',
-      errorType: ErrorTypes.connection,
-      errorCode: ErrorCodes.connectionError,
+      errorType: ExceptionTypes.connection,
+      errorCode: ExceptionCodes.connectionError,
       suggestedAction: '네트워크 연결을 확인하고 다시 시도해주세요.',
     );
   }
@@ -137,8 +137,8 @@ class NetworkException implements ErrorInterface {
       message: 'Security connection failed',
       userMessage: '보안 연결을 설정할 수 없습니다.',
       title: '보안 연결 실패',
-      errorType: ErrorTypes.security,
-      errorCode: ErrorCodes.securityConnectionFailed,
+      errorType: ExceptionTypes.security,
+      errorCode: ExceptionCodes.securityConnectionFailed,
       suggestedAction: '네트워크 보안 설정을 확인하세요.',
     );
   }

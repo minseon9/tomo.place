@@ -27,22 +27,12 @@ class EnvConfig {
     }
   }
 
-  static String get _googleServerClientIdKey {
-    if (Platform.isAndroid) {
-      return 'ANDROID_GOOGLE_SERVER_CLIENT_ID';
-    } else if (Platform.isIOS) {
-      return 'IOS_GOOGLE_SERVER_CLIENT_ID';
-    } else {
-      throw ArgumentError('Not Supported Platform');
-    }
-  }
-
   /// 필수 환경 변수 검증
   static void _validateRequiredVariables() {
     final requiredVars = <String>[
       'API_URL',
       _googleClientIdKey,
-      _googleServerClientIdKey,
+      'GOOGLE_SERVER_CLIENT_ID',
       'GOOGLE_REDIRECT_URI',
     ];
 
@@ -82,7 +72,7 @@ class EnvConfig {
 
   static String get googleClientId => _require(_googleClientIdKey);
 
-  static String get googleServerClientId => _require(_googleServerClientIdKey);
+  static String get googleServerClientId => _require('GOOGLE_SERVER_CLIENT_ID');
 
   static String get googleRedirectUri => _require('GOOGLE_REDIRECT_URI');
 

@@ -1,6 +1,19 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-class TokenStorageService {
+abstract class TokenStorageInterface {
+  Future<void> saveRefreshToken({
+    required String refreshToken,
+    required DateTime refreshTokenExpiresAt,
+  });
+
+  Future<String?> getRefreshToken();
+
+  Future<DateTime?> getRefreshTokenExpiry();
+
+  Future<void> clearTokens();
+}
+
+class TokenStorageService implements TokenStorageInterface {
   static const String _refreshTokenKey = 'refresh_token';
   static const String _refreshTokenExpiryKey = 'refresh_token_expiry';
 
@@ -11,6 +24,7 @@ class TokenStorageService {
     ),
   );
 
+  @override
   Future<void> saveRefreshToken({
     required String refreshToken,
     required DateTime refreshTokenExpiresAt,
@@ -24,10 +38,12 @@ class TokenStorageService {
     ]);
   }
 
+  @override
   Future<String?> getRefreshToken() async {
     return await _storage.read(key: _refreshTokenKey);
   }
 
+  @override
   Future<DateTime?> getRefreshTokenExpiry() async {
     final expiryString = await _storage.read(key: _refreshTokenExpiryKey);
     if (expiryString != null) {
@@ -36,6 +52,7 @@ class TokenStorageService {
     return null;
   }
 
+  @override
   Future<void> clearTokens() async {
     await Future.wait([
       _storage.delete(key: _refreshTokenKey),

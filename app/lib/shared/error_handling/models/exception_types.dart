@@ -1,4 +1,4 @@
-class ErrorTypes {
+class ExceptionTypes {
   // Network 관련
   /// 네트워크 일반
   static const String network = 'Network';
