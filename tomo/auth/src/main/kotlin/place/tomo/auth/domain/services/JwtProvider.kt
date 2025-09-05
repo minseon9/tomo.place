@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service
 import place.tomo.auth.domain.dtos.JwtPropertiesDTO
 import place.tomo.auth.domain.dtos.JwtToken
 import java.time.Instant
-import java.util.Date
 
 @Service
 class JwtProvider(
@@ -40,8 +39,7 @@ class JwtProvider(
         val jwsHeader = JwsHeader.with(MacAlgorithm.HS256).build()
 
         val token = jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, jwtClaims)).tokenValue
-        Date.from(expiresAt).time
 
-        return JwtToken(token = token, expiresAt = expiresAt.toEpochMilli())
+        return JwtToken(token = token, expiresAt = expiresAt)
     }
 }

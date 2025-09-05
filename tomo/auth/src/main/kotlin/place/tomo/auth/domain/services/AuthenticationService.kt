@@ -33,8 +33,8 @@ class AuthenticationService(
         return AuthTokenDTO(
             accessToken = accessToken.token,
             refreshToken = refreshToken.token,
-            accessTokenExpiresAt = accessToken.expiresAt,
-            refreshTokenExpiresAt = refreshToken.expiresAt
+            accessTokenExpiresAt = accessToken.expiresAt.toEpochMilli(),
+            refreshTokenExpiresAt = refreshToken.expiresAt.toEpochMilli(),
         )
     }
 
