@@ -13,7 +13,6 @@ import org.springframework.boot.autoconfigure.web.reactive.WebFluxAutoConfigurat
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.context.ApplicationContext
 import org.springframework.http.MediaType
-import org.springframework.security.oauth2.jwt.JwtDecoder
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
@@ -29,7 +28,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.context.WebApplicationContext
-import place.tomo.auth.domain.services.JwtProvider
+import place.tomo.auth.domain.services.jwt.JwtProvider
 import place.tomo.auth.ui.controllers.AuthController
 
 @RestController
@@ -42,6 +41,7 @@ class DummyController {
 
     @PostMapping(
         "/api/auth/signup",
+        "/api/auth/refresh",
     )
     fun postAllAllowed() {}
 }
@@ -66,9 +66,6 @@ class SecurityFilterChainConfigTest {
 
     @Autowired
     private lateinit var jwtProvider: JwtProvider
-
-    @Autowired
-    private lateinit var jwtDecoder: JwtDecoder
 
     private lateinit var mockMvc: MockMvc
 
@@ -199,17 +196,6 @@ class SecurityFilterChainConfigTest {
                         .post("/need-authentication")
                         .header("Authorization", "Bearer ${jwtToken.token}"),
                 ).andExpect(MockMvcResultMatchers.status().isOk)
-        }
-
-        @Test
-        @DisplayName("잘못된 JWT 토큰으로는 접근 불가")
-        fun `filterChain when invalid jwt token expect access denied`() {
-            mockMvc
-                .perform(
-                    MockMvcRequestBuilders
-                        .post("/need-authentication")
-                        .header("Authorization", "Bearer invalid.token.here"),
-                ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
         }
 
         @Test

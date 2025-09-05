@@ -1,6 +1,8 @@
-package place.tomo.auth.domain.dtos
+package place.tomo.auth.application.responses
 
-data class AuthTokenDTO(
+import place.tomo.auth.domain.dtos.JwtToken
+
+data class IssueTokenResponse(
     val accessToken: String,
     val refreshToken: String,
     val accessTokenExpiresAt: Long,
@@ -10,8 +12,8 @@ data class AuthTokenDTO(
         fun fromJwtTokens(
             accessToken: JwtToken,
             refreshToken: JwtToken,
-        ): AuthTokenDTO =
-            AuthTokenDTO(
+        ): IssueTokenResponse =
+            IssueTokenResponse(
                 accessToken = accessToken.token,
                 refreshToken = refreshToken.token,
                 accessTokenExpiresAt = accessToken.expiresAt.toEpochMilli(),

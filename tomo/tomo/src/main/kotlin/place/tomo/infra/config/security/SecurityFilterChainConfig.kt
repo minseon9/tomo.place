@@ -15,6 +15,7 @@ class SecurityFilterChainConfig {
     private val publicPostEndpoints =
         arrayOf(
             "/api/auth/signup",
+            "/api/auth/refresh",
         )
 
     private val apiDocsEndpoints =

@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Import
 import org.springframework.context.annotation.Primary
-import place.tomo.auth.application.services.OIDCApplicationService
+import place.tomo.auth.application.services.AuthenticationApplicationService
 import place.tomo.common.test.security.TestSecurityConfig
 
 @SpringBootConfiguration
@@ -23,5 +23,5 @@ import place.tomo.common.test.security.TestSecurityConfig
 class AuthControllerTestConfig {
     @Bean
     @Primary
-    fun oidcApplicationService(): OIDCApplicationService = mockk()
+    fun authenticationApplicationService(): AuthenticationApplicationService = mockk()
 }

@@ -1,4 +1,4 @@
-package place.tomo.auth.domain.services
+package place.tomo.auth.domain.services.jwt
 
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm
 import org.springframework.security.oauth2.jwt.JwsHeader
@@ -23,8 +23,7 @@ class JwtProvider(
         subject: String,
         expiration: Long,
     ): JwtToken {
-        val nowInstant = Instant.now()
-        val expiresAt = nowInstant.plusSeconds(expiration)
+        val expiresAt = Instant.now().plusSeconds(expiration)
 
         val jwtClaims =
             JwtClaimsSet
@@ -32,7 +31,6 @@ class JwtProvider(
                 .subject(subject)
                 .audience(properties.audiences)
                 .issuer(properties.issuer)
-                .issuedAt(nowInstant)
                 .expiresAt(expiresAt)
                 .build()
 
