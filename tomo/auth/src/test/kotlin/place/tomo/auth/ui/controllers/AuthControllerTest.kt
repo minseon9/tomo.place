@@ -64,8 +64,8 @@ class AuthControllerTest
                             .content(objectMapper.writeValueAsString(SignupRequestBody(provider, authorizationCode))),
                     ).andExpect(status().isOk)
                     .andExpect(header().doesNotExist("Set-Cookie"))
-                    .andExpect(jsonPath("$.token", equalTo(mockedResponse.accessToken)))
-                    .andExpect(jsonPath("$.tokenExpiresAt", equalTo(mockedResponse.accessTokenExpiresAt)))
+                    .andExpect(jsonPath("$.accessToken", equalTo(mockedResponse.accessToken)))
+                    .andExpect(jsonPath("$.accessTokenExpiresAt", equalTo(mockedResponse.accessTokenExpiresAt)))
                     .andExpect(jsonPath("$.refreshToken", equalTo(mockedResponse.refreshToken)))
                     .andExpect(jsonPath("$.refreshTokenExpiresAt", equalTo(mockedResponse.refreshTokenExpiresAt)))
             }
