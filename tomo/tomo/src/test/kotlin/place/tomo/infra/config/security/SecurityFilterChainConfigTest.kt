@@ -13,7 +13,7 @@ import org.springframework.boot.autoconfigure.web.reactive.WebFluxAutoConfigurat
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.context.ApplicationContext
 import org.springframework.http.MediaType
-import org.springframework.security.core.userdetails.UserDetailsService
+import org.springframework.security.oauth2.jwt.JwtDecoder
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
@@ -66,6 +66,9 @@ class SecurityFilterChainConfigTest {
 
     @Autowired
     private lateinit var jwtProvider: JwtProvider
+
+    @Autowired
+    private lateinit var jwtDecoder: JwtDecoder
 
     private lateinit var mockMvc: MockMvc
 
@@ -156,13 +159,13 @@ class SecurityFilterChainConfigTest {
         @Test
         @DisplayName("Form 로그인이 비활성화됨")
         fun `filterChain when form login expect disabled`() {
-            val token = jwtProvider.issueAccessToken(faker.internet().emailAddress())
+            val jwtToken = jwtProvider.issueAccessToken(faker.internet().emailAddress())
 
             mockMvc
                 .perform(
                     MockMvcRequestBuilders
                         .get("/login")
-                        .header("Authorization", "Bearer $token"),
+                        .header("Authorization", "Bearer ${jwtToken.token}"),
                 ).andExpect(MockMvcResultMatchers.status().isNotFound)
         }
     }
@@ -188,13 +191,13 @@ class SecurityFilterChainConfigTest {
         @Test
         @DisplayName("유효한 JWT 토큰으로 보호된 엔드포인트 접근 가능")
         fun `filterChain when valid jwt token expect access to protected endpoints`() {
-            val token = jwtProvider.issueAccessToken(faker.internet().emailAddress())
+            val jwtToken = jwtProvider.issueAccessToken(faker.internet().emailAddress())
 
             mockMvc
                 .perform(
                     MockMvcRequestBuilders
                         .post("/need-authentication")
-                        .header("Authorization", "Bearer $token"),
+                        .header("Authorization", "Bearer ${jwtToken.token}"),
                 ).andExpect(MockMvcResultMatchers.status().isOk)
         }
 

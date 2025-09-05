@@ -16,6 +16,7 @@ import place.tomo.auth.domain.exception.SocialAccountNotLinkedException
 import place.tomo.auth.domain.services.oidc.OIDCProvider
 import place.tomo.auth.domain.services.oidc.OIDCProviderFactory
 import place.tomo.contract.constant.OIDCProviderType
+import java.time.Instant
 
 @DisplayName("AuthenticationService")
 class AuthenticationServiceTest {
@@ -44,6 +45,7 @@ class AuthenticationServiceTest {
             every { oidcProviderFactory.getService(OIDCProviderType.GOOGLE) } returns provider
             coEvery { provider.getOIDCUserInfo("code") } returns info
             every { socialAccountService.checkSocialAccount(OIDCProviderType.GOOGLE, "sid") } returns true
+
             val accessToken = JwtToken("a", Instant.now().plusSeconds(3600))
             val refreshToken = JwtToken("r", Instant.now().plusSeconds(86400))
             every { jwtTokenProvider.issueAccessToken("user@example.com") } returns accessToken
@@ -53,8 +55,8 @@ class AuthenticationServiceTest {
 
             assertThat(token.accessToken).isEqualTo("a")
             assertThat(token.refreshToken).isEqualTo("r")
-            assertThat(token.accessTokenExpiresAt).isEqualTo(accessToken.expiresAt)
-            assertThat(token.refreshTokenExpiresAt).isEqualTo(refreshToken.expiresAt)
+            assertThat(token.accessTokenExpiresAt).isEqualTo(accessToken.expiresAt.toEpochMilli())
+            assertThat(token.refreshTokenExpiresAt).isEqualTo(refreshToken.expiresAt.toEpochMilli())
         }
 
         @Test
@@ -91,8 +93,8 @@ class AuthenticationServiceTest {
 
             assertThat(token.accessToken).isEqualTo("a")
             assertThat(token.refreshToken).isEqualTo("r")
-            assertThat(token.accessTokenExpiresAt).isEqualTo(accessToken.expiresAt)
-            assertThat(token.refreshTokenExpiresAt).isEqualTo(refreshToken.expiresAt)
+            assertThat(token.accessTokenExpiresAt).isEqualTo(accessToken.expiresAt.toEpochMilli())
+            assertThat(token.refreshTokenExpiresAt).isEqualTo(refreshToken.expiresAt.toEpochMilli())
         }
     }
 

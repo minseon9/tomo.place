@@ -2,7 +2,6 @@ package place.tomo.auth.ui.controllers
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.mockk.every
-import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -13,8 +12,8 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.header
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import place.tomo.auth.application.requests.OIDCSignUpRequest
 import place.tomo.auth.application.responses.LoginResponse
@@ -51,9 +50,9 @@ class AuthControllerTest
                 val mockedResponse =
                     LoginResponse(
                         accessToken = "access-token",
-                        accessTokenExpiresAt = 1000L,
+                        accessTokenExpiresAt = 1000,
                         refreshToken = "refresh-token",
-                        refreshTokenExpiresAt = 1000L,
+                        refreshTokenExpiresAt = 1000,
                     )
                 every { oidcAuthService.signUp(OIDCSignUpRequest(provider, authorizationCode)) } returns mockedResponse
 
@@ -64,10 +63,7 @@ class AuthControllerTest
                             .content(objectMapper.writeValueAsString(SignupRequestBody(provider, authorizationCode))),
                     ).andExpect(status().isOk)
                     .andExpect(header().doesNotExist("Set-Cookie"))
-                    .andExpect(jsonPath("$.accessToken", equalTo(mockedResponse.accessToken)))
-                    .andExpect(jsonPath("$.accessTokenExpiresAt", equalTo(mockedResponse.accessTokenExpiresAt)))
-                    .andExpect(jsonPath("$.refreshToken", equalTo(mockedResponse.refreshToken)))
-                    .andExpect(jsonPath("$.refreshTokenExpiresAt", equalTo(mockedResponse.refreshTokenExpiresAt)))
+                    .andExpect(content().json(objectMapper.writeValueAsString(mockedResponse)))
             }
 
             @Test

@@ -62,8 +62,8 @@ class OIDCApplicationServiceTest {
                 AuthTokenDTO(
                     accessToken = accessToken,
                     refreshToken = refreshToken,
-                    accessTokenExpiresAt = Instant.now().plusSeconds(3600),
-                    refreshTokenExpiresAt = Instant.now().plusSeconds(86400),
+                    accessTokenExpiresAt = Instant.now().plusSeconds(3600).toEpochMilli(),
+                    refreshTokenExpiresAt = Instant.now().plusSeconds(86400).toEpochMilli(),
                 )
 
             every { authenticationService.getOidcUserInfo(OIDCProviderType.GOOGLE, any()) } returns oidcInfo
@@ -104,8 +104,8 @@ class OIDCApplicationServiceTest {
                 AuthTokenDTO(
                     accessToken = accessToken,
                     refreshToken = refreshToken,
-                    accessTokenExpiresAt = Instant.now().plusSeconds(3600),
-                    refreshTokenExpiresAt = Instant.now().plusSeconds(86400),
+                    accessTokenExpiresAt = Instant.now().plusSeconds(3600).toEpochMilli(),
+                    refreshTokenExpiresAt = Instant.now().plusSeconds(86400).toEpochMilli(),
                 )
 
             every { authenticationService.getOidcUserInfo(OIDCProviderType.GOOGLE, any()) } returns oidcInfo
@@ -144,8 +144,8 @@ class OIDCApplicationServiceTest {
                 AuthTokenDTO(
                     accessToken = faker.internet().password(),
                     refreshToken = faker.internet().password(),
-                    accessTokenExpiresAt = Instant.now().plusSeconds(3600),
-                    refreshTokenExpiresAt = Instant.now().plusSeconds(86400),
+                    accessTokenExpiresAt = Instant.now().plusSeconds(3600).toEpochMilli(),
+                    refreshTokenExpiresAt = Instant.now().plusSeconds(86400).toEpochMilli(),
                 )
 
             service.signUp(OIDCSignUpRequest(OIDCProviderType.GOOGLE, authorizationCode = faker.internet().password()))
@@ -185,8 +185,8 @@ class OIDCApplicationServiceTest {
                 AuthTokenDTO(
                     accessToken = accessToken,
                     refreshToken = refreshToken,
-                    accessTokenExpiresAt = Instant.now().plusSeconds(3600),
-                    refreshTokenExpiresAt = Instant.now().plusSeconds(86400),
+                    accessTokenExpiresAt = Instant.now().plusSeconds(3600).toEpochMilli(),
+                    refreshTokenExpiresAt = Instant.now().plusSeconds(86400).toEpochMilli(),
                 )
             val expectedLoginResponse =
                 LoginResponse(
