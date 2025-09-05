@@ -41,6 +41,7 @@ class DummyController {
 
     @PostMapping(
         "/api/auth/signup",
+        "/api/auth/refresh",
     )
     fun postAllAllowed() {}
 }

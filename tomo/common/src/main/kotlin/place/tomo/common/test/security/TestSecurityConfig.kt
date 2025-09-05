@@ -13,6 +13,7 @@ class TestSecurityConfig {
     private val publicPostEndpoints =
         arrayOf(
             "/api/auth/signup",
+            "/api/auth/refresh",
         )
 
     @Bean
