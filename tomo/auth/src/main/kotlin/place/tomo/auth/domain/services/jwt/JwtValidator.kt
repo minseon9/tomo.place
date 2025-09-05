@@ -26,7 +26,7 @@ class JwtValidator(
                 throw InvalidRefreshTokenException("유효하지 않는 subject입니다.")
             }
         } catch (e: JwtException) {
-            throw InvalidRefreshTokenException("유효하지 않은 토큰입니다.: ${e.message}")
+            throw InvalidRefreshTokenException("유효하지 않은 토큰입니다.: ${e.message}", e)
         }
     }
 }
