@@ -1,8 +1,8 @@
 package place.tomo.user.domain.services
 
 import org.springframework.stereotype.Service
+import place.tomo.common.exception.NotFoundActiveUserException
 import place.tomo.user.domain.entities.UserEntity
-import place.tomo.user.domain.exception.DeactivatedUserException
 import place.tomo.user.domain.exception.DuplicateEmailException
 import place.tomo.user.infra.repositories.UserRepository
 
@@ -32,7 +32,7 @@ class UserDomainService(
 
         return when {
             existingUser == null -> createUser(email, name)
-            !existingUser.isActivated() -> throw DeactivatedUserException(email)
+            !existingUser.isActivated() -> throw NotFoundActiveUserException(email)
             else -> existingUser
         }
     }
