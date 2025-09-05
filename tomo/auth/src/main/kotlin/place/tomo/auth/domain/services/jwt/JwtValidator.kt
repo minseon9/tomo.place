@@ -4,27 +4,17 @@ import org.springframework.security.oauth2.jwt.JwtDecoder
 import org.springframework.security.oauth2.jwt.JwtException
 import org.springframework.stereotype.Service
 import place.tomo.auth.domain.exception.InvalidRefreshTokenException
-import java.time.Instant
 
 @Service
 class JwtValidator(
     private val jwtDecoder: JwtDecoder,
 ) {
-    fun validateRefreshToken(
-        subject: String,
-        refreshToken: String,
-    ) {
+    fun validateRefreshToken(refreshToken: String): String {
         try {
+            // NOTE: JwtConfig에서 validator들을 추가해, decode 시 iss, aud, exp에 대한 검증을 진행
             val jwt = jwtDecoder.decode(refreshToken)
 
-            val expiration = jwt.expiresAt
-            if (expiration != null && expiration.isBefore(Instant.now())) {
-                throw InvalidRefreshTokenException("만료된 토큰입니다.")
-            }
-
-            if (jwt.subject != subject) {
-                throw InvalidRefreshTokenException("유효하지 않는 subject입니다.")
-            }
+            return jwt.subject
         } catch (e: JwtException) {
             throw InvalidRefreshTokenException("유효하지 않은 토큰입니다.: ${e.message}", e)
         }

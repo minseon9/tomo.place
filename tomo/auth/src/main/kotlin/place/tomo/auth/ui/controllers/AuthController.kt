@@ -2,8 +2,6 @@ package place.tomo.auth.ui.controllers
 
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
-import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -39,10 +37,9 @@ class AuthController(
 
     @PostMapping("/refresh")
     fun refreshToken(
-        @AuthenticationPrincipal user: UserDetails,
         @RequestBody @Valid body: RefreshTokenRequestBody,
     ): ResponseEntity<RefreshTokenResponseBody> {
-        val response = authService.refreshToken(RefreshTokenRequest(user.username, body.refreshToken))
+        val response = authService.refreshToken(RefreshTokenRequest(body.refreshToken))
 
         return ResponseEntity.ok(
             RefreshTokenResponseBody(

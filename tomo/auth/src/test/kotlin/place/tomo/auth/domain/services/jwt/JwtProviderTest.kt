@@ -62,7 +62,6 @@ class JwtProviderTest {
             assertThat(claims.getClaim<String>("iss")).isEqualTo(jwtProperties.issuer)
             assertThat(claims.getClaim<String>("sub")).isEqualTo(subject)
             assertThat(claims.getClaim<List<String>>("aud")).isEqualTo(jwtProperties.audiences)
-            assertThat(claims.getClaim<Instant>("iat")).isBefore(Instant.now())
             assertThat(claims.getClaim<Instant>("exp")).isAfter(Instant.now())
         }
 
@@ -90,7 +89,6 @@ class JwtProviderTest {
             assertThat(claims.getClaim<String>("iss")).isEqualTo(jwtProperties.issuer)
             assertThat(claims.getClaim<String>("sub")).isEqualTo(subject)
             assertThat(claims.getClaim<List<String>>("aud")).isEqualTo(jwtProperties.audiences)
-            assertThat(claims.getClaim<Instant>("iat")).isBefore(Instant.now())
             assertThat(claims.getClaim<Instant>("exp")).isAfter(Instant.now())
 
             verify { jwtEncoder.encode(any()) }

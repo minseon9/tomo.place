@@ -23,7 +23,6 @@ import place.tomo.auth.application.services.AuthenticationApplicationService
 import place.tomo.auth.domain.exception.InvalidRefreshTokenException
 import place.tomo.auth.ui.requests.RefreshTokenRequestBody
 import place.tomo.auth.ui.requests.SignupRequestBody
-import place.tomo.common.test.security.TestSecurityUtils
 import place.tomo.contract.constant.OIDCProviderType
 
 @WebMvcTest(
@@ -119,7 +118,6 @@ class AuthControllerTest {
         @Test
         @DisplayName("유효한 refresh token으로 요청 시 새로운 토큰을 반환한다")
         fun `refresh token when valid expect new tokens returned`() {
-            val userEmail = faker.internet().emailAddress()
             val refreshToken = faker.internet().password()
             val request = RefreshTokenRequestBody(refreshToken)
             val mockedResponse =
@@ -130,13 +128,12 @@ class AuthControllerTest {
                     refreshTokenExpiresAt = System.currentTimeMillis() + 86400000,
                 )
             every {
-                authenticationApplicationService.refreshToken(RefreshTokenRequest(userEmail, refreshToken))
+                authenticationApplicationService.refreshToken(RefreshTokenRequest(refreshToken))
             } returns mockedResponse
 
             mockMvc
                 .perform(
                     post("/api/auth/refresh")
-                        .with(TestSecurityUtils.withUser(userEmail))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)),
                 ).andExpect(status().isOk)
@@ -160,12 +157,11 @@ class AuthControllerTest {
         @Test
         @DisplayName("유효하지 않은 refresh token으로 요청 시 403 Bad Request를 반환한다")
         fun `refresh token when invalud expect 403 bad request`() {
-            val userEmail = faker.internet().emailAddress()
             val refreshToken = "invalid refresh token"
             val request = RefreshTokenRequestBody(refreshToken)
 
             every {
-                authenticationApplicationService.refreshToken(RefreshTokenRequest(userEmail, refreshToken))
+                authenticationApplicationService.refreshToken(RefreshTokenRequest(refreshToken))
             } throws InvalidRefreshTokenException("유효하지 않은 토큰입니다.")
 
             mockMvc

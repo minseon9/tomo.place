@@ -10,6 +10,7 @@ import place.tomo.auth.domain.services.AuthenticationService
 import place.tomo.auth.domain.services.SocialAccountDomainService
 import place.tomo.auth.domain.services.jwt.JwtProvider
 import place.tomo.auth.domain.services.jwt.JwtValidator
+import place.tomo.common.exception.NotFoundActiveUserException
 import place.tomo.contract.ports.UserDomainPort
 
 @Service
@@ -41,9 +42,13 @@ class AuthenticationApplicationService(
     }
 
     fun refreshToken(request: RefreshTokenRequest): IssueTokenResponse {
-        jwtValidator.validateRefreshToken(request.userEmail, request.refreshToken)
+        val subject = jwtValidator.validateRefreshToken(request.refreshToken)
+        val activeUser = userDomainPort.findActiveByEmail(subject)
+        if (activeUser == null) {
+            throw NotFoundActiveUserException(subject)
+        }
 
-        return issueToken(request.userEmail)
+        return issueToken(subject)
     }
 
     private fun issueToken(subject: String): IssueTokenResponse {

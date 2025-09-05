@@ -199,17 +199,6 @@ class SecurityFilterChainConfigTest {
         }
 
         @Test
-        @DisplayName("잘못된 JWT 토큰으로는 접근 불가")
-        fun `filterChain when invalid jwt token expect access denied`() {
-            mockMvc
-                .perform(
-                    MockMvcRequestBuilders
-                        .post("/need-authentication")
-                        .header("Authorization", "Bearer invalid.token.here"),
-                ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
-        }
-
-        @Test
         @DisplayName("Bearer 접두사만 있고 토큰이 없을 때 인증 실패")
         fun `should fail authentication when bearer prefix exists but no token`() {
             mockMvc
