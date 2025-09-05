@@ -9,13 +9,12 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.http.MediaType
-import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.header
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import place.tomo.auth.application.requests.OIDCSignUpRequest
 import place.tomo.auth.application.requests.RefreshTokenRequest
@@ -57,7 +56,7 @@ class AuthControllerTest {
         fun `signup when valid authorization code expect 200 ok`() {
             val provider = OIDCProviderType.GOOGLE
             val authorizationCode = faker.internet().password()
-            val response =
+            val mockedResponse =
                 IssueTokenResponse(
                     accessToken = faker.internet().password(),
                     refreshToken = faker.internet().password(),
@@ -65,7 +64,9 @@ class AuthControllerTest {
                     refreshTokenExpiresAt = System.currentTimeMillis() + 86400000,
                 )
 
-            every { authenticationApplicationService.signUp(OIDCSignUpRequest(provider, authorizationCode)) } returns response
+            every {
+                authenticationApplicationService.signUp(OIDCSignUpRequest(provider, authorizationCode))
+            } returns mockedResponse
 
             mockMvc
                 .perform(
@@ -74,10 +75,7 @@ class AuthControllerTest {
                         .content(objectMapper.writeValueAsString(SignupRequestBody(provider, authorizationCode))),
                 ).andExpect(status().isOk)
                 .andExpect(header().doesNotExist("Set-Cookie"))
-                .andExpect(jsonPath("$.accessToken").value(response.accessToken))
-                .andExpect(jsonPath("$.refreshToken").value(response.refreshToken))
-                .andExpect(jsonPath("$.accessTokenExpiresAt").value(response.accessTokenExpiresAt))
-                .andExpect(jsonPath("$.refreshTokenExpiresAt").value(response.refreshTokenExpiresAt))
+                .andExpect(content().json(objectMapper.writeValueAsString(mockedResponse)))
         }
 
         @Test
@@ -123,14 +121,16 @@ class AuthControllerTest {
             val userEmail = faker.internet().emailAddress()
             val refreshToken = faker.internet().password()
             val request = RefreshTokenRequestBody(refreshToken)
-            val response =
+            val mockedResponse =
                 IssueTokenResponse(
                     accessToken = faker.internet().password(),
                     refreshToken = faker.internet().password(),
                     accessTokenExpiresAt = System.currentTimeMillis() + 3600000,
                     refreshTokenExpiresAt = System.currentTimeMillis() + 86400000,
                 )
-            every { authenticationApplicationService.refreshToken(RefreshTokenRequest(userEmail, refreshToken)) } returns response
+            every {
+                authenticationApplicationService.refreshToken(RefreshTokenRequest(userEmail, refreshToken))
+            } returns mockedResponse
 
             mockMvc
                 .perform(
@@ -140,15 +140,11 @@ class AuthControllerTest {
                         .content(objectMapper.writeValueAsString(request)),
                 ).andExpect(status().isOk)
                 .andExpect(header().doesNotExist("Set-Cookie"))
-                .andExpect(jsonPath("$.accessToken").value(response.accessToken))
-                .andExpect(jsonPath("$.refreshToken").value(response.refreshToken))
-                .andExpect(jsonPath("$.accessTokenExpiresAt").value(response.accessTokenExpiresAt))
-                .andExpect(jsonPath("$.refreshTokenExpiresAt").value(response.refreshTokenExpiresAt))
+                .andExpect(content().json(objectMapper.writeValueAsString(mockedResponse)))
         }
 
         @Test
         @DisplayName("빈 refresh token으로 요청 시 400 Bad Request를 반환한다")
-        @WithMockUser(username = "test")
         fun `refresh token when empty expect 400 bad request`() {
             val request = RefreshTokenRequestBody("")
 
@@ -162,7 +158,6 @@ class AuthControllerTest {
 
         @Test
         @DisplayName("refresh token이 없는 요청 시 400 Bad Request를 반환한다")
-        @WithMockUser(username = "test")
         fun `refresh token when missing expect 400 bad request`() {
             val request = mapOf<String, String>()
 

@@ -155,13 +155,13 @@ class SecurityFilterChainConfigTest {
         @Test
         @DisplayName("Form 로그인이 비활성화됨")
         fun `filterChain when form login expect disabled`() {
-            val token = jwtProvider.issueAccessToken(faker.internet().emailAddress())
+            val jwtToken = jwtProvider.issueAccessToken(faker.internet().emailAddress())
 
             mockMvc
                 .perform(
                     MockMvcRequestBuilders
                         .get("/login")
-                        .header("Authorization", "Bearer ${token.token}"),
+                        .header("Authorization", "Bearer ${jwtToken.token}"),
                 ).andExpect(MockMvcResultMatchers.status().isNotFound)
         }
     }
@@ -187,13 +187,13 @@ class SecurityFilterChainConfigTest {
         @Test
         @DisplayName("유효한 JWT 토큰으로 보호된 엔드포인트 접근 가능")
         fun `filterChain when valid jwt token expect access to protected endpoints`() {
-            val token = jwtProvider.issueAccessToken(faker.internet().emailAddress())
+            val jwtToken = jwtProvider.issueAccessToken(faker.internet().emailAddress())
 
             mockMvc
                 .perform(
                     MockMvcRequestBuilders
                         .post("/need-authentication")
-                        .header("Authorization", "Bearer ${token.token}"),
+                        .header("Authorization", "Bearer ${jwtToken.token}"),
                 ).andExpect(MockMvcResultMatchers.status().isOk)
         }
 

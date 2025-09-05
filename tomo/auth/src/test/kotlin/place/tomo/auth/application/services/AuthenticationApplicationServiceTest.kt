@@ -1,6 +1,9 @@
 package place.tomo.auth.application.services
 
-import io.mockk.*
+import io.mockk.every
+import io.mockk.justRun
+import io.mockk.mockk
+import io.mockk.verify
 import net.datafaker.Faker
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -12,8 +15,9 @@ import place.tomo.auth.application.requests.OIDCSignUpRequest
 import place.tomo.auth.application.requests.RefreshTokenRequest
 import place.tomo.auth.application.responses.IssueTokenResponse
 import place.tomo.auth.domain.commands.LinkSocialAccountCommand
-import place.tomo.auth.domain.dtos.JwtTokenVO
+import place.tomo.auth.domain.dtos.JwtToken
 import place.tomo.auth.domain.dtos.oidc.OIDCUserInfo
+import place.tomo.auth.domain.exception.InvalidRefreshTokenException
 import place.tomo.auth.domain.services.AuthenticationService
 import place.tomo.auth.domain.services.SocialAccountDomainService
 import place.tomo.auth.domain.services.jwt.JwtProvider
@@ -40,7 +44,14 @@ class AuthenticationApplicationServiceTest {
         jwtValidator = mockk()
         userDomainPort = mockk()
         socialAccountService = mockk(relaxed = true)
-        service = AuthenticationApplicationService(authenticationService, jwtProvider, jwtValidator, userDomainPort, socialAccountService)
+        service =
+            AuthenticationApplicationService(
+                authenticationService,
+                jwtProvider,
+                jwtValidator,
+                userDomainPort,
+                socialAccountService,
+            )
     }
 
     @Nested
@@ -51,9 +62,6 @@ class AuthenticationApplicationServiceTest {
         fun `sign up when user already exists expect do not create`() {
             val email = faker.internet().emailAddress()
             val name = faker.name().fullName()
-            val accessToken = faker.internet().password()
-            val refreshToken = faker.internet().password()
-
             val oidcInfo =
                 OIDCUserInfo(
                     OIDCProviderType.GOOGLE,
@@ -63,22 +71,19 @@ class AuthenticationApplicationServiceTest {
                     profileImageUrl = null,
                 )
             val userInfo = UserInfoDTO(faker.number().numberBetween(1L, 1000L), email, name)
-            val accessTokenVO = JwtTokenVO(accessToken, Instant.now().plusSeconds(3600).toEpochMilli())
-            val refreshTokenVO = JwtTokenVO(refreshToken, Instant.now().plusSeconds(86400).toEpochMilli())
-
             every { authenticationService.getOidcUserInfo(OIDCProviderType.GOOGLE, any()) } returns oidcInfo
             every { userDomainPort.getOrCreateActiveUser(email, name) } returns userInfo
-            every { jwtProvider.issueAccessToken(email) } returns accessTokenVO
-            every { jwtProvider.issueRefreshToken(email) } returns refreshTokenVO
 
-            val response: IssueTokenResponse =
-                service.signUp(
-                    OIDCSignUpRequest(OIDCProviderType.GOOGLE, authorizationCode = faker.internet().password()),
-                )
+            val accessToken = issueToken(false)
+            val refreshToken = issueToken(true)
+            every { jwtProvider.issueAccessToken(email) } returns accessToken
+            every { jwtProvider.issueRefreshToken(email) } returns refreshToken
 
-            assertThat(response.accessToken).isEqualTo(accessToken)
-            assertThat(response.accessTokenExpiresAt).isEqualTo(accessTokenVO.expiresAt)
-            assertThat(response.refreshTokenExpiresAt).isEqualTo(refreshTokenVO.expiresAt)
+            service.signUp(
+                OIDCSignUpRequest(OIDCProviderType.GOOGLE, authorizationCode = faker.internet().password()),
+            )
+
+            IssueTokenResponse.fromJwtTokens(accessToken, refreshToken)
             verify(exactly = 1) { userDomainPort.getOrCreateActiveUser(email, name) }
             verify(exactly = 1) { socialAccountService.linkSocialAccount(any<LinkSocialAccountCommand>()) }
         }
@@ -88,9 +93,6 @@ class AuthenticationApplicationServiceTest {
         fun `sign up when user not exists expect temporary password generated and user created`() {
             val email = faker.internet().emailAddress()
             val name = faker.name().fullName()
-            val accessToken = faker.internet().password()
-            val refreshToken = faker.internet().password()
-
             val oidcInfo =
                 OIDCUserInfo(
                     OIDCProviderType.GOOGLE,
@@ -100,19 +102,25 @@ class AuthenticationApplicationServiceTest {
                     profileImageUrl = null,
                 )
             val createdUserInfo = UserInfoDTO(faker.number().numberBetween(1L, 1000L), email, name)
-            val accessTokenVO = JwtTokenVO(accessToken, Instant.now().plusSeconds(3600).toEpochMilli())
-            val refreshTokenVO = JwtTokenVO(refreshToken, Instant.now().plusSeconds(86400).toEpochMilli())
-
             every { authenticationService.getOidcUserInfo(OIDCProviderType.GOOGLE, any()) } returns oidcInfo
             every { userDomainPort.getOrCreateActiveUser(email, name) } returns createdUserInfo
-            every { jwtProvider.issueAccessToken(email) } returns accessTokenVO
-            every { jwtProvider.issueRefreshToken(email) } returns refreshTokenVO
 
-            val response = service.signUp(OIDCSignUpRequest(OIDCProviderType.GOOGLE, authorizationCode = faker.internet().password()))
+            val accessToken = issueToken(false)
+            val refreshToken = issueToken(true)
+            every { jwtProvider.issueAccessToken(email) } returns accessToken
+            every { jwtProvider.issueRefreshToken(email) } returns refreshToken
 
-            assertThat(response.accessToken).isEqualTo(accessToken)
-            assertThat(response.accessTokenExpiresAt).isEqualTo(accessTokenVO.expiresAt)
-            assertThat(response.refreshTokenExpiresAt).isEqualTo(refreshTokenVO.expiresAt)
+            val response =
+                service.signUp(
+                    OIDCSignUpRequest(
+                        OIDCProviderType.GOOGLE,
+                        authorizationCode = faker.internet().password(),
+                    ),
+                )
+
+            val expectedIssueTokenResponse =
+                IssueTokenResponse.fromJwtTokens(accessToken, refreshToken)
+            assertThat(response).isEqualTo(expectedIssueTokenResponse)
             verify { userDomainPort.getOrCreateActiveUser(email, name) }
             verify { socialAccountService.linkSocialAccount(any<LinkSocialAccountCommand>()) }
         }
@@ -133,13 +141,13 @@ class AuthenticationApplicationServiceTest {
                     profileImageUrl = faker.internet().url(),
                 )
             val userInfo = UserInfoDTO(faker.number().numberBetween(1L, 1000L), email, name)
-            val accessTokenVO = JwtTokenVO(faker.internet().password(), Instant.now().plusSeconds(3600).toEpochMilli())
-            val refreshTokenVO = JwtTokenVO(faker.internet().password(), Instant.now().plusSeconds(86400).toEpochMilli())
-
             every { authenticationService.getOidcUserInfo(any(), any()) } returns oidcInfo
             every { userDomainPort.getOrCreateActiveUser(email, name) } returns userInfo
-            every { jwtProvider.issueAccessToken(email) } returns accessTokenVO
-            every { jwtProvider.issueRefreshToken(email) } returns refreshTokenVO
+
+            val accessToken = issueToken(false)
+            val refreshToken = issueToken(true)
+            every { jwtProvider.issueAccessToken(email) } returns accessToken
+            every { jwtProvider.issueRefreshToken(email) } returns refreshToken
 
             service.signUp(OIDCSignUpRequest(OIDCProviderType.GOOGLE, authorizationCode = faker.internet().password()))
 
@@ -157,9 +165,6 @@ class AuthenticationApplicationServiceTest {
         @Test
         @DisplayName("OIDC 회원 가입 성공 시, 토큰 정보를 반환한다")
         fun `sign up when completed expect login response with tokens`() {
-            val accessToken = faker.internet().password()
-            val refreshToken = faker.internet().password()
-
             val oidcInfo =
                 OIDCUserInfo(
                     OIDCProviderType.GOOGLE,
@@ -174,23 +179,24 @@ class AuthenticationApplicationServiceTest {
                     faker.internet().emailAddress(),
                     faker.name().fullName(),
                 )
-            val accessTokenVO = JwtTokenVO(accessToken, Instant.now().plusSeconds(3600).toEpochMilli())
-            val refreshTokenVO = JwtTokenVO(refreshToken, Instant.now().plusSeconds(86400).toEpochMilli())
-            val expectedIssueTokenResponse =
-                IssueTokenResponse(
-                    accessToken = accessToken,
-                    refreshToken = refreshToken,
-                    accessTokenExpiresAt = accessTokenVO.expiresAt,
-                    refreshTokenExpiresAt = refreshTokenVO.expiresAt,
-                )
-
             every { authenticationService.getOidcUserInfo(any(), any()) } returns oidcInfo
             every { userDomainPort.getOrCreateActiveUser(any(), any()) } returns userInfo
-            every { jwtProvider.issueAccessToken(any()) } returns accessTokenVO
-            every { jwtProvider.issueRefreshToken(any()) } returns refreshTokenVO
 
-            val response = service.signUp(OIDCSignUpRequest(OIDCProviderType.GOOGLE, authorizationCode = faker.internet().password()))
+            val accessToken = issueToken(false)
+            val refreshToken = issueToken(true)
+            every { jwtProvider.issueAccessToken(any()) } returns accessToken
+            every { jwtProvider.issueRefreshToken(any()) } returns refreshToken
 
+            val response =
+                service.signUp(
+                    OIDCSignUpRequest(
+                        OIDCProviderType.GOOGLE,
+                        authorizationCode = faker.internet().password(),
+                    ),
+                )
+
+            val expectedIssueTokenResponse =
+                IssueTokenResponse.fromJwtTokens(accessToken, refreshToken)
             assertThat(response).isEqualTo(expectedIssueTokenResponse)
         }
 
@@ -213,7 +219,12 @@ class AuthenticationApplicationServiceTest {
             every { userDomainPort.findActiveByEmail(email) } throws RuntimeException("비활성화된 사용자입니다.")
 
             assertThatThrownBy {
-                service.signUp(OIDCSignUpRequest(OIDCProviderType.GOOGLE, authorizationCode = faker.internet().password()))
+                service.signUp(
+                    OIDCSignUpRequest(
+                        OIDCProviderType.GOOGLE,
+                        authorizationCode = faker.internet().password(),
+                    ),
+                )
             }.isInstanceOf(RuntimeException::class.java)
         }
     }
@@ -226,25 +237,50 @@ class AuthenticationApplicationServiceTest {
         fun `refresh token when valid expect new tokens returned`() {
             val refreshToken = faker.internet().password()
             val userEmail = faker.internet().emailAddress()
-            val newAccessToken = faker.internet().password()
-            val newRefreshToken = faker.internet().password()
-            val accessTokenExpiresAt = Instant.now().plusSeconds(3600).toEpochMilli()
-            val refreshTokenExpiresAt = Instant.now().plusSeconds(86400).toEpochMilli()
-
             val request = RefreshTokenRequest(userEmail, refreshToken)
-            val accessTokenVO = JwtTokenVO(newAccessToken, accessTokenExpiresAt)
-            val refreshTokenVO = JwtTokenVO(newRefreshToken, refreshTokenExpiresAt)
 
             justRun { jwtValidator.validateRefreshToken(userEmail, refreshToken) }
-            every { jwtProvider.issueAccessToken(userEmail) } returns accessTokenVO
-            every { jwtProvider.issueRefreshToken(userEmail) } returns refreshTokenVO
+
+            val newAccessToken = issueToken(false)
+            val newRefreshToken = issueToken(true)
+            every { jwtProvider.issueAccessToken(userEmail) } returns newAccessToken
+            every { jwtProvider.issueRefreshToken(userEmail) } returns newRefreshToken
 
             val result = service.refreshToken(request)
 
-            assertThat(result.accessToken).isEqualTo(newAccessToken)
-            assertThat(result.refreshToken).isEqualTo(newRefreshToken)
-            assertThat(result.accessTokenExpiresAt).isEqualTo(accessTokenExpiresAt)
-            assertThat(result.refreshTokenExpiresAt).isEqualTo(refreshTokenExpiresAt)
+            val expectedResult = IssueTokenResponse.fromJwtTokens(newAccessToken, newRefreshToken)
+            assertThat(result).isEqualTo(expectedResult)
         }
+
+        @Test
+        @DisplayName("유효하지 않은 refresh token으로 요청 시 예외를 던진다")
+        fun `refresh token when invalid expect exception thrown`() {
+            val refreshToken = faker.internet().password()
+            val userEmail = faker.internet().emailAddress()
+
+            val request = RefreshTokenRequest(userEmail, refreshToken)
+
+            every {
+                jwtValidator.validateRefreshToken(userEmail, refreshToken)
+            } throws InvalidRefreshTokenException("유효하지 않은 토큰입니다.")
+
+            assertThatThrownBy { service.refreshToken(request) }
+                .isInstanceOf(InvalidRefreshTokenException::class.java)
+                .hasMessage("유효하지 않은 토큰입니다.")
+        }
+    }
+
+    private fun issueToken(isRefresh: Boolean): JwtToken {
+        val token = faker.internet().password()
+
+        val secondsToAdd =
+            if (isRefresh) {
+                3600L
+            } else {
+                86400L
+            }
+        val expiresAt = Instant.now().plusSeconds(secondsToAdd)
+
+        return JwtToken(token, expiresAt)
     }
 }

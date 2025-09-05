@@ -50,11 +50,9 @@ class AuthenticationApplicationService(
         val accessToken = jwtProvider.issueAccessToken(subject)
         val refreshToken = jwtProvider.issueRefreshToken(subject)
 
-        return IssueTokenResponse(
-            accessToken = accessToken.token,
-            refreshToken = refreshToken.token,
-            accessTokenExpiresAt = accessToken.expiresAt,
-            refreshTokenExpiresAt = refreshToken.expiresAt,
+        return IssueTokenResponse.fromJwtTokens(
+            accessToken,
+            refreshToken,
         )
     }
 }

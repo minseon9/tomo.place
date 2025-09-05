@@ -51,7 +51,7 @@ class JwtProviderTest {
             val issueToken = provider.issueAccessToken(subject)
 
             assertThat(issueToken.token).isEqualTo("test-access-token")
-            assertThat(issueToken.expiresAt).isGreaterThan(Instant.now().toEpochMilli())
+            assertThat(issueToken.expiresAt).isAfter(Instant.now())
 
             val parametersSlot = slot<JwtEncoderParameters>()
             verify { jwtEncoder.encode(capture(parametersSlot)) }
@@ -79,7 +79,7 @@ class JwtProviderTest {
             val refreshToken = provider.issueRefreshToken(subject)
 
             assertThat(refreshToken.token).isEqualTo("test-refresh-token")
-            assertThat(refreshToken.expiresAt).isGreaterThan(Instant.now().toEpochMilli())
+            assertThat(refreshToken.expiresAt).isAfter(Instant.now())
 
             val parametersSlot = slot<JwtEncoderParameters>()
             verify { jwtEncoder.encode(capture(parametersSlot)) }

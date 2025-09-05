@@ -32,7 +32,13 @@ class AuthenticationServiceTest {
         fun `get oidc user info when provider and code valid expect user info returned`() {
             val provider = mockk<OIDCProvider>()
             val info =
-                OIDCUserInfo(OIDCProviderType.GOOGLE, socialId = "sid", email = "user@example.com", name = "User", profileImageUrl = null)
+                OIDCUserInfo(
+                    OIDCProviderType.GOOGLE,
+                    socialId = "sid",
+                    email = "user@example.com",
+                    name = "User",
+                    profileImageUrl = null,
+                )
             every { oidcProviderFactory.getService(OIDCProviderType.GOOGLE) } returns provider
             coEvery { provider.getOIDCUserInfo("code") } returns info
 

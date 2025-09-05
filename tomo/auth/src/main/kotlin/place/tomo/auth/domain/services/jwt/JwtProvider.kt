@@ -7,23 +7,22 @@ import org.springframework.security.oauth2.jwt.JwtEncoder
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters
 import org.springframework.stereotype.Service
 import place.tomo.auth.domain.dtos.JwtPropertiesDTO
-import place.tomo.auth.domain.dtos.JwtTokenVO
+import place.tomo.auth.domain.dtos.JwtToken
 import java.time.Instant
-import java.util.Date
 
 @Service
 class JwtProvider(
     private val properties: JwtPropertiesDTO,
     private val jwtEncoder: JwtEncoder,
 ) {
-    fun issueAccessToken(subject: String): JwtTokenVO = issueToken(subject, properties.accessTtlSeconds)
+    fun issueAccessToken(subject: String): JwtToken = issueToken(subject, properties.accessTtlSeconds)
 
-    fun issueRefreshToken(subject: String): JwtTokenVO = issueToken(subject, properties.refreshTtlSeconds)
+    fun issueRefreshToken(subject: String): JwtToken = issueToken(subject, properties.refreshTtlSeconds)
 
     private fun issueToken(
         subject: String,
         expiration: Long,
-    ): JwtTokenVO {
+    ): JwtToken {
         val nowInstant = Instant.now()
         val expiresAt = nowInstant.plusSeconds(expiration)
 
@@ -40,8 +39,7 @@ class JwtProvider(
         val jwsHeader = JwsHeader.with(MacAlgorithm.HS256).build()
 
         val token = jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, jwtClaims)).tokenValue
-        Date.from(expiresAt).time
 
-        return JwtTokenVO(token = token, expiresAt = expiresAt.toEpochMilli())
+        return JwtToken(token = token, expiresAt = expiresAt)
     }
 }
