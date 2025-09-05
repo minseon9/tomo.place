@@ -20,6 +20,7 @@ import place.tomo.auth.domain.services.SocialAccountDomainService
 import place.tomo.contract.constant.OIDCProviderType
 import place.tomo.contract.dtos.UserInfoDTO
 import place.tomo.contract.ports.UserDomainPort
+import java.time.Instant
 
 @DisplayName("OIDCApplicationService")
 class OIDCApplicationServiceTest {
@@ -57,7 +58,13 @@ class OIDCApplicationServiceTest {
                     profileImageUrl = null,
                 )
             val userInfo = UserInfoDTO(faker.number().numberBetween(1L, 1000L), email, name)
-            val expectedAuthToken = AuthTokenDTO(accessToken, refreshToken)
+            val expectedAuthToken =
+                AuthTokenDTO(
+                    accessToken = accessToken,
+                    refreshToken = refreshToken,
+                    accessTokenExpiresAt = Instant.now().plusSeconds(3600).toEpochMilli(),
+                    refreshTokenExpiresAt = Instant.now().plusSeconds(86400).toEpochMilli(),
+                )
 
             every { authenticationService.getOidcUserInfo(OIDCProviderType.GOOGLE, any()) } returns oidcInfo
             every { userDomainPort.getOrCreateActiveUser(email, name) } returns userInfo
@@ -68,7 +75,9 @@ class OIDCApplicationServiceTest {
                     OIDCSignUpRequest(OIDCProviderType.GOOGLE, authorizationCode = faker.internet().password()),
                 )
 
-            assertThat(res.token).isEqualTo(accessToken)
+            assertThat(res.accessToken).isEqualTo(accessToken)
+            assertThat(res.accessTokenExpiresAt).isEqualTo(expectedAuthToken.accessTokenExpiresAt)
+            assertThat(res.refreshTokenExpiresAt).isEqualTo(expectedAuthToken.refreshTokenExpiresAt)
             verify(exactly = 1) { userDomainPort.getOrCreateActiveUser(email, name) }
             verify(exactly = 1) { socialAccountService.linkSocialAccount(any<LinkSocialAccountCommand>()) }
         }
@@ -91,7 +100,13 @@ class OIDCApplicationServiceTest {
                     profileImageUrl = null,
                 )
             val createdUserInfo = UserInfoDTO(faker.number().numberBetween(1L, 1000L), email, name)
-            val expectedAuthToken = AuthTokenDTO(accessToken, refreshToken)
+            val expectedAuthToken =
+                AuthTokenDTO(
+                    accessToken = accessToken,
+                    refreshToken = refreshToken,
+                    accessTokenExpiresAt = Instant.now().plusSeconds(3600).toEpochMilli(),
+                    refreshTokenExpiresAt = Instant.now().plusSeconds(86400).toEpochMilli(),
+                )
 
             every { authenticationService.getOidcUserInfo(OIDCProviderType.GOOGLE, any()) } returns oidcInfo
             every { userDomainPort.getOrCreateActiveUser(email, name) } returns createdUserInfo
@@ -99,7 +114,9 @@ class OIDCApplicationServiceTest {
 
             val res = service.signUp(OIDCSignUpRequest(OIDCProviderType.GOOGLE, authorizationCode = faker.internet().password()))
 
-            assertThat(res.token).isEqualTo(accessToken)
+            assertThat(res.accessToken).isEqualTo(accessToken)
+            assertThat(res.accessTokenExpiresAt).isEqualTo(expectedAuthToken.accessTokenExpiresAt)
+            assertThat(res.refreshTokenExpiresAt).isEqualTo(expectedAuthToken.refreshTokenExpiresAt)
             verify { userDomainPort.getOrCreateActiveUser(email, name) }
             verify { socialAccountService.linkSocialAccount(any<LinkSocialAccountCommand>()) }
         }
@@ -124,7 +141,12 @@ class OIDCApplicationServiceTest {
             every { authenticationService.getOidcUserInfo(any(), any()) } returns oidcInfo
             every { userDomainPort.getOrCreateActiveUser(email, name) } returns userInfo
             every { authenticationService.issueOIDCUserAuthToken(oidcInfo) } returns
-                AuthTokenDTO(faker.internet().password(), refreshToken = faker.internet().password())
+                AuthTokenDTO(
+                    accessToken = faker.internet().password(),
+                    refreshToken = faker.internet().password(),
+                    accessTokenExpiresAt = Instant.now().plusSeconds(3600).toEpochMilli(),
+                    refreshTokenExpiresAt = Instant.now().plusSeconds(86400).toEpochMilli(),
+                )
 
             service.signUp(OIDCSignUpRequest(OIDCProviderType.GOOGLE, authorizationCode = faker.internet().password()))
 
@@ -159,8 +181,20 @@ class OIDCApplicationServiceTest {
                     faker.internet().emailAddress(),
                     faker.name().fullName(),
                 )
-            val expectedAuthToken = AuthTokenDTO(accessToken, refreshToken)
-            val expectedLoginResponse = LoginResponse(token = accessToken, refreshToken = refreshToken)
+            val expectedAuthToken =
+                AuthTokenDTO(
+                    accessToken = accessToken,
+                    refreshToken = refreshToken,
+                    accessTokenExpiresAt = Instant.now().plusSeconds(3600).toEpochMilli(),
+                    refreshTokenExpiresAt = Instant.now().plusSeconds(86400).toEpochMilli(),
+                )
+            val expectedLoginResponse =
+                LoginResponse(
+                    accessToken = accessToken,
+                    refreshToken = refreshToken,
+                    accessTokenExpiresAt = expectedAuthToken.accessTokenExpiresAt,
+                    refreshTokenExpiresAt = expectedAuthToken.refreshTokenExpiresAt,
+                )
 
             every { authenticationService.getOidcUserInfo(any(), any()) } returns oidcInfo
             every { userDomainPort.getOrCreateActiveUser(any(), any()) } returns userInfo

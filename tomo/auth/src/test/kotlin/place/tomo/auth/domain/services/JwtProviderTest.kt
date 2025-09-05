@@ -9,10 +9,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.springframework.security.oauth2.jose.jws.MacAlgorithm
-import org.springframework.security.oauth2.jwt.JwsHeader
 import org.springframework.security.oauth2.jwt.Jwt
-import org.springframework.security.oauth2.jwt.JwtClaimsSet
 import org.springframework.security.oauth2.jwt.JwtEncoder
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters
 import place.tomo.auth.domain.dtos.JwtPropertiesDTO
@@ -53,7 +50,8 @@ class JwtProviderTest {
 
             val issueToken = provider.issueAccessToken(subject)
 
-            assertThat(issueToken).isEqualTo("test-access-token")
+            assertThat(issueToken.token).isEqualTo("test-access-token")
+            assertThat(issueToken.expiresAt).isAfter(Instant.now())
 
             val parametersSlot = slot<JwtEncoderParameters>()
             verify { jwtEncoder.encode(capture(parametersSlot)) }
@@ -80,7 +78,8 @@ class JwtProviderTest {
 
             val refreshToken = provider.issueRefreshToken(subject)
 
-            assertThat(refreshToken).isEqualTo("test-refresh-token")
+            assertThat(refreshToken.token).isEqualTo("test-refresh-token")
+            assertThat(refreshToken.expiresAt).isAfter(Instant.now())
 
             val parametersSlot = slot<JwtEncoderParameters>()
             verify { jwtEncoder.encode(capture(parametersSlot)) }

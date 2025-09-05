@@ -22,6 +22,13 @@ class AuthController(
     ): ResponseEntity<LoginResponseBody> {
         val response = oidcAuthService.signUp(OIDCSignUpRequest(body.provider, body.authorizationCode))
 
-        return ResponseEntity.ok(LoginResponseBody(token = response.token, refreshToken = response.refreshToken))
+        return ResponseEntity.ok(
+            LoginResponseBody(
+                accessToken = response.accessToken,
+                accessTokenExpiresAt = response.accessTokenExpiresAt,
+                refreshToken = response.refreshToken,
+                refreshTokenExpiresAt = response.refreshTokenExpiresAt,
+            ),
+        )
     }
 }
