@@ -20,6 +20,7 @@ import place.tomo.auth.application.requests.OIDCSignUpRequest
 import place.tomo.auth.application.requests.RefreshTokenRequest
 import place.tomo.auth.application.responses.IssueTokenResponse
 import place.tomo.auth.application.services.AuthenticationApplicationService
+import place.tomo.auth.domain.exception.InvalidRefreshTokenException
 import place.tomo.auth.ui.requests.RefreshTokenRequestBody
 import place.tomo.auth.ui.requests.SignupRequestBody
 import place.tomo.common.test.security.TestSecurityUtils
@@ -154,6 +155,25 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)),
                 ).andExpect(status().isBadRequest)
+        }
+
+        @Test
+        @DisplayName("유효하지 않은 refresh token으로 요청 시 403 Bad Request를 반환한다")
+        fun `refresh token when invalud expect 403 bad request`() {
+            val userEmail = faker.internet().emailAddress()
+            val refreshToken = "invalid refresh token"
+            val request = RefreshTokenRequestBody(refreshToken)
+
+            every {
+                authenticationApplicationService.refreshToken(RefreshTokenRequest(userEmail, refreshToken))
+            } throws InvalidRefreshTokenException("유효하지 않은 토큰입니다.")
+
+            mockMvc
+                .perform(
+                    post("/api/auth/refresh")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)),
+                ).andExpect(status().isUnauthorized)
         }
 
         @Test
