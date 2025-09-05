@@ -1,37 +1,59 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'di/injection_container.dart' as di;
+import '../domains/auth/presentation/controllers/auth_notifier.dart';
+import '../domains/auth/presentation/models/auth_state.dart';
+import '../shared/application/providers.dart';
+import '../shared/error_handling/models/exception_interface.dart';
+import '../shared/error_handling/providers.dart';
+import '../shared/ui/design_system/tokens/colors.dart';
 import 'router/app_router.dart';
-import '../shared/design_system/tokens/colors.dart';
-import '../shared/utils/global_context.dart';
-import '../domains/auth/presentation/controllers/auth_controller.dart';
 
-class TomoPlaceApp extends StatelessWidget {
+class TomoPlaceApp extends ConsumerWidget {
   const TomoPlaceApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider<AuthController>(
-          create: (context) => di.sl<AuthController>(),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final navigatorKey = ref.watch(navigatorKeyProvider);
+
+    ref.listen<AuthState>(authNotifierProvider, (prev, next) {
+      switch (next) {
+        case AuthInitial():
+          ref.read(navigationActionsProvider).navigateToSignup();
+        case AuthSuccess(isNavigateHome: true):
+          ref.read(navigationActionsProvider).navigateToHome();
+        case AuthFailure():
+          ref.read(navigationActionsProvider).navigateToSignup();
+        case _:
+          break;
+      }
+    });
+
+    ref.listen<ExceptionInterface?>(errorEffectsProvider, (prev, next) {
+      if (next != null) {
+        final ctx = navigatorKey.currentContext;
+        if (ctx != null) {
+          ScaffoldMessenger.of(
+            ctx,
+          ).showSnackBar(SnackBar(content: Text(next.userMessage)));
+        }
+        ref.read(errorEffectsProvider.notifier).clear();
+      }
+    });
+
+    return MaterialApp(
+      title: 'Tomo Place',
+      debugShowCheckedModeBanner: false,
+      navigatorKey: navigatorKey,
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: DesignTokens.appColors['primary_200']!,
         ),
-      ],
-      child: MaterialApp(
-        title: 'Tomo Place',
-        debugShowCheckedModeBanner: false,
-        navigatorKey: GlobalContext.navigatorKey,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: DesignTokens.appColors['primary_200']!,
-          ),
-          useMaterial3: true,
-          scaffoldBackgroundColor: DesignTokens.appColors['background'],
-        ),
-        onGenerateRoute: AppRouter.generateRoute,
-        initialRoute: '/signup',
+        useMaterial3: true,
+        scaffoldBackgroundColor: DesignTokens.appColors['background'],
       ),
+      onGenerateRoute: AppRouter.generateRoute,
+      initialRoute: '/splash',
     );
   }
 }

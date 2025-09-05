@@ -1,17 +1,17 @@
-import '../../../../shared/infrastructure/storage/token_storage_service.dart';
+import '../entities/auth_token.dart';
+import '../repositories/auth_token_repository.dart';
 
 class CheckAuthStatusUseCase {
-  final TokenStorageService _tokenStorage;
-  
-  CheckAuthStatusUseCase({
-    required TokenStorageService tokenStorage,
-  }) : _tokenStorage = tokenStorage;
-  
-  /// 인증 상태 확인
+  final AuthTokenRepository _authTokenRepository;
+
+  CheckAuthStatusUseCase({required AuthTokenRepository authTokenRepository})
+    : _authTokenRepository = authTokenRepository;
+
   Future<bool> execute() async {
     try {
-      final isValid = await _tokenStorage.isTokenValid();
-      return isValid;
+      AuthToken? authToken = await _authTokenRepository.getCurrentToken();
+
+      return authToken?.isAccessTokenValid ?? false;
     } catch (e) {
       return false;
     }

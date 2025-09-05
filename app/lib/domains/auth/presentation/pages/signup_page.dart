@@ -1,78 +1,52 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../shared/design_system/tokens/colors.dart';
-import '../../../../shared/design_system/tokens/spacing.dart';
-import '../../../../shared/widgets/error_dialog.dart';
+import '../../../../shared/ui/design_system/tokens/colors.dart';
+import '../../../../shared/ui/design_system/tokens/spacing.dart';
 import '../../consts/social_label_variant.dart';
-import '../controllers/auth_controller.dart';
+import '../controllers/auth_notifier.dart';
 import '../widgets/social_login_section.dart';
 
-/// 통합된 인증 화면
-/// 
-/// 로그인과 회원가입을 하나의 페이지에서 처리하는 통합된 인증 화면입니다.
-/// OIDC 기반 소셜 로그인만 지원하며, 이메일 인증은 제거되었습니다.
-class SignupPage extends StatefulWidget {
+class SignupPage extends ConsumerStatefulWidget {
   const SignupPage({super.key});
 
   @override
-  State<SignupPage> createState() => _SignupPageState();
+  ConsumerState<SignupPage> createState() => _SignupPageState();
 }
 
-class _SignupPageState extends State<SignupPage> {
+class _SignupPageState extends ConsumerState<SignupPage> {
   bool _isSignupMode = true;
 
   @override
   Widget build(BuildContext context) {
+    // ✅ app.dart에서 중앙화된 네비게이션 처리하므로 직접 네비게이션 제거
     return Scaffold(
       backgroundColor: DesignTokens.background,
       body: SafeArea(
-        child: BlocConsumer<AuthController, AuthState>(
-          listener: (context, state) {
-            _handleStateChange(context, state);
+        child: _SignupPageContent(
+          isSignupMode: _isSignupMode,
+          onToggleMode: () {
+            setState(() {
+              _isSignupMode = !_isSignupMode;
+            });
           },
-          builder: (context, state) {
-            return _SignupPageContent(
-              isSignupMode: _isSignupMode,
-              onToggleMode: () {
-                setState(() {
-                  _isSignupMode = !_isSignupMode;
-                });
-              },
-            );
-          },
+          ref: ref,
         ),
       ),
     );
   }
-
-  /// 상태 변화에 따른 UI 처리
-  void _handleStateChange(BuildContext context, AuthState state) {
-    if (state is AuthSuccess) {
-      // 인증 성공 시 홈 화면으로 이동
-      // 토큰은 이미 AuthService에서 저장되었으므로 바로 이동
-      Navigator.of(context).pushReplacementNamed('/home');
-    } else if (state is AuthFailure) {
-      // 인증 실패 시 에러 다이얼로그 표시
-      ErrorDialog.show(
-        context: context,
-        exception: state.exception,
-        onDismiss: () => context.read<AuthController>().clearError(),
-      );
-    }
-  }
-
-
 }
 
 class _SignupPageContent extends StatelessWidget {
   const _SignupPageContent({
     required this.isSignupMode,
     required this.onToggleMode,
+    required this.ref,
   });
 
   final bool isSignupMode;
   final VoidCallback onToggleMode;
+  final WidgetRef ref;
 
   @override
   Widget build(BuildContext context) {
@@ -85,11 +59,12 @@ class _SignupPageContent extends StatelessWidget {
             child: Column(
               children: [
                 SocialLoginSection(
-                  labelVariant: isSignupMode 
-                      ? SocialLabelVariant.signup 
+                  labelVariant: isSignupMode
+                      ? SocialLabelVariant.signup
                       : SocialLabelVariant.login,
-                  onProviderPressed: (provider) => 
-                      context.read<AuthController>().signupWithProvider(provider),
+                  onProviderPressed: (provider) => ref
+                      .read(authNotifierProvider.notifier)
+                      .signupWithProvider(provider),
                 ),
               ],
             ),
@@ -101,5 +76,3 @@ class _SignupPageContent extends StatelessWidget {
     );
   }
 }
-
-

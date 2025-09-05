@@ -32,6 +32,9 @@
 	<!-- Google Sign-In 설정 -->
 	<key>GIDClientID</key>
 	<string>1016804314663-31vke1m4f00tspni83e19cghoed4j4ns.apps.googleusercontent.com</string>
+    <key>GIDServerClientID</key>
+    <string>1016804314663-ji2taqsu14c3sqfg0u60jfni9shg3dja.apps.googleusercontent.com</string>
+
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

@@ -1,37 +1,33 @@
+import '../entities/authentication_result.dart';
 import '../repositories/auth_repository.dart';
-import '../../../../shared/infrastructure/storage/token_storage_service.dart';
+import '../repositories/auth_token_repository.dart';
 
 class RefreshTokenUseCase {
-  final AuthRepository _repository;
-  final TokenStorageService _tokenStorage;
-  
-  RefreshTokenUseCase({
-    required AuthRepository repository,
-    required TokenStorageService tokenStorage,
-  }) : _repository = repository,
-       _tokenStorage = tokenStorage;
-  
-  Future<bool> execute() async {
+  RefreshTokenUseCase(this._authRepository, this._tokenRepository);
+
+  final AuthRepository _authRepository;
+  final AuthTokenRepository _tokenRepository;
+
+  Future<AuthenticationResult> execute() async {
     try {
-      final refreshToken = await _tokenStorage.getRefreshToken();
-      if (refreshToken == null) {
-        return false;
+      final currentToken = await _tokenRepository.getCurrentToken();
+      if (currentToken == null) {
+        return AuthenticationResult.unauthenticated();
       }
-      
-      // 서버에 토큰 갱신 요청
-      final newTokens = await _repository.refreshToken(refreshToken);
-      
-      // 새 토큰 저장
-      await _tokenStorage.saveTokens(
-        accessToken: newTokens.accessToken,
-        refreshToken: newTokens.refreshToken,
+
+      if (currentToken.isRefreshTokenValid) {
+        return AuthenticationResult.authenticated(currentToken);
+      }
+
+      final newToken = await _authRepository.refreshToken(
+        currentToken.refreshToken,
       );
-      
-      return true;
+      await _tokenRepository.saveToken(newToken);
+
+      return AuthenticationResult.authenticated(newToken);
     } catch (e) {
-      // 토큰 갱신 실패 시 기존 토큰 삭제
-      await _tokenStorage.clearTokens();
-      return false;
+      await _tokenRepository.clearToken();
+      return AuthenticationResult.unauthenticated('Token refresh failed: $e');
     }
   }
 }
