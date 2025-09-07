@@ -11,6 +11,6 @@ export 'application/providers.dart';
 // Configuration Providers
 export 'config/app_config.dart';
 // Error Handling Providers
-export 'error_handling/providers.dart';
+export 'exception_handler/exception_notifier.dart';
 // Infrastructure Providers
 export 'infrastructure/storage/providers.dart';

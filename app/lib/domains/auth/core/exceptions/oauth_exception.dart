@@ -1,4 +1,4 @@
-import '../../../../shared/error_handling/models/exception_interface.dart';
+import '../../../../shared/exception_handler/models/exception_interface.dart';
 import 'error_codes.dart';
 import 'error_types.dart';
 
