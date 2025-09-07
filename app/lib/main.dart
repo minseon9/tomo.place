@@ -7,7 +7,15 @@ import 'app/app.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  AppConfig.initialize();
+  // AppConfig 초기화
+  final container = ProviderContainer();
+  final appConfig = container.read(appConfigProvider);
+  await appConfig.initialize();
 
-  runApp(const ProviderScope(child: TomoPlaceApp()));
+  runApp(
+    UncontrolledProviderScope(
+      container: container,
+      child: const TomoPlaceApp(),
+    ),
+  );
 }

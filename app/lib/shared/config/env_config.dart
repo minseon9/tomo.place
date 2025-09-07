@@ -1,6 +1,22 @@
 import 'dart:io';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+abstract class EnvConfigInterface {
+  Future<void> initialize();
+  String get apiUrl;
+}
+
+class EnvConfigImpl implements EnvConfigInterface {
+  @override
+  Future<void> initialize() async {
+    await EnvConfig.initialize();
+  }
+
+  @override
+  String get apiUrl => EnvConfig.apiUrl;
+}
 
 class EnvConfig {
   static bool _isInitialized = false;
@@ -96,3 +112,5 @@ class EnvConfig {
   static String getEnvOrDefault(String key, String defaultValue) =>
       dotenv.env[key] ?? defaultValue;
 }
+
+final envConfigProvider = Provider<EnvConfigInterface>((ref) => EnvConfigImpl());
