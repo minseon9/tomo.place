@@ -1,4 +1,4 @@
-import '../../../../../../shared/infrastructure/storage/token_storage_service.dart';
+import '../../../../../shared/infrastructure/storage/token_storage_service.dart';
 import '../../../../../shared/infrastructure/storage/access_token_memory_store.dart';
 import '../../../core/entities/auth_token.dart';
 
