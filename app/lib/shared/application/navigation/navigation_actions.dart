@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final navigatorKeyProvider = Provider<GlobalKey<NavigatorState>>(
-  (ref) => GlobalKey<NavigatorState>(),
-);
+import 'navigation_key.dart';
 
 class NavigationActions {
   NavigationActions(this._key);
@@ -27,3 +25,7 @@ class NavigationActions {
     }
   }
 }
+
+final navigationActionsProvider = Provider<NavigationActions>(
+      (ref) => NavigationActions(ref.watch(navigatorKeyProvider)),
+);

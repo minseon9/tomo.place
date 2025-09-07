@@ -7,7 +7,7 @@
 // 이 파일에서 모든 Provider를 re-export하여 사용
 
 // Application Providers
-export 'application/providers.dart';
+export 'application/navigation/navigation_actions.dart';
 // Configuration Providers
 export 'config/app_config.dart';
 // Error Handling Providers

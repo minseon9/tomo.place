@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../domains/auth/presentation/controllers/auth_notifier.dart';
 import '../domains/auth/presentation/models/auth_state.dart';
-import '../shared/application/providers.dart';
+import '../shared/application/navigation/navigation_actions.dart';
+import '../shared/application/navigation/navigation_key.dart';
 import '../shared/exception_handler/exception_notifier.dart';
 import '../shared/exception_handler/models/exception_interface.dart';
 import '../shared/ui/design_system/tokens/colors.dart';
