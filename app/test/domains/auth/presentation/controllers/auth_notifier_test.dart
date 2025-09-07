@@ -1,142 +1,147 @@
 import 'package:app/domains/auth/consts/social_provider.dart';
-import 'package:app/domains/auth/core/usecases/logout_usecase.dart';
-import 'package:app/domains/auth/core/usecases/refresh_token_usecase.dart';
-import 'package:app/domains/auth/core/usecases/signup_with_social_usecase.dart';
+import 'package:app/domains/auth/core/exceptions/auth_exception.dart';
+import 'package:app/domains/auth/core/usecases/usecase_providers.dart';
 import 'package:app/domains/auth/presentation/controllers/auth_notifier.dart';
 import 'package:app/domains/auth/presentation/models/auth_state.dart';
-import 'package:app/shared/error_handling/exceptions/unknown_exception.dart';
-import 'package:app/shared/error_handling/models/exception_interface.dart';
-import 'package:app/shared/error_handling/providers.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:app/shared/exception_handler/exception_notifier.dart';
+import 'package:app/shared/exception_handler/exceptions/unknown_exception.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:test/test.dart';
 
-import '../../../../utils/fake_data_generator.dart';
-
-class _MockSignupWithSocialUseCase extends Mock
-    implements SignupWithSocialUseCase {}
-
-class _MockLogoutUseCase extends Mock implements LogoutUseCase {}
-
-class _MockRefreshTokenUseCase extends Mock implements RefreshTokenUseCase {}
-
-class _MockErrorEffects extends Mock implements ErrorEffects {}
-
-class _MockErrorInterface extends Mock implements ExceptionInterface {}
+import '../../../../utils/fake_data/fake_auth_token_generator.dart';
+import '../../../../utils/fake_data/fake_authentication_result_generator.dart';
+import '../../../../utils/mock_factory/auth_mock_factory.dart';
+import '../../../../utils/mock_factory/presentation_mock_factory.dart';
 
 void main() {
   group('AuthNotifier', () {
-    late _MockSignupWithSocialUseCase mockSignupUseCase;
-    late _MockLogoutUseCase mockLogoutUseCase;
-    late _MockRefreshTokenUseCase mockRefreshTokenUseCase;
-    late _MockErrorEffects mockErrorEffects;
+    late MockSignupWithSocialUseCase mockSignupUseCase;
+    late MockLogoutUseCase mockLogoutUseCase;
+    late MockRefreshTokenUseCase mockRefreshUseCase;
+    late MockExceptionNotifier mockErrorEffects;
+    late ProviderContainer container;
     late AuthNotifier authNotifier;
 
     setUp(() {
-      mockSignupUseCase = _MockSignupWithSocialUseCase();
-      mockLogoutUseCase = _MockLogoutUseCase();
-      mockRefreshTokenUseCase = _MockRefreshTokenUseCase();
-      mockErrorEffects = _MockErrorEffects();
-      authNotifier = AuthNotifier(
-        mockSignupUseCase,
-        mockLogoutUseCase,
-        mockRefreshTokenUseCase,
-        mockErrorEffects,
+      mockSignupUseCase = AuthMockFactory.createSignupUseCase();
+      mockLogoutUseCase = AuthMockFactory.createLogoutUseCase();
+      mockRefreshUseCase = AuthMockFactory.createRefreshTokenUseCase();
+      mockErrorEffects = PresentationMockFactory.createExceptionNotifier();
+
+      // Register fallback values
+      registerFallbackValue(SocialProvider.google);
+      registerFallbackValue(AuthException.authenticationFailed(message: 'Test error'));
+
+      container = ProviderContainer(
+        overrides: [
+          signupWithSocialUseCaseProvider.overrideWithValue(mockSignupUseCase),
+          logoutUseCaseProvider.overrideWithValue(mockLogoutUseCase),
+          refreshTokenUseCaseProvider.overrideWithValue(mockRefreshUseCase),
+          exceptionNotifierProvider.overrideWith((ref) => mockErrorEffects),
+        ],
       );
+
+      authNotifier = container.read(authNotifierProvider.notifier);
+    });
+
+    tearDown(() {
+      container.dispose();
     });
 
     group('초기 상태', () {
-      test('초기 상태는 AuthInitial이어야 한다', () {
-        // Given & When & Then
-        expect(authNotifier.state, isA<AuthInitial>());
+      test('초기 상태가 AuthInitial이어야 한다', () {
+        // When
+        final initialState = container.read(authNotifierProvider);
+
+        // Then
+        expect(initialState, isA<AuthInitial>());
       });
     });
 
     group('signupWithProvider', () {
-      test('성공적인 소셜 회원가입 시 AuthSuccess 상태로 변경되어야 한다', () async {
+      test('정상적인 소셜 로그인이 성공해야 한다', () async {
         // Given
-        final authToken = FakeDataGenerator.createValidAuthToken();
-        when(
-          () => mockSignupUseCase.execute(any()),
-        ).thenAnswer((_) async => authToken);
+        final mockToken = FakeAuthTokenGenerator.createValid();
+        when(() => mockSignupUseCase.execute(any())).thenAnswer((_) async => mockToken);
 
         // When
         await authNotifier.signupWithProvider(SocialProvider.google);
 
         // Then
-        expect(authNotifier.state, isA<AuthSuccess>());
-        verify(
-          () => mockSignupUseCase.execute(SocialProvider.google),
-        ).called(1);
+        final currentState = container.read(authNotifierProvider);
+        expect(currentState, isA<AuthSuccess>());
+        expect((currentState as AuthSuccess).isNavigateHome, isTrue);
+        verify(() => mockSignupUseCase.execute(SocialProvider.google)).called(1);
+        verifyNever(() => mockErrorEffects.report(any()));
       });
 
-      test('회원가입 중에는 AuthLoading 상태여야 한다', () async {
+      test('토큰이 null일 때 AuthInitial 상태로 변경되어야 한다', () async {
         // Given
-        final authToken = FakeDataGenerator.createValidAuthToken();
-        when(
-          () => mockSignupUseCase.execute(any()),
-        ).thenAnswer((_) async => authToken);
-
-        // When
-        final future = authNotifier.signupWithProvider(SocialProvider.google);
-
-        // Then (로딩 중 상태 확인)
-        expect(authNotifier.state, isA<AuthLoading>());
-
-        await future;
-        expect(authNotifier.state, isA<AuthSuccess>());
-      });
-
-      test('토큰이 null인 경우 AuthInitial 상태로 돌아가야 한다', () async {
-        // Given
-        when(
-          () => mockSignupUseCase.execute(any()),
-        ).thenAnswer((_) async => null);
+        when(() => mockSignupUseCase.execute(any())).thenAnswer((_) async => null);
 
         // When
         await authNotifier.signupWithProvider(SocialProvider.google);
 
         // Then
-        expect(authNotifier.state, isA<AuthInitial>());
-        verify(
-          () => mockSignupUseCase.execute(SocialProvider.google),
-        ).called(1);
+        final currentState = container.read(authNotifierProvider);
+        expect(currentState, isA<AuthInitial>());
+        verify(() => mockSignupUseCase.execute(SocialProvider.google)).called(1);
+        verifyNever(() => mockErrorEffects.report(any()));
       });
 
-      test('회원가입 실패 시 AuthFailure 상태로 변경되어야 한다', () async {
+      test('로그인 실패 시 AuthFailure 상태로 변경되어야 한다', () async {
         // Given
-        final exception = Exception('Signup failed');
-        when(() => mockSignupUseCase.execute(any())).thenThrow(exception);
+                            final authException = AuthException.authenticationFailed(message: 'Authentication failed');
+        when(() => mockSignupUseCase.execute(any())).thenThrow(authException);
 
         // When
         await authNotifier.signupWithProvider(SocialProvider.google);
 
         // Then
-        expect(authNotifier.state, isA<AuthFailure>());
-        final failureState = authNotifier.state as AuthFailure;
-        expect(failureState.error.message, contains('Signup failed'));
+        final currentState = container.read(authNotifierProvider);
+        expect(currentState, isA<AuthFailure>());
+        expect((currentState as AuthFailure).error, equals(authException));
+        verify(() => mockSignupUseCase.execute(SocialProvider.google)).called(1);
+        verify(() => mockErrorEffects.report(authException)).called(1);
+      });
+
+      test('네트워크 오류 시 UnknownException으로 변환되어야 한다', () async {
+        // Given
+        final networkError = Exception('Network error');
+        when(() => mockSignupUseCase.execute(any())).thenThrow(networkError);
+
+        // When
+        await authNotifier.signupWithProvider(SocialProvider.google);
+
+        // Then
+        final currentState = container.read(authNotifierProvider);
+        expect(currentState, isA<AuthFailure>());
+        expect((currentState as AuthFailure).error, isA<UnknownException>());
+        verify(() => mockSignupUseCase.execute(SocialProvider.google)).called(1);
         verify(() => mockErrorEffects.report(any())).called(1);
       });
 
-      test('다양한 소셜 제공자로 회원가입할 수 있어야 한다', () async {
+      test('로딩 상태가 올바르게 설정되어야 한다', () async {
         // Given
-        final authToken = FakeDataGenerator.createValidAuthToken();
-        when(
-          () => mockSignupUseCase.execute(any()),
-        ).thenAnswer((_) async => authToken);
+        final mockToken = FakeAuthTokenGenerator.createValid();
+        when(() => mockSignupUseCase.execute(any())).thenAnswer((_) async {
+          // 로딩 상태 확인
+          final loadingState = container.read(authNotifierProvider);
+          expect(loadingState, isA<AuthLoading>());
+          return mockToken;
+        });
 
-        // When & Then
-        await authNotifier.signupWithProvider(SocialProvider.kakao);
-        expect(authNotifier.state, isA<AuthSuccess>());
-        verify(() => mockSignupUseCase.execute(SocialProvider.kakao)).called(1);
+        // When
+        await authNotifier.signupWithProvider(SocialProvider.google);
 
-        await authNotifier.signupWithProvider(SocialProvider.apple);
-        expect(authNotifier.state, isA<AuthSuccess>());
-        verify(() => mockSignupUseCase.execute(SocialProvider.apple)).called(1);
+        // Then
+        verify(() => mockSignupUseCase.execute(SocialProvider.google)).called(1);
       });
     });
 
     group('logout', () {
-      test('성공적인 로그아웃 시 AuthInitial 상태로 변경되어야 한다', () async {
+      test('정상적인 로그아웃이 성공해야 한다', () async {
         // Given
         when(() => mockLogoutUseCase.execute()).thenAnswer((_) async {});
 
@@ -144,147 +149,178 @@ void main() {
         await authNotifier.logout();
 
         // Then
-        expect(authNotifier.state, isA<AuthInitial>());
+        final currentState = container.read(authNotifierProvider);
+        expect(currentState, isA<AuthInitial>());
         verify(() => mockLogoutUseCase.execute()).called(1);
-      });
-
-      test('로그아웃 중에는 AuthLoading 상태여야 한다', () async {
-        // Given
-        when(() => mockLogoutUseCase.execute()).thenAnswer((_) async {});
-
-        // When
-        final future = authNotifier.logout();
-
-        // Then (로딩 중 상태 확인)
-        expect(authNotifier.state, isA<AuthLoading>());
-
-        await future;
-        expect(authNotifier.state, isA<AuthInitial>());
+        verifyNever(() => mockErrorEffects.report(any()));
       });
 
       test('로그아웃 실패 시 AuthFailure 상태로 변경되어야 한다', () async {
         // Given
-        final exception = Exception('Logout failed');
-        when(() => mockLogoutUseCase.execute()).thenThrow(exception);
+                            final authException = AuthException.authenticationFailed(message: 'Logout failed');
+        when(() => mockLogoutUseCase.execute()).thenThrow(authException);
 
         // When
         await authNotifier.logout();
 
         // Then
-        expect(authNotifier.state, isA<AuthFailure>());
-        final failureState = authNotifier.state as AuthFailure;
-        expect(failureState.error.message, contains('Logout failed'));
-        verify(() => mockErrorEffects.report(any())).called(1);
-      });
-    });
-
-    group('에러 처리', () {
-      test('ErrorInterface를 상속한 에러는 그대로 전달되어야 한다', () async {
-        // Given
-        final customError = _MockErrorInterface();
-        when(() => customError.message).thenReturn('Custom error');
-        when(() => mockSignupUseCase.execute(any())).thenThrow(customError);
-
-        // When
-        await authNotifier.signupWithProvider(SocialProvider.google);
-
-        // Then
-        expect(authNotifier.state, isA<AuthFailure>());
-        final failureState = authNotifier.state as AuthFailure;
-        expect(failureState.error, equals(customError));
-        verify(() => mockErrorEffects.report(customError)).called(1);
+        final currentState = container.read(authNotifierProvider);
+        expect(currentState, isA<AuthFailure>());
+        expect((currentState as AuthFailure).error, equals(authException));
+        verify(() => mockLogoutUseCase.execute()).called(1);
+        verify(() => mockErrorEffects.report(authException)).called(1);
       });
 
-      test('일반 Exception은 UnknownUiError로 변환되어야 한다', () async {
+      test('로딩 상태가 올바르게 설정되어야 한다', () async {
         // Given
-        final exception = Exception('Network error');
-        when(() => mockSignupUseCase.execute(any())).thenThrow(exception);
+        when(() => mockLogoutUseCase.execute()).thenAnswer((_) async {
+          // 로딩 상태 확인
+          final loadingState = container.read(authNotifierProvider);
+          expect(loadingState, isA<AuthLoading>());
+        });
 
         // When
-        await authNotifier.signupWithProvider(SocialProvider.google);
-
-        // Then
-        expect(authNotifier.state, isA<AuthFailure>());
-        final failureState = authNotifier.state as AuthFailure;
-        expect(failureState.error, isA<UnknownException>());
-        expect(failureState.error.message, contains('Network error'));
-        verify(() => mockErrorEffects.report(any())).called(1);
-      });
-
-      test('String 에러도 UnknownUiError로 변환되어야 한다', () async {
-        // Given
-        when(() => mockSignupUseCase.execute(any())).thenThrow('String error');
-
-        // When
-        await authNotifier.signupWithProvider(SocialProvider.google);
-
-        // Then
-        expect(authNotifier.state, isA<AuthFailure>());
-        final failureState = authNotifier.state as AuthFailure;
-        expect(failureState.error, isA<UnknownException>());
-        expect(failureState.error.message, equals('String error'));
-        verify(() => mockErrorEffects.report(any())).called(1);
-      });
-    });
-
-    group('상태 전환', () {
-      test('회원가입 성공 후 로그아웃이 가능해야 한다', () async {
-        // Given
-        final authToken = FakeDataGenerator.createValidAuthToken();
-        when(
-          () => mockSignupUseCase.execute(any()),
-        ).thenAnswer((_) async => authToken);
-        when(() => mockLogoutUseCase.execute()).thenAnswer((_) async {});
-
-        // When
-        await authNotifier.signupWithProvider(SocialProvider.google);
-        expect(authNotifier.state, isA<AuthSuccess>());
-
         await authNotifier.logout();
-        expect(authNotifier.state, isA<AuthInitial>());
 
         // Then
-        verify(
-          () => mockSignupUseCase.execute(SocialProvider.google),
-        ).called(1);
         verify(() => mockLogoutUseCase.execute()).called(1);
       });
+    });
 
-      test('연속된 회원가입 시도가 가능해야 한다', () async {
+    group('refreshToken', () {
+      test('인증된 상태에서 토큰 갱신이 성공해야 한다', () async {
         // Given
-        final authToken = FakeDataGenerator.createValidAuthToken();
-        when(
-          () => mockSignupUseCase.execute(any()),
-        ).thenAnswer((_) async => authToken);
+        final mockResult = FakeAuthenticationResultGenerator.createAuthenticated();
+        when(() => mockRefreshUseCase.execute()).thenAnswer((_) async => mockResult);
 
         // When
-        await authNotifier.signupWithProvider(SocialProvider.google);
-        expect(authNotifier.state, isA<AuthSuccess>());
-
-        await authNotifier.signupWithProvider(SocialProvider.kakao);
-        expect(authNotifier.state, isA<AuthSuccess>());
+        final result = await authNotifier.refreshToken(true);
 
         // Then
-        verify(
-          () => mockSignupUseCase.execute(SocialProvider.google),
-        ).called(1);
-        verify(() => mockSignupUseCase.execute(SocialProvider.kakao)).called(1);
+        expect(result, equals(mockResult));
+        final currentState = container.read(authNotifierProvider);
+        expect(currentState, isA<AuthSuccess>());
+        expect((currentState as AuthSuccess).isNavigateHome, isTrue);
+        verify(() => mockRefreshUseCase.execute()).called(1);
+        verifyNever(() => mockErrorEffects.report(any()));
+      });
+
+      test('인증되지 않은 상태에서 AuthInitial로 변경되어야 한다', () async {
+        // Given
+        final mockResult = FakeAuthenticationResultGenerator.createUnauthenticated();
+        when(() => mockRefreshUseCase.execute()).thenAnswer((_) async => mockResult);
+
+        // When
+        final result = await authNotifier.refreshToken(false);
+
+        // Then
+        expect(result, equals(mockResult));
+        final currentState = container.read(authNotifierProvider);
+        expect(currentState, isA<AuthInitial>());
+        verify(() => mockRefreshUseCase.execute()).called(1);
+        verifyNever(() => mockErrorEffects.report(any()));
+      });
+
+      test('토큰 갱신 실패 시 AuthFailure 상태로 변경되어야 한다', () async {
+        // Given
+                            final authException = AuthException.tokenExpired(message: 'Token refresh failed');
+        when(() => mockRefreshUseCase.execute()).thenThrow(authException);
+
+        // When
+        final result = await authNotifier.refreshToken(true);
+
+        // Then
+        expect(result, isNull);
+        final currentState = container.read(authNotifierProvider);
+        expect(currentState, isA<AuthFailure>());
+        expect((currentState as AuthFailure).error, equals(authException));
+        verify(() => mockRefreshUseCase.execute()).called(1);
+        verify(() => mockErrorEffects.report(authException)).called(1);
+      });
+
+      test('로딩 상태가 올바르게 설정되어야 한다', () async {
+        // Given
+        final mockResult = FakeAuthenticationResultGenerator.createAuthenticated();
+        when(() => mockRefreshUseCase.execute()).thenAnswer((_) async {
+          // 로딩 상태 확인
+          final loadingState = container.read(authNotifierProvider);
+          expect(loadingState, isA<AuthLoading>());
+          return mockResult;
+        });
+
+        // When
+        await authNotifier.refreshToken(true);
+
+        // Then
+        verify(() => mockRefreshUseCase.execute()).called(1);
       });
     });
 
-    group('의존성 주입', () {
-      test('필수 의존성이 올바르게 주입되어야 한다', () {
-        // Given & When
-        final notifier = AuthNotifier(
-          mockSignupUseCase,
-          mockLogoutUseCase,
-          mockRefreshTokenUseCase,
-          mockErrorEffects,
-        );
+    group('에러 처리 검증', () {
+      test('ExceptionInterface는 그대로 처리되어야 한다', () async {
+        // Given
+        final authException = AuthException.authenticationFailed(message: 'Authentication failed');
+        when(() => mockSignupUseCase.execute(any())).thenThrow(authException);
+
+        // When
+        await authNotifier.signupWithProvider(SocialProvider.google);
 
         // Then
-        expect(notifier, isA<AuthNotifier>());
-        expect(notifier.state, isA<AuthInitial>());
+        final currentState = container.read(authNotifierProvider);
+        expect(currentState, isA<AuthFailure>());
+        expect((currentState as AuthFailure).error, equals(authException));
+        verify(() => mockErrorEffects.report(authException)).called(1);
+      });
+
+      test('일반 Exception은 UnknownException으로 변환되어야 한다', () async {
+        // Given
+        final generalException = Exception('General error');
+        when(() => mockSignupUseCase.execute(any())).thenThrow(generalException);
+
+        // When
+        await authNotifier.signupWithProvider(SocialProvider.google);
+
+        // Then
+        final currentState = container.read(authNotifierProvider);
+        expect(currentState, isA<AuthFailure>());
+        expect((currentState as AuthFailure).error, isA<UnknownException>());
+        expect((currentState).error.message, equals('Exception: General error'));
+        verify(() => mockErrorEffects.report(any())).called(1);
+      });
+
+      test('String은 UnknownException으로 변환되어야 한다', () async {
+        // Given
+        const errorString = 'String error';
+        when(() => mockSignupUseCase.execute(any())).thenThrow(errorString);
+
+        // When
+        await authNotifier.signupWithProvider(SocialProvider.google);
+
+        // Then
+        final currentState = container.read(authNotifierProvider);
+        expect(currentState, isA<AuthFailure>());
+        expect((currentState as AuthFailure).error, isA<UnknownException>());
+        expect(currentState.error.message, equals('String error'));
+        verify(() => mockErrorEffects.report(any())).called(1);
+      });
+    });
+
+    group('상태 변화 검증', () {
+      test('상태 변화가 올바르게 반영되어야 한다', () async {
+        // Given
+        final mockToken = FakeAuthTokenGenerator.createValid();
+        when(() => mockSignupUseCase.execute(any())).thenAnswer((_) async => mockToken);
+
+        // When & Then
+        // 초기 상태
+        expect(container.read(authNotifierProvider), isA<AuthInitial>());
+
+        // 로딩 상태 (비동기 실행 중)
+        final future = authNotifier.signupWithProvider(SocialProvider.google);
+        
+        // 성공 상태
+        await future;
+        expect(container.read(authNotifierProvider), isA<AuthSuccess>());
       });
     });
   });

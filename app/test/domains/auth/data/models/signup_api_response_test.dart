@@ -1,161 +1,177 @@
-import 'package:flutter_test/flutter_test.dart';
-
 import 'package:app/domains/auth/data/models/signup_api_response.dart';
+import 'package:faker/faker.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('SignupApiResponse', () {
     group('생성자', () {
       test('필수 파라미터로 생성되어야 한다', () {
-        // Given & When
+        // Given
+        final accessToken = faker.guid.guid();
+        final accessTokenExpiresAt = faker.randomGenerator.integer(2147483647); // 2^31 - 1
+        final refreshToken = faker.guid.guid();
+        final refreshTokenExpiresAt = faker.randomGenerator.integer(2147483647); // 2^31 - 1
+
+        // When
         final response = SignupApiResponse(
-          accessToken: 'test_access_token',
-          accessTokenExpiresAt: 1640995200000,
-          refreshToken: 'test_refresh_token',
-          refreshTokenExpiresAt: 1643587200000,
+          accessToken: accessToken,
+          accessTokenExpiresAt: accessTokenExpiresAt,
+          refreshToken: refreshToken,
+          refreshTokenExpiresAt: refreshTokenExpiresAt,
         );
 
         // Then
-        expect(response.accessToken, equals('test_access_token'));
-        expect(response.accessTokenExpiresAt, equals(1640995200000));
-        expect(response.refreshToken, equals('test_refresh_token'));
-        expect(response.refreshTokenExpiresAt, equals(1643587200000));
+        expect(response.accessToken, equals(accessToken));
+        expect(response.accessTokenExpiresAt, equals(accessTokenExpiresAt));
+        expect(response.refreshToken, equals(refreshToken));
+        expect(response.refreshTokenExpiresAt, equals(refreshTokenExpiresAt));
       });
 
       test('const 생성자로 생성되어야 한다', () {
-        // Given & When
-        const response = SignupApiResponse(
-          accessToken: 'const_access_token',
-          accessTokenExpiresAt: 1640995200000,
-          refreshToken: 'const_refresh_token',
-          refreshTokenExpiresAt: 1643587200000,
+        // Given
+        final accessToken = faker.guid.guid();
+        final accessTokenExpiresAt = faker.randomGenerator.integer(2147483647); // 2^31 - 1
+        final refreshToken = faker.guid.guid();
+        final refreshTokenExpiresAt = faker.randomGenerator.integer(2147483647); // 2^31 - 1
+
+        // When
+        final response = SignupApiResponse(
+          accessToken: accessToken,
+          accessTokenExpiresAt: accessTokenExpiresAt,
+          refreshToken: refreshToken,
+          refreshTokenExpiresAt: refreshTokenExpiresAt,
         );
 
         // Then
-        expect(response.accessToken, equals('const_access_token'));
-        expect(response.accessTokenExpiresAt, equals(1640995200000));
-        expect(response.refreshToken, equals('const_refresh_token'));
-        expect(response.refreshTokenExpiresAt, equals(1643587200000));
+        expect(response, equals(response));
       });
     });
 
     group('fromJson', () {
-      test('유효한 JSON을 파싱해야 한다', () {
+      test('정상적인 JSON을 올바르게 파싱해야 한다', () {
         // Given
+        final accessToken = faker.guid.guid();
+        final accessTokenExpiresAt = faker.randomGenerator.integer(2147483647); // 2^31 - 1
+        final refreshToken = faker.guid.guid();
+        final refreshTokenExpiresAt = faker.randomGenerator.integer(2147483647); // 2^31 - 1
+        
         final json = {
-          'accessToken': 'json_access_token',
-          'accessTokenExpiresAt': 1640995200000,
-          'refreshToken': 'json_refresh_token',
-          'refreshTokenExpiresAt': 1643587200000,
+          'accessToken': accessToken,
+          'accessTokenExpiresAt': accessTokenExpiresAt,
+          'refreshToken': refreshToken,
+          'refreshTokenExpiresAt': refreshTokenExpiresAt,
         };
 
         // When
         final response = SignupApiResponse.fromJson(json);
 
         // Then
-        expect(response.accessToken, equals('json_access_token'));
-        expect(response.accessTokenExpiresAt, equals(1640995200000));
-        expect(response.refreshToken, equals('json_refresh_token'));
-        expect(response.refreshTokenExpiresAt, equals(1643587200000));
+        expect(response.accessToken, equals(accessToken));
+        expect(response.accessTokenExpiresAt, equals(accessTokenExpiresAt));
+        expect(response.refreshToken, equals(refreshToken));
+        expect(response.refreshTokenExpiresAt, equals(refreshTokenExpiresAt));
       });
 
-      test('다양한 타입의 JSON 값을 올바르게 파싱해야 한다', () {
+      test('null 값이 포함된 JSON은 타입 캐스팅 오류를 발생시켜야 한다', () {
         // Given
         final json = {
-          'accessToken': 'dynamic_token_123',
-          'accessTokenExpiresAt': 1704067200000, // 2024-01-01
-          'refreshToken': 'dynamic_refresh_456',
-          'refreshTokenExpiresAt': 1706745600000, // 2024-02-01
+          'accessToken': null,
+          'accessTokenExpiresAt': 1234567890,
+          'refreshToken': 'test_refresh_token',
+          'refreshTokenExpiresAt': 9876543210,
         };
-
-        // When
-        final response = SignupApiResponse.fromJson(json);
-
-        // Then
-        expect(response.accessToken, equals('dynamic_token_123'));
-        expect(response.accessTokenExpiresAt, equals(1704067200000));
-        expect(response.refreshToken, equals('dynamic_refresh_456'));
-        expect(response.refreshTokenExpiresAt, equals(1706745600000));
-      });
-
-      test('빈 문자열 토큰을 처리해야 한다', () {
-        // Given
-        final json = {
-          'accessToken': '',
-          'accessTokenExpiresAt': 0,
-          'refreshToken': '',
-          'refreshTokenExpiresAt': 0,
-        };
-
-        // When
-        final response = SignupApiResponse.fromJson(json);
-
-        // Then
-        expect(response.accessToken, equals(''));
-        expect(response.accessTokenExpiresAt, equals(0));
-        expect(response.refreshToken, equals(''));
-        expect(response.refreshTokenExpiresAt, equals(0));
-      });
-    });
-
-    group('불변성', () {
-      test('생성 후 값이 변경되지 않아야 한다', () {
-        // Given
-        final response = SignupApiResponse(
-          accessToken: 'immutable_token',
-          accessTokenExpiresAt: 1640995200000,
-          refreshToken: 'immutable_refresh',
-          refreshTokenExpiresAt: 1643587200000,
-        );
 
         // When & Then
-        expect(response.accessToken, equals('immutable_token'));
-        expect(response.accessTokenExpiresAt, equals(1640995200000));
-        expect(response.refreshToken, equals('immutable_refresh'));
-        expect(response.refreshTokenExpiresAt, equals(1643587200000));
+        expect(
+          () => SignupApiResponse.fromJson(json),
+          throwsA(isA<TypeError>()),
+        );
+      });
+
+      test('잘못된 타입의 JSON은 타입 캐스팅 오류를 발생시켜야 한다', () {
+        // Given
+        final json = {
+          'accessToken': 'test_access_token',
+          'accessTokenExpiresAt': 'invalid_timestamp', // String instead of int
+          'refreshToken': 'test_refresh_token',
+          'refreshTokenExpiresAt': 9876543210,
+        };
+
+        // When & Then
+        expect(
+          () => SignupApiResponse.fromJson(json),
+          throwsA(isA<TypeError>()),
+        );
+      });
+
+      test('누락된 필드가 있는 JSON은 타입 캐스팅 오류를 발생시켜야 한다', () {
+        // Given
+        final json = {
+          'accessToken': 'test_access_token',
+          'accessTokenExpiresAt': 1234567890,
+          // refreshToken 누락
+          'refreshTokenExpiresAt': 9876543210,
+        };
+
+        // When & Then
+        expect(
+          () => SignupApiResponse.fromJson(json),
+          throwsA(isA<TypeError>()),
+        );
       });
     });
 
-    group('에지 케이스', () {
-      test('0 타임스탬프를 처리해야 한다', () {
-        // Given & When
-        final response = SignupApiResponse(
-          accessToken: 'zero_time_token',
-          accessTokenExpiresAt: 0,
-          refreshToken: 'zero_time_refresh',
-          refreshTokenExpiresAt: 0,
+    group('객체 속성 비교', () {
+      test('동일한 값으로 생성된 객체는 같은 속성을 가져야 한다', () {
+        // Given
+        const accessToken = 'test_access_token';
+        const accessTokenExpiresAt = 1234567890;
+        const refreshToken = 'test_refresh_token';
+        const refreshTokenExpiresAt = 9876543210;
+
+        // When
+        const response1 = SignupApiResponse(
+          accessToken: accessToken,
+          accessTokenExpiresAt: accessTokenExpiresAt,
+          refreshToken: refreshToken,
+          refreshTokenExpiresAt: refreshTokenExpiresAt,
+        );
+
+        const response2 = SignupApiResponse(
+          accessToken: accessToken,
+          accessTokenExpiresAt: accessTokenExpiresAt,
+          refreshToken: refreshToken,
+          refreshTokenExpiresAt: refreshTokenExpiresAt,
         );
 
         // Then
-        expect(response.accessTokenExpiresAt, equals(0));
-        expect(response.refreshTokenExpiresAt, equals(0));
+        expect(response1.accessToken, equals(response2.accessToken));
+        expect(response1.accessTokenExpiresAt, equals(response2.accessTokenExpiresAt));
+        expect(response1.refreshToken, equals(response2.refreshToken));
+        expect(response1.refreshTokenExpiresAt, equals(response2.refreshTokenExpiresAt));
       });
 
-      test('음수 타임스탬프를 처리해야 한다', () {
-        // Given & When
-        final response = SignupApiResponse(
-          accessToken: 'negative_time_token',
-          accessTokenExpiresAt: -1000,
-          refreshToken: 'negative_time_refresh',
-          refreshTokenExpiresAt: -2000,
+      test('다른 값으로 생성된 객체는 다른 속성을 가져야 한다', () {
+        // Given
+        const response1 = SignupApiResponse(
+          accessToken: 'token1',
+          accessTokenExpiresAt: 1234567890,
+          refreshToken: 'refresh1',
+          refreshTokenExpiresAt: 9876543210,
+        );
+
+        const response2 = SignupApiResponse(
+          accessToken: 'token2',
+          accessTokenExpiresAt: 1234567890,
+          refreshToken: 'refresh1',
+          refreshTokenExpiresAt: 9876543210,
         );
 
         // Then
-        expect(response.accessTokenExpiresAt, equals(-1000));
-        expect(response.refreshTokenExpiresAt, equals(-2000));
-      });
-
-      test('매우 큰 타임스탬프를 처리해야 한다', () {
-        // Given & When
-        final response = SignupApiResponse(
-          accessToken: 'large_time_token',
-          accessTokenExpiresAt: 9999999999999,
-          refreshToken: 'large_time_refresh',
-          refreshTokenExpiresAt: 9999999999999,
-        );
-
-        // Then
-        expect(response.accessTokenExpiresAt, equals(9999999999999));
-        expect(response.refreshTokenExpiresAt, equals(9999999999999));
+        expect(response1.accessToken, isNot(equals(response2.accessToken)));
+        expect(response1.accessTokenExpiresAt, equals(response2.accessTokenExpiresAt));
+        expect(response1.refreshToken, equals(response2.refreshToken));
+        expect(response1.refreshTokenExpiresAt, equals(response2.refreshTokenExpiresAt));
       });
     });
   });

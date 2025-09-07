@@ -3,11 +3,11 @@ import 'package:app/shared/ui/design_system/tokens/radius.dart';
 import 'package:app/shared/ui/design_system/tokens/spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import '../../../../utils/design_system/design_system_test_utils.dart';
-import '../../../../utils/widget/app_wrappers.dart';
-import '../../../../utils/widget/actions.dart';
-import '../../../../utils/widget/finders.dart';
-import '../../../../utils/widget/verifiers.dart';
+
+import '../../../../../utils/design_system/design_system_test_utils.dart';
+import '../../../../../utils/widget/actions.dart';
+import '../../../../../utils/widget/finders.dart';
+import '../../../../../utils/widget/verifiers.dart';
 
 void main() {
   group('BaseButton', () {

@@ -1,190 +1,207 @@
-import 'package:flutter_test/flutter_test.dart';
-
-import 'package:app/domains/auth/core/entities/auth_token.dart';
 import 'package:app/domains/auth/core/entities/authentication_result.dart';
-import '../../../../utils/fake_data_generator.dart';
+import 'package:faker/faker.dart';
+import 'package:test/test.dart';
+
+import '../../../../utils/fake_data/fake_data_generator.dart';
 
 void main() {
   group('AuthenticationResult', () {
-    late AuthToken validToken;
+    group('생성자', () {
+      test('필수 파라미터로 생성되어야 한다', () {
+        // Given
+        const status = AuthenticationStatus.authenticated;
 
-    setUp(() {
-      validToken = FakeDataGenerator.createValidAuthToken();
-    });
+        // When
+        const result = AuthenticationResult(status: status);
 
-    group('authenticated factory', () {
-      test('인증된 상태로 생성되어야 한다', () {
-        final result = AuthenticationResult.authenticated(validToken);
-
+        // Then
         expect(result.status, equals(AuthenticationStatus.authenticated));
-        expect(result.token, equals(validToken));
+        expect(result.token, isNull);
         expect(result.message, isNull);
       });
 
-      test('토큰 정보가 올바르게 저장되어야 한다', () {
-        final result = AuthenticationResult.authenticated(validToken);
+      test('토큰과 메시지가 포함된 생성자가 올바르게 작동해야 한다', () {
+        // Given
+        final token = FakeDataGenerator.createValidAuthToken();
+        final message = faker.lorem.sentence();
 
-        expect(result.token?.accessToken, isNotEmpty);
-        expect(result.token?.refreshToken, isNotEmpty);
+        // When
+        final result = AuthenticationResult(
+          status: AuthenticationStatus.authenticated,
+          token: token,
+          message: message,
+        );
+
+        // Then
+        expect(result.status, equals(AuthenticationStatus.authenticated));
+        expect(result.token, equals(token));
+        expect(result.message, equals(message));
       });
     });
 
-    group('unauthenticated factory', () {
-      test('메시지 없이 미인증 상태로 생성되어야 한다', () {
+    group('Factory 생성자', () {
+      test('authenticated factory가 올바르게 작동해야 한다', () {
+        // Given
+        final token = FakeDataGenerator.createValidAuthToken();
+
+        // When
+        final result = AuthenticationResult.authenticated(token);
+
+        // Then
+        expect(result.status, equals(AuthenticationStatus.authenticated));
+        expect(result.token, equals(token));
+        expect(result.message, isNull);
+      });
+
+      test('unauthenticated factory가 기본 메시지로 올바르게 작동해야 한다', () {
+        // When
         final result = AuthenticationResult.unauthenticated();
 
+        // Then
         expect(result.status, equals(AuthenticationStatus.unauthenticated));
         expect(result.token, isNull);
         expect(result.message, equals('Authentication required'));
       });
 
-      test('커스텀 메시지로 미인증 상태를 생성해야 한다', () {
-        final customMessage = 'Invalid credentials';
+      test('unauthenticated factory가 커스텀 메시지로 올바르게 작동해야 한다', () {
+        // Given
+        final customMessage = faker.lorem.sentence();
+
+        // When
         final result = AuthenticationResult.unauthenticated(customMessage);
 
+        // Then
         expect(result.status, equals(AuthenticationStatus.unauthenticated));
         expect(result.token, isNull);
         expect(result.message, equals(customMessage));
       });
-    });
 
-    group('expired factory', () {
-      test('메시지 없이 만료 상태로 생성되어야 한다', () {
+      test('expired factory가 기본 메시지로 올바르게 작동해야 한다', () {
+        // When
         final result = AuthenticationResult.expired();
 
+        // Then
         expect(result.status, equals(AuthenticationStatus.expired));
         expect(result.token, isNull);
         expect(result.message, equals('Token expired'));
       });
 
-      test('커스텀 메시지로 만료 상태를 생성해야 한다', () {
-        final customMessage = 'Access token has expired';
+      test('expired factory가 커스텀 메시지로 올바르게 작동해야 한다', () {
+        // Given
+        final customMessage = faker.lorem.sentence();
+
+        // When
         final result = AuthenticationResult.expired(customMessage);
 
+        // Then
         expect(result.status, equals(AuthenticationStatus.expired));
         expect(result.token, isNull);
         expect(result.message, equals(customMessage));
       });
     });
 
-    group('isAuthenticated method', () {
-      test('인증된 상태일 때 true를 반환해야 한다', () {
-        final result = AuthenticationResult.authenticated(validToken);
+    group('비즈니스 로직', () {
+      test('인증된 상태에서 isAuthenticated가 true를 반환해야 한다', () {
+        // Given
+        final token = FakeDataGenerator.createValidAuthToken();
 
+        // When
+        final result = AuthenticationResult.authenticated(token);
+
+        // Then
         expect(result.isAuthenticated(), isTrue);
       });
 
-      test('미인증 상태일 때 false를 반환해야 한다', () {
+      test('인증되지 않은 상태에서 isAuthenticated가 false를 반환해야 한다', () {
+        // When
         final result = AuthenticationResult.unauthenticated();
 
+        // Then
         expect(result.isAuthenticated(), isFalse);
       });
 
-      test('만료 상태일 때 false를 반환해야 한다', () {
+      test('만료된 상태에서 isAuthenticated가 false를 반환해야 한다', () {
+        // When
         final result = AuthenticationResult.expired();
 
+        // Then
         expect(result.isAuthenticated(), isFalse);
+      });
+
+      test('토큰 정보를 올바르게 반환해야 한다', () {
+        // Given
+        final token = FakeDataGenerator.createValidAuthToken();
+
+        // When
+        final result = AuthenticationResult.authenticated(token);
+
+        // Then
+        expect(result.token, equals(token));
+        expect(result.token?.accessToken, equals(token.accessToken));
+        expect(result.token?.refreshToken, equals(token.refreshToken));
       });
     });
 
     group('Equatable 구현', () {
-      test('동일한 상태와 토큰을 가진 결과는 같아야 한다', () {
-        final result1 = AuthenticationResult.authenticated(validToken);
-        final result2 = AuthenticationResult.authenticated(validToken);
+      test('동일한 값으로 생성된 객체는 같아야 한다', () {
+        // Given
+        final token = FakeDataGenerator.createValidAuthToken();
 
+        // When
+        final result1 = AuthenticationResult.authenticated(token);
+        final result2 = AuthenticationResult.authenticated(token);
+
+        // Then
         expect(result1, equals(result2));
+        expect(result1.hashCode, equals(result2.hashCode));
       });
 
-      test('다른 상태를 가진 결과는 달라야 한다', () {
-        final authenticated = AuthenticationResult.authenticated(validToken);
-        final unauthenticated = AuthenticationResult.unauthenticated();
+      test('다른 상태로 생성된 객체는 달라야 한다', () {
+        // Given
+        final token = FakeDataGenerator.createValidAuthToken();
 
-        expect(authenticated, isNot(equals(unauthenticated)));
+        // When
+        final authenticatedResult = AuthenticationResult.authenticated(token);
+        final unauthenticatedResult = AuthenticationResult.unauthenticated();
+
+        // Then
+        expect(authenticatedResult, isNot(equals(unauthenticatedResult)));
       });
 
-      test('다른 메시지를 가진 결과는 달라야 한다', () {
-        final result1 = AuthenticationResult.unauthenticated('Message 1');
-        final result2 = AuthenticationResult.unauthenticated('Message 2');
+      test('다른 메시지로 생성된 객체는 달라야 한다', () {
+        // Given
+        final message1 = faker.lorem.sentence();
+        final message2 = faker.lorem.sentence();
 
+        // When
+        final result1 = AuthenticationResult.unauthenticated(message1);
+        final result2 = AuthenticationResult.unauthenticated(message2);
+
+        // Then
         expect(result1, isNot(equals(result2)));
       });
 
-      test('다른 토큰을 가진 결과는 달라야 한다', () {
-        final token1 = AuthToken(
-          accessToken: 'token1',
-          refreshToken: 'refresh1',
-          accessTokenExpiresAt: DateTime.now().add(const Duration(minutes: 30)),
-          refreshTokenExpiresAt: DateTime.now().add(const Duration(days: 7)),
-        );
-        final token2 = AuthToken(
-          accessToken: 'token2',
-          refreshToken: 'refresh2',
-          accessTokenExpiresAt: DateTime.now().add(const Duration(minutes: 30)),
-          refreshTokenExpiresAt: DateTime.now().add(const Duration(days: 7)),
-        );
+      test('다른 토큰으로 생성된 객체는 달라야 한다', () {
+        // Given
+        final token1 = FakeDataGenerator.createValidAuthToken();
+        final token2 = FakeDataGenerator.createValidAuthToken(); // 다른 토큰
 
+        // When
         final result1 = AuthenticationResult.authenticated(token1);
         final result2 = AuthenticationResult.authenticated(token2);
 
+        // Then
         expect(result1, isNot(equals(result2)));
       });
     });
 
-    group('props', () {
-      test('상태, 토큰, 메시지를 포함해야 한다', () {
-        final result = AuthenticationResult.authenticated(validToken);
-
-        expect(result.props, containsAll([
-          AuthenticationStatus.authenticated,
-          validToken,
-          null, // message
-        ]));
-      });
-
-      test('메시지가 있는 경우 props에 포함되어야 한다', () {
-        final result = AuthenticationResult.unauthenticated('Custom message');
-
-        expect(result.props, containsAll([
-          AuthenticationStatus.unauthenticated,
-          null, // token
-          'Custom message',
-        ]));
-      });
-    });
-
-    group('상태별 데이터 접근', () {
-      test('인증된 상태에서 토큰에 안전하게 접근할 수 있어야 한다', () {
-        final result = AuthenticationResult.authenticated(validToken);
-
-        expect(result.token?.accessToken, isNotEmpty);
-        expect(result.token?.refreshToken, isNotEmpty);
-      });
-
-      test('미인증 상태에서 토큰은 null이어야 한다', () {
-        final result = AuthenticationResult.unauthenticated();
-
-        expect(result.token, isNull);
-      });
-
-      test('만료 상태에서 토큰은 null이어야 한다', () {
-        final result = AuthenticationResult.expired();
-
-        expect(result.token, isNull);
-      });
-    });
-
-    group('에러 메시지 처리', () {
-      test('에러 메시지가 있는 경우 적절히 표시되어야 한다', () {
-        final errorMessage = 'Network connection failed';
-        final result = AuthenticationResult.unauthenticated(errorMessage);
-
-        expect(result.message, equals(errorMessage));
-      });
-
-      test('기본 메시지가 없는 경우 기본값이 사용되어야 한다', () {
-        final result = AuthenticationResult.unauthenticated();
-
-        expect(result.message, equals('Authentication required'));
+    group('AuthenticationStatus enum', () {
+      test('모든 상태 값이 올바르게 정의되어야 한다', () {
+        // Then
+        expect(AuthenticationStatus.values, hasLength(3));
+        expect(AuthenticationStatus.values, contains(AuthenticationStatus.authenticated));
+        expect(AuthenticationStatus.values, contains(AuthenticationStatus.unauthenticated));
+        expect(AuthenticationStatus.values, contains(AuthenticationStatus.expired));
       });
     });
   });

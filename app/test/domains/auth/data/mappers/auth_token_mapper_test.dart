@@ -1,53 +1,104 @@
-import 'package:flutter_test/flutter_test.dart';
-
 import 'package:app/domains/auth/data/mappers/auth_token_mapper.dart';
 import 'package:app/domains/auth/data/models/refresh_token_api_response.dart';
 import 'package:app/domains/auth/data/models/signup_api_response.dart';
+import 'package:faker/faker.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('AuthTokenMapper', () {
+    late String accessToken;
+    late String refreshToken;
+    late int accessTokenExpiresAt;
+    late int refreshTokenExpiresAt;
+
+    setUp(() {
+      accessToken = faker.guid.guid();
+      refreshToken = faker.guid.guid();
+      accessTokenExpiresAt = faker.date.dateTime().millisecondsSinceEpoch;
+      refreshTokenExpiresAt = faker.date.dateTime().millisecondsSinceEpoch;
+    });
+
     group('fromSignupResponse', () {
       test('SignupApiResponse를 AuthToken으로 올바르게 변환해야 한다', () {
         // Given
         final signupResponse = SignupApiResponse(
-          accessToken: 'test_access_token',
-          accessTokenExpiresAt: 1640995200000, // 2022-01-01 00:00:00 UTC
-          refreshToken: 'test_refresh_token',
-          refreshTokenExpiresAt: 1643587200000, // 2022-01-31 00:00:00 UTC
+          accessToken: accessToken,
+          accessTokenExpiresAt: accessTokenExpiresAt,
+          refreshToken: refreshToken,
+          refreshTokenExpiresAt: refreshTokenExpiresAt,
         );
 
         // When
-        final authToken = AuthTokenMapper.fromSignupResponse(signupResponse);
+        final result = AuthTokenMapper.fromSignupResponse(signupResponse);
 
         // Then
-        expect(authToken.accessToken, equals('test_access_token'));
-        expect(authToken.refreshToken, equals('test_refresh_token'));
-        expect(authToken.tokenType, equals('Bearer'));
-        expect(authToken.accessTokenExpiresAt, equals(DateTime.fromMillisecondsSinceEpoch(1640995200000)));
-        expect(authToken.refreshTokenExpiresAt, equals(DateTime.fromMillisecondsSinceEpoch(1643587200000)));
+        expect(result.accessToken, equals(accessToken));
+        expect(result.refreshToken, equals(refreshToken));
+        expect(result.accessTokenExpiresAt, equals(DateTime.fromMillisecondsSinceEpoch(accessTokenExpiresAt)));
+        expect(result.refreshTokenExpiresAt, equals(DateTime.fromMillisecondsSinceEpoch(refreshTokenExpiresAt)));
+        expect(result.tokenType, equals('Bearer'));
       });
 
-      test('다양한 타임스탬프로 올바르게 변환해야 한다', () {
+      test('토큰 타입이 항상 Bearer로 설정되어야 한다', () {
         // Given
-        final now = DateTime.now();
-        final accessExpiry = now.add(const Duration(hours: 1));
-        final refreshExpiry = now.add(const Duration(days: 30));
-
         final signupResponse = SignupApiResponse(
-          accessToken: 'dynamic_access_token',
-          accessTokenExpiresAt: accessExpiry.millisecondsSinceEpoch,
-          refreshToken: 'dynamic_refresh_token',
-          refreshTokenExpiresAt: refreshExpiry.millisecondsSinceEpoch,
+          accessToken: accessToken,
+          accessTokenExpiresAt: accessTokenExpiresAt,
+          refreshToken: refreshToken,
+          refreshTokenExpiresAt: refreshTokenExpiresAt,
         );
 
         // When
-        final authToken = AuthTokenMapper.fromSignupResponse(signupResponse);
+        final result = AuthTokenMapper.fromSignupResponse(signupResponse);
 
         // Then
-        expect(authToken.accessToken, equals('dynamic_access_token'));
-        expect(authToken.refreshToken, equals('dynamic_refresh_token'));
-        expect(authToken.accessTokenExpiresAt.millisecondsSinceEpoch, equals(accessExpiry.millisecondsSinceEpoch));
-        expect(authToken.refreshTokenExpiresAt.millisecondsSinceEpoch, equals(refreshExpiry.millisecondsSinceEpoch));
+        expect(result.tokenType, equals('Bearer'));
+      });
+
+      test('밀리초 타임스탬프가 올바르게 DateTime으로 변환되어야 한다', () {
+        // Given
+        final now = DateTime.now();
+        final accessTokenExpiresAt = now.millisecondsSinceEpoch;
+        final refreshTokenExpiresAt = now.add(const Duration(hours: 1)).millisecondsSinceEpoch;
+        
+        final signupResponse = SignupApiResponse(
+          accessToken: accessToken,
+          accessTokenExpiresAt: accessTokenExpiresAt,
+          refreshToken: refreshToken,
+          refreshTokenExpiresAt: refreshTokenExpiresAt,
+        );
+
+        // When
+        final result = AuthTokenMapper.fromSignupResponse(signupResponse);
+
+        // Then
+        expect(result.accessTokenExpiresAt.millisecondsSinceEpoch, equals(accessTokenExpiresAt));
+        expect(result.refreshTokenExpiresAt.millisecondsSinceEpoch, equals(refreshTokenExpiresAt));
+      });
+
+      test('다양한 타임스탬프 값으로 변환이 올바르게 동작해야 한다', () {
+        // Given
+        final testCases = [
+          {'access': 0, 'refresh': 1000},
+          {'access': 1640995200000, 'refresh': 1640998800000}, // 2022-01-01 00:00:00, 01:00:00
+          {'access': 1672531200000, 'refresh': 1672534800000}, // 2023-01-01 00:00:00, 01:00:00
+        ];
+
+        for (final testCase in testCases) {
+          final signupResponse = SignupApiResponse(
+            accessToken: accessToken,
+            accessTokenExpiresAt: testCase['access']!,
+            refreshToken: refreshToken,
+            refreshTokenExpiresAt: testCase['refresh']!,
+          );
+
+          // When
+          final result = AuthTokenMapper.fromSignupResponse(signupResponse);
+
+          // Then
+          expect(result.accessTokenExpiresAt, equals(DateTime.fromMillisecondsSinceEpoch(testCase['access']!)));
+          expect(result.refreshTokenExpiresAt, equals(DateTime.fromMillisecondsSinceEpoch(testCase['refresh']!)));
+        }
       });
     });
 
@@ -55,80 +106,133 @@ void main() {
       test('RefreshTokenApiResponse를 AuthToken으로 올바르게 변환해야 한다', () {
         // Given
         final refreshResponse = RefreshTokenApiResponse(
-          accessToken: 'new_access_token',
-          accessTokenExpiresAt: 1640995200000, // 2022-01-01 00:00:00 UTC
-          refreshToken: 'new_refresh_token',
-          refreshTokenExpiresAt: 1643587200000, // 2022-01-31 00:00:00 UTC
+          accessToken: accessToken,
+          accessTokenExpiresAt: accessTokenExpiresAt,
+          refreshToken: refreshToken,
+          refreshTokenExpiresAt: refreshTokenExpiresAt,
         );
 
         // When
-        final authToken = AuthTokenMapper.fromRefreshTokenResponse(refreshResponse);
+        final result = AuthTokenMapper.fromRefreshTokenResponse(refreshResponse);
 
         // Then
-        expect(authToken.accessToken, equals('new_access_token'));
-        expect(authToken.refreshToken, equals('new_refresh_token'));
-        expect(authToken.tokenType, equals('Bearer'));
-        expect(authToken.accessTokenExpiresAt, equals(DateTime.fromMillisecondsSinceEpoch(1640995200000)));
-        expect(authToken.refreshTokenExpiresAt, equals(DateTime.fromMillisecondsSinceEpoch(1643587200000)));
+        expect(result.accessToken, equals(accessToken));
+        expect(result.refreshToken, equals(refreshToken));
+        expect(result.accessTokenExpiresAt, equals(DateTime.fromMillisecondsSinceEpoch(accessTokenExpiresAt)));
+        expect(result.refreshTokenExpiresAt, equals(DateTime.fromMillisecondsSinceEpoch(refreshTokenExpiresAt)));
+        expect(result.tokenType, equals('Bearer'));
       });
 
-      test('토큰 갱신 시 새로운 토큰으로 올바르게 변환해야 한다', () {
+      test('토큰 타입이 항상 Bearer로 설정되어야 한다', () {
         // Given
-        final now = DateTime.now();
-        final newAccessExpiry = now.add(const Duration(hours: 2));
-        final newRefreshExpiry = now.add(const Duration(days: 60));
-
         final refreshResponse = RefreshTokenApiResponse(
-          accessToken: 'refreshed_access_token',
-          accessTokenExpiresAt: newAccessExpiry.millisecondsSinceEpoch,
-          refreshToken: 'refreshed_refresh_token',
-          refreshTokenExpiresAt: newRefreshExpiry.millisecondsSinceEpoch,
+          accessToken: accessToken,
+          accessTokenExpiresAt: accessTokenExpiresAt,
+          refreshToken: refreshToken,
+          refreshTokenExpiresAt: refreshTokenExpiresAt,
         );
 
         // When
-        final authToken = AuthTokenMapper.fromRefreshTokenResponse(refreshResponse);
+        final result = AuthTokenMapper.fromRefreshTokenResponse(refreshResponse);
 
         // Then
-        expect(authToken.accessToken, equals('refreshed_access_token'));
-        expect(authToken.refreshToken, equals('refreshed_refresh_token'));
-        expect(authToken.accessTokenExpiresAt.millisecondsSinceEpoch, equals(newAccessExpiry.millisecondsSinceEpoch));
-        expect(authToken.refreshTokenExpiresAt.millisecondsSinceEpoch, equals(newRefreshExpiry.millisecondsSinceEpoch));
+        expect(result.tokenType, equals('Bearer'));
+      });
+
+      test('밀리초 타임스탬프가 올바르게 DateTime으로 변환되어야 한다', () {
+        // Given
+        final now = DateTime.now();
+        final accessTokenExpiresAt = now.millisecondsSinceEpoch;
+        final refreshTokenExpiresAt = now.add(const Duration(hours: 1)).millisecondsSinceEpoch;
+        
+        final refreshResponse = RefreshTokenApiResponse(
+          accessToken: accessToken,
+          accessTokenExpiresAt: accessTokenExpiresAt,
+          refreshToken: refreshToken,
+          refreshTokenExpiresAt: refreshTokenExpiresAt,
+        );
+
+        // When
+        final result = AuthTokenMapper.fromRefreshTokenResponse(refreshResponse);
+
+        // Then
+        expect(result.accessTokenExpiresAt.millisecondsSinceEpoch, equals(accessTokenExpiresAt));
+        expect(result.refreshTokenExpiresAt.millisecondsSinceEpoch, equals(refreshTokenExpiresAt));
+      });
+
+      test('다양한 타임스탬프 값으로 변환이 올바르게 동작해야 한다', () {
+        // Given
+        final testCases = [
+          {'access': 0, 'refresh': 1000},
+          {'access': 1640995200000, 'refresh': 1640998800000}, // 2022-01-01 00:00:00, 01:00:00
+          {'access': 1672531200000, 'refresh': 1672534800000}, // 2023-01-01 00:00:00, 01:00:00
+        ];
+
+        for (final testCase in testCases) {
+          final refreshResponse = RefreshTokenApiResponse(
+            accessToken: accessToken,
+            accessTokenExpiresAt: testCase['access']!,
+            refreshToken: refreshToken,
+            refreshTokenExpiresAt: testCase['refresh']!,
+          );
+
+          // When
+          final result = AuthTokenMapper.fromRefreshTokenResponse(refreshResponse);
+
+          // Then
+          expect(result.accessTokenExpiresAt, equals(DateTime.fromMillisecondsSinceEpoch(testCase['access']!)));
+          expect(result.refreshTokenExpiresAt, equals(DateTime.fromMillisecondsSinceEpoch(testCase['refresh']!)));
+        }
       });
     });
 
-    group('에지 케이스', () {
-      test('0 타임스탬프를 올바르게 처리해야 한다', () {
+    group('공통 동작', () {
+      test('두 메서드 모두 동일한 변환 로직을 사용해야 한다', () {
         // Given
         final signupResponse = SignupApiResponse(
-          accessToken: 'test_token',
-          accessTokenExpiresAt: 0,
-          refreshToken: 'test_refresh',
-          refreshTokenExpiresAt: 0,
+          accessToken: accessToken,
+          accessTokenExpiresAt: accessTokenExpiresAt,
+          refreshToken: refreshToken,
+          refreshTokenExpiresAt: refreshTokenExpiresAt,
+        );
+
+        final refreshResponse = RefreshTokenApiResponse(
+          accessToken: accessToken,
+          accessTokenExpiresAt: accessTokenExpiresAt,
+          refreshToken: refreshToken,
+          refreshTokenExpiresAt: refreshTokenExpiresAt,
         );
 
         // When
-        final authToken = AuthTokenMapper.fromSignupResponse(signupResponse);
+        final signupResult = AuthTokenMapper.fromSignupResponse(signupResponse);
+        final refreshResult = AuthTokenMapper.fromRefreshTokenResponse(refreshResponse);
 
         // Then
-        expect(authToken.accessTokenExpiresAt, equals(DateTime.fromMillisecondsSinceEpoch(0)));
-        expect(authToken.refreshTokenExpiresAt, equals(DateTime.fromMillisecondsSinceEpoch(0)));
+        expect(signupResult.accessToken, equals(refreshResult.accessToken));
+        expect(signupResult.refreshToken, equals(refreshResult.refreshToken));
+        expect(signupResult.accessTokenExpiresAt, equals(refreshResult.accessTokenExpiresAt));
+        expect(signupResult.refreshTokenExpiresAt, equals(refreshResult.refreshTokenExpiresAt));
+        expect(signupResult.tokenType, equals(refreshResult.tokenType));
       });
 
-      test('음수 타임스탬프를 올바르게 처리해야 한다', () {
+      test('생성된 AuthToken이 유효한 상태여야 한다', () {
         // Given
+        final futureTime = DateTime.now().add(const Duration(hours: 1));
         final signupResponse = SignupApiResponse(
-          accessToken: 'test_token',
-          accessTokenExpiresAt: -1000,
-          refreshToken: 'test_refresh',
-          refreshTokenExpiresAt: -2000,
+          accessToken: accessToken,
+          accessTokenExpiresAt: futureTime.millisecondsSinceEpoch,
+          refreshToken: refreshToken,
+          refreshTokenExpiresAt: futureTime.add(const Duration(hours: 1)).millisecondsSinceEpoch,
         );
 
         // When
-        final authToken = AuthTokenMapper.fromSignupResponse(signupResponse);
+        final result = AuthTokenMapper.fromSignupResponse(signupResponse);
 
         // Then
-        expect(authToken.accessTokenExpiresAt, equals(DateTime.fromMillisecondsSinceEpoch(-1000)));
-        expect(authToken.refreshTokenExpiresAt, equals(DateTime.fromMillisecondsSinceEpoch(-2000)));
+        expect(result.isAccessTokenValid, isTrue);
+        expect(result.isRefreshTokenValid, isTrue);
+        expect(result.isAccessTokenExpired, isFalse);
+        expect(result.isRefreshTokenExpired, isFalse);
       });
     });
   });

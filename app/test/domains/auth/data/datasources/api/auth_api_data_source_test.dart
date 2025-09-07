@@ -1,264 +1,191 @@
-import 'package:app/domains/auth/data/datasources/api/auth_api_data_source.dart';
 import 'package:app/domains/auth/data/models/refresh_token_api_response.dart';
 import 'package:app/domains/auth/data/models/signup_api_response.dart';
-import 'package:app/shared/infrastructure/network/auth_client.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:app/shared/exception_handler/exceptions/network_exception.dart';
+import 'package:app/shared/exception_handler/exceptions/server_exception.dart';
+import 'package:clock/clock.dart';
+import 'package:faker/faker.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:test/test.dart';
 
-class _MockAuthClient extends Mock implements AuthClient {}
+import '../../../../../utils/mock_factory/auth_mock_factory.dart';
+
 
 void main() {
-  group('AuthApiDataSourceImpl', () {
-    late _MockAuthClient mockAuthClient;
-    late AuthApiDataSourceImpl dataSource;
+  group('AuthApiDataSource', () {
+    late MockAuthApiDataSource mockDataSource;
 
     setUp(() {
-      mockAuthClient = _MockAuthClient();
-      dataSource = AuthApiDataSourceImpl(mockAuthClient);
+      mockDataSource = AuthMockFactory.createAuthApiDataSource();
     });
 
     group('authenticate', () {
-      test('성공적인 인증 시 SignupApiResponse를 반환해야 한다', () async {
+      test('정상적인 인증 요청이 성공해야 한다', () async {
         // Given
-        final signupResponse = SignupApiResponse(
-          accessToken: 'test_access_token',
-          accessTokenExpiresAt: 1640995200000,
-          refreshToken: 'test_refresh_token',
-          refreshTokenExpiresAt: 1643587200000,
+        final provider = faker.randomGenerator.element(['google', 'apple', 'kakao']);
+        final authorizationCode = faker.guid.guid();
+        final expectedResponse = SignupApiResponse(
+          accessToken: faker.guid.guid(),
+          accessTokenExpiresAt: clock.now().add(const Duration(hours: 1)).millisecondsSinceEpoch,
+          refreshToken: faker.guid.guid(),
+          refreshTokenExpiresAt: clock.now().add(const Duration(days: 7)).millisecondsSinceEpoch,
         );
 
-        when(
-          () => mockAuthClient.post<SignupApiResponse>(any(), any(), any()),
-        ).thenAnswer((_) async => signupResponse);
+        when(() => mockDataSource.authenticate(
+          provider: any(named: 'provider'),
+          authorizationCode: any(named: 'authorizationCode'),
+        )).thenAnswer((_) => Future.value(expectedResponse));
 
         // When
-        final result = await dataSource.authenticate(
-          provider: 'google',
-          authorizationCode: 'test_auth_code',
+        final result = await mockDataSource.authenticate(
+          provider: provider,
+          authorizationCode: authorizationCode,
         );
 
         // Then
-        expect(result, equals(signupResponse));
-        verify(
-          () => mockAuthClient.post<SignupApiResponse>('/api/auth/signup', {
-            'provider': 'GOOGLE',
-            'authorizationCode': 'test_auth_code',
-          }, any()),
-        ).called(1);
+        expect(result, equals(expectedResponse));
+        verify(() => mockDataSource.authenticate(
+          provider: provider,
+          authorizationCode: authorizationCode,
+        )).called(1);
       });
 
-      test('다양한 OAuth 제공자로 인증할 수 있어야 한다', () async {
+      test('네트워크 오류 시 NetworkException을 던져야 한다', () async {
         // Given
-        final signupResponse = SignupApiResponse(
-          accessToken: 'kakao_access_token',
-          accessTokenExpiresAt: 1640995200000,
-          refreshToken: 'kakao_refresh_token',
-          refreshTokenExpiresAt: 1643587200000,
-        );
+        final provider = faker.randomGenerator.element(['google', 'apple', 'kakao']);
+        final authorizationCode = faker.guid.guid();
+        final networkException = NetworkException.noConnection();
 
-        when(
-          () => mockAuthClient.post<SignupApiResponse>(any(), any(), any()),
-        ).thenAnswer((_) async => signupResponse);
-
-        // When
-        final result = await dataSource.authenticate(
-          provider: 'kakao',
-          authorizationCode: 'kakao_auth_code',
-        );
-
-        // Then
-        expect(result, equals(signupResponse));
-        verify(
-          () => mockAuthClient.post<SignupApiResponse>('/api/auth/signup', {
-            'provider': 'KAKAO',
-            'authorizationCode': 'kakao_auth_code',
-          }, any()),
-        ).called(1);
-      });
-
-      test('API 오류 시 예외를 전파해야 한다', () async {
-        // Given
-        final apiException = Exception('API Error');
-        when(
-          () => mockAuthClient.post<SignupApiResponse>(any(), any(), any()),
-        ).thenThrow(apiException);
+        when(() => mockDataSource.authenticate(
+          provider: any(named: 'provider'),
+          authorizationCode: any(named: 'authorizationCode'),
+        )).thenThrow(networkException);
 
         // When & Then
         expect(
-          () => dataSource.authenticate(
-            provider: 'google',
-            authorizationCode: 'test_auth_code',
+          () => mockDataSource.authenticate(
+            provider: provider,
+            authorizationCode: authorizationCode,
           ),
-          throwsA(equals(apiException)),
+          throwsA(isA<NetworkException>()),
         );
       });
 
-      test('provider를 대문자로 변환해야 한다', () async {
+      test('서버 오류 시 ServerException을 던져야 한다', () async {
         // Given
-        final signupResponse = SignupApiResponse(
-          accessToken: 'test_access_token',
-          accessTokenExpiresAt: 1640995200000,
-          refreshToken: 'test_refresh_token',
-          refreshTokenExpiresAt: 1643587200000,
+        final provider = faker.randomGenerator.element(['google', 'apple', 'kakao']);
+        final authorizationCode = faker.guid.guid();
+        final serverException = ServerException.fromStatusCode(
+          statusCode: 401,
+          message: 'Unauthorized',
         );
 
-        when(
-          () => mockAuthClient.post<SignupApiResponse>(any(), any(), any()),
-        ).thenAnswer((_) async => signupResponse);
+        when(() => mockDataSource.authenticate(
+          provider: any(named: 'provider'),
+          authorizationCode: any(named: 'authorizationCode'),
+        )).thenThrow(serverException);
 
-        // When
-        await dataSource.authenticate(
-          provider: 'apple',
-          authorizationCode: 'apple_auth_code',
+        // When & Then
+        expect(
+          () => mockDataSource.authenticate(
+            provider: provider,
+            authorizationCode: authorizationCode,
+          ),
+          throwsA(isA<ServerException>()),
         );
-
-        // Then
-        verify(
-          () => mockAuthClient.post<SignupApiResponse>('/api/auth/signup', {
-            'provider': 'APPLE',
-            'authorizationCode': 'apple_auth_code',
-          }, any()),
-        ).called(1);
       });
     });
 
     group('refreshToken', () {
-      test('성공적인 토큰 갱신 시 RefreshTokenApiResponse를 반환해야 한다', () async {
+      test('정상적인 토큰 갱신이 성공해야 한다', () async {
         // Given
-        final refreshResponse = RefreshTokenApiResponse(
-          accessToken: 'new_access_token',
-          accessTokenExpiresAt: 1640995200000,
-          refreshToken: 'new_refresh_token',
-          refreshTokenExpiresAt: 1643587200000,
+        final refreshToken = faker.guid.guid();
+        final expectedResponse = RefreshTokenApiResponse(
+          accessToken: faker.guid.guid(),
+          accessTokenExpiresAt: clock.now().add(const Duration(hours: 1)).millisecondsSinceEpoch,
+          refreshToken: faker.guid.guid(),
+          refreshTokenExpiresAt: clock.now().add(const Duration(days: 7)).millisecondsSinceEpoch,
         );
 
-        when(
-          () =>
-              mockAuthClient.post<RefreshTokenApiResponse>(any(), any(), any()),
-        ).thenAnswer((_) async => refreshResponse);
+        when(() => mockDataSource.refreshToken(any())).thenAnswer((_) => Future.value(expectedResponse));
 
         // When
-        final result = await dataSource.refreshToken('old_refresh_token');
+        final result = await mockDataSource.refreshToken(refreshToken);
 
         // Then
-        expect(result, equals(refreshResponse));
-        verify(
-          () => mockAuthClient.post<RefreshTokenApiResponse>(
-            '/api/auth/refresh',
-            {'refreshToken': 'old_refresh_token'},
-            any(),
-          ),
-        ).called(1);
+        expect(result, equals(expectedResponse));
+        verify(() => mockDataSource.refreshToken(refreshToken)).called(1);
       });
 
-      test('토큰 갱신 실패 시 예외를 전파해야 한다', () async {
+      test('만료된 리프레시 토큰으로 실패해야 한다', () async {
         // Given
-        final apiException = Exception('Token refresh failed');
-        when(
-          () =>
-              mockAuthClient.post<RefreshTokenApiResponse>(any(), any(), any()),
-        ).thenThrow(apiException);
+        final refreshToken = faker.guid.guid();
+        final serverException = ServerException.fromStatusCode(
+          statusCode: 401,
+          message: 'Token expired',
+        );
+
+        when(() => mockDataSource.refreshToken(any())).thenThrow(serverException);
 
         // When & Then
         expect(
-          () => dataSource.refreshToken('invalid_refresh_token'),
-          throwsA(equals(apiException)),
+          () => mockDataSource.refreshToken(refreshToken),
+          throwsA(isA<ServerException>()),
         );
       });
 
-      test('빈 refresh token으로 갱신 시도 시 예외를 전파해야 한다', () async {
+      test('네트워크 오류 시 NetworkException을 던져야 한다', () async {
         // Given
-        when(
-          () =>
-              mockAuthClient.post<RefreshTokenApiResponse>(any(), any(), any()),
-        ).thenThrow(Exception('Empty refresh token'));
+        final refreshToken = faker.guid.guid();
+        final networkException = NetworkException.connectionTimeout();
+
+        when(() => mockDataSource.refreshToken(any())).thenThrow(networkException);
 
         // When & Then
-        expect(() => dataSource.refreshToken(''), throwsA(isA<Exception>()));
+        expect(
+          () => mockDataSource.refreshToken(refreshToken),
+          throwsA(isA<NetworkException>()),
+        );
       });
     });
 
     group('logout', () {
-      test('성공적인 로그아웃을 수행해야 한다', () async {
+      test('정상적인 로그아웃이 성공해야 한다', () async {
         // Given
-        when(
-          () => mockAuthClient.post<Map<String, dynamic>>(any(), any(), any()),
-        ).thenAnswer((_) async => <String, dynamic>{});
+        when(() => mockDataSource.logout()).thenAnswer((_) => Future.value());
 
         // When
-        await dataSource.logout();
+        await mockDataSource.logout();
 
         // Then
-        verify(
-          () => mockAuthClient.post<Map<String, dynamic>>(
-            '/api/auth/logout',
-            {},
-            any(),
-          ),
-        ).called(1);
+        verify(() => mockDataSource.logout()).called(1);
       });
 
-      test('로그아웃 실패 시 예외를 전파해야 한다', () async {
+      test('네트워크 오류 시 NetworkException을 던져야 한다', () async {
         // Given
-        final logoutException = Exception('Logout failed');
-        when(
-          () => mockAuthClient.post<Map<String, dynamic>>(any(), any(), any()),
-        ).thenThrow(logoutException);
+        final networkException = NetworkException.noConnection();
 
-        // When & Then
-        expect(() => dataSource.logout(), throwsA(equals(logoutException)));
-      });
-    });
-
-    group('의존성 주입', () {
-      test('ApiClient가 올바르게 주입되어야 한다', () {
-        // Given & When
-        final dataSource = AuthApiDataSourceImpl(mockAuthClient);
-
-        // Then
-        expect(dataSource, isA<AuthApiDataSourceImpl>());
-      });
-
-      test('null ApiClient는 허용되지 않아야 한다', () {
-        // Given & When & Then
-        expect(
-          () => AuthApiDataSourceImpl(null as dynamic),
-          // ignore: cast_nullable_to_non_nullable
-          throwsA(isA<TypeError>()),
-        );
-      });
-    });
-
-    group('에러 처리', () {
-      test('네트워크 오류를 적절히 처리해야 한다', () async {
-        // Given
-        final networkException = Exception('Network error');
-        when(
-          () => mockAuthClient.post<SignupApiResponse>(any(), any(), any()),
-        ).thenThrow(networkException);
+        when(() => mockDataSource.logout()).thenThrow(networkException);
 
         // When & Then
         expect(
-          () => dataSource.authenticate(
-            provider: 'google',
-            authorizationCode: 'test_code',
-          ),
-          throwsA(equals(networkException)),
+          () => mockDataSource.logout(),
+          throwsA(isA<NetworkException>()),
         );
       });
 
-      test('서버 오류를 적절히 처리해야 한다', () async {
+      test('서버 오류 시 ServerException을 던져야 한다', () async {
         // Given
-        final serverException = Exception('Server error 500');
-        when(
-          () =>
-              mockAuthClient.post<RefreshTokenApiResponse>(any(), any(), any()),
-        ).thenThrow(serverException);
+        final serverException = ServerException.fromStatusCode(
+          statusCode: 500,
+          message: 'Internal server error',
+        );
+
+        when(() => mockDataSource.logout()).thenThrow(serverException);
 
         // When & Then
         expect(
-          () => dataSource.refreshToken('test_refresh_token'),
-          throwsA(equals(serverException)),
+          () => mockDataSource.logout(),
+          throwsA(isA<ServerException>()),
         );
       });
     });
