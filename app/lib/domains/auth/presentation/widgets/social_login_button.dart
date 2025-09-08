@@ -5,7 +5,6 @@ import '../../../../shared/ui/design_system/tokens/colors.dart';
 import '../../../../shared/ui/design_system/tokens/sizes.dart';
 import '../../../../shared/ui/design_system/tokens/spacing.dart';
 import '../../../../shared/ui/design_system/tokens/typography.dart';
-import '../../consts/social_label_variant.dart';
 import '../../consts/social_provider.dart';
 
 class SocialLoginButton extends StatelessWidget {
@@ -14,15 +13,12 @@ class SocialLoginButton extends StatelessWidget {
     required this.provider,
     required this.onPressed,
     this.isLoading = false,
-    this.labelVariant = SocialLabelVariant.signup,
   });
 
   final SocialProvider provider;
   final VoidCallback? onPressed;
   final bool isLoading;
-  final SocialLabelVariant labelVariant;
 
-  /// 버튼이 비활성화되어야 하는지 확인
   bool get _isDisabled {
     switch (provider) {
       case SocialProvider.kakao:
@@ -103,13 +99,9 @@ class SocialLoginButton extends StatelessWidget {
     if (_isDisabled) {
       switch (provider) {
         case SocialProvider.kakao:
-          return labelVariant == SocialLabelVariant.login
-              ? '카카오 로그인 (준비 중)'
-              : '카카오로 시작하기 (준비 중)';
+          return '카카오로 시작하기 (준비 중)';
         case SocialProvider.apple:
-          return labelVariant == SocialLabelVariant.login
-              ? '애플 로그인 (준비 중)'
-              : '애플로 시작하기 (준비 중)';
+          return '애플로 시작하기 (준비 중)';
         default:
           return '';
       }
@@ -117,13 +109,11 @@ class SocialLoginButton extends StatelessWidget {
 
     switch (provider) {
       case SocialProvider.kakao:
-        return labelVariant == SocialLabelVariant.login
-            ? '카카오 로그인'
-            : '카카오로 시작하기';
+        return '카카오로 시작하기';
       case SocialProvider.apple:
-        return labelVariant == SocialLabelVariant.login ? '애플 로그인' : '애플로 시작하기';
+        return '애플로 시작하기';
       case SocialProvider.google:
-        return labelVariant == SocialLabelVariant.login ? '구글 로그인' : '구글로 시작하기';
+        return '구글로 시작하기';
     }
   }
 

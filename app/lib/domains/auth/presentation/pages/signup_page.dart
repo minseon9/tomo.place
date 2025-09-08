@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../shared/application/routes/routes.dart';
 import '../../../../shared/ui/design_system/tokens/colors.dart';
 import '../../../../shared/ui/design_system/tokens/spacing.dart';
-import '../../consts/social_label_variant.dart';
+import '../../../terms_agreement/presentation/widgets/organisms/terms_agreement_modal.dart';
+import '../../consts/social_provider.dart';
 import '../controllers/auth_notifier.dart';
 import '../widgets/social_login_section.dart';
 
@@ -15,38 +17,47 @@ class SignupPage extends ConsumerStatefulWidget {
 }
 
 class _SignupPageState extends ConsumerState<SignupPage> {
-  bool _isSignupMode = true;
-
   @override
   Widget build(BuildContext context) {
-    // ✅ app.dart에서 중앙화된 네비게이션 처리하므로 직접 네비게이션 제거
     return Scaffold(
       backgroundColor: DesignTokens.background,
-      body: SafeArea(
-        child: _SignupPageContent(
-          isSignupMode: _isSignupMode,
-          onToggleMode: () {
-            setState(() {
-              _isSignupMode = !_isSignupMode;
-            });
-          },
-          ref: ref,
-        ),
-      ),
+      body: SafeArea(child: _SignupPageContent(ref: ref)),
     );
   }
 }
 
 class _SignupPageContent extends StatelessWidget {
-  const _SignupPageContent({
-    required this.isSignupMode,
-    required this.onToggleMode,
-    required this.ref,
-  });
+  const _SignupPageContent({required this.ref});
 
-  final bool isSignupMode;
-  final VoidCallback onToggleMode;
   final WidgetRef ref;
+
+  void _showTermsAgreementModal(SocialProvider provider) {
+    showModalBottomSheet(
+      context: ref.context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      isDismissible: false,
+      enableDrag: false,
+      builder: (context) => TermsAgreementModal(
+        onAgreeAll: () {
+          Navigator.pop(context);
+          ref.read(authNotifierProvider.notifier).signupWithProvider(provider);
+        },
+        onTermsTap: () {
+          Navigator.pushNamed(context, Routes.termsOfService);
+        },
+        onPrivacyTap: () {
+          Navigator.pushNamed(context, Routes.privacyPolicy);
+        },
+        onLocationTap: () {
+          Navigator.pushNamed(context, Routes.locationTerms);
+        },
+        onDismiss: () {
+          Navigator.pop(context);
+        },
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,12 +70,8 @@ class _SignupPageContent extends StatelessWidget {
             child: Column(
               children: [
                 SocialLoginSection(
-                  labelVariant: isSignupMode
-                      ? SocialLabelVariant.signup
-                      : SocialLabelVariant.login,
-                  onProviderPressed: (provider) => ref
-                      .read(authNotifierProvider.notifier)
-                      .signupWithProvider(provider),
+                  onProviderPressed: (provider) =>
+                      _showTermsAgreementModal(provider),
                 ),
               ],
             ),
