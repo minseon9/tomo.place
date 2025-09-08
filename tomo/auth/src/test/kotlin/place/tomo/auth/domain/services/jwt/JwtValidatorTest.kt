@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.jwt.JwtDecoder
 import org.springframework.security.oauth2.jwt.JwtException
+import place.tomo.auth.domain.constants.JwtType
 import place.tomo.auth.domain.exception.InvalidRefreshTokenException
 
 @DisplayName("RefreshTokenValidationService")
@@ -38,6 +39,7 @@ class JwtValidatorTest {
             val mockJwt =
                 mockk<Jwt> {
                     every { subject } returns userEmail
+                    every { getClaim<JwtType>("type") } returns JwtType.REFRESH
                 }
             every { jwtDecoder.decode(refreshToken) } returns mockJwt
 
@@ -55,6 +57,40 @@ class JwtValidatorTest {
 
             assertThatThrownBy { service.validateRefreshToken(refreshToken) }
                 .isInstanceOf(InvalidRefreshTokenException::class.java)
+        }
+
+        @Test
+        @DisplayName("refresh type이 아닌 경우 예외를 던진다")
+        fun `decode refresh token when type is not REFRESH expect exception thrown`() {
+            val notRefreshToken = "not refresh token"
+
+            val mockJwt =
+                mockk<Jwt> {
+                    every { getClaim<JwtType>("type") } returns JwtType.ACCESS
+                }
+            every { jwtDecoder.decode(notRefreshToken) } returns mockJwt
+
+            assertThatThrownBy { service.validateRefreshToken(notRefreshToken) }
+                .isInstanceOf(InvalidRefreshTokenException::class.java)
+                .message()
+                .isEqualTo("유효하지 않은 토큰 유형입니다.")
+        }
+
+        @Test
+        @DisplayName("type claim이 null인 경우 예외를 던진다")
+        fun `decode refresh token when type is null expect exception thrown`() {
+            val typeNullRefreshToken = "type null refresh token"
+
+            val mockJwt =
+                mockk<Jwt> {
+                    every { getClaim<JwtType>("type") } returns null
+                }
+            every { jwtDecoder.decode(typeNullRefreshToken) } returns mockJwt
+
+            assertThatThrownBy { service.validateRefreshToken(typeNullRefreshToken) }
+                .isInstanceOf(InvalidRefreshTokenException::class.java)
+                .message()
+                .isEqualTo("유효하지 않은 토큰 유형입니다.")
         }
     }
 }

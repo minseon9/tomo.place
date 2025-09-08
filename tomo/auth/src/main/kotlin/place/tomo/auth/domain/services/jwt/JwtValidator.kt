@@ -3,6 +3,7 @@ package place.tomo.auth.domain.services.jwt
 import org.springframework.security.oauth2.jwt.JwtDecoder
 import org.springframework.security.oauth2.jwt.JwtException
 import org.springframework.stereotype.Service
+import place.tomo.auth.domain.constants.JwtType
 import place.tomo.auth.domain.exception.InvalidRefreshTokenException
 
 @Service
@@ -13,6 +14,10 @@ class JwtValidator(
         try {
             // NOTE: JwtConfig에서 validator들을 추가해, decode 시 iss, aud, exp에 대한 검증을 진행
             val jwt = jwtDecoder.decode(refreshToken)
+
+            if (jwt.getClaim<JwtType>("type") != JwtType.REFRESH) {
+                throw InvalidRefreshTokenException("유효하지 않은 토큰 유형입니다.")
+            }
 
             return jwt.subject
         } catch (e: JwtException) {
