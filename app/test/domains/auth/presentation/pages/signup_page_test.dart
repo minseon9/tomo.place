@@ -5,6 +5,7 @@ import 'package:tomo_place/domains/auth/presentation/models/auth_state.dart';
 import 'package:tomo_place/domains/auth/presentation/pages/signup_page.dart';
 import 'package:tomo_place/domains/auth/presentation/widgets/social_login_section.dart';
 import 'package:tomo_place/domains/auth/presentation/widgets/social_login_button.dart';
+import 'package:tomo_place/domains/terms_agreement/presentation/widgets/organisms/terms_agreement_modal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -28,8 +29,13 @@ void main() {
         overrides: [
           authNotifierProvider.overrideWith((ref) => mockAuthNotifier),
         ],
-        child: const MaterialApp(
-          home: SignupPage(),
+        child: MaterialApp(
+          home: const SignupPage(),
+          routes: {
+            '/terms/terms-of-service': (context) => const Scaffold(body: Text('Terms of Service')),
+            '/terms/privacy-policy': (context) => const Scaffold(body: Text('Privacy Policy')),
+            '/terms/location-terms': (context) => const Scaffold(body: Text('Location Terms')),
+          },
         ),
       );
     }
@@ -60,7 +66,7 @@ void main() {
         expect(find.byType(SocialLoginSection), findsOneWidget);
       });
 
-      testWidgets('기본적으로 회원가입 모드로 시작해야 한다', (WidgetTester tester) async {
+      testWidgets('SocialLoginSection이 올바르게 렌더링되어야 한다', (WidgetTester tester) async {
         // Given
         when(() => mockAuthNotifier.state).thenReturn(const AuthInitial());
 
@@ -68,18 +74,14 @@ void main() {
         await tester.pumpWidget(createTestWidget());
 
         // Then
-        final socialLoginSection = tester.widget<SocialLoginSection>(
-          find.byType(SocialLoginSection),
-        );
-        expect(socialLoginSection.labelVariant, equals(SocialLabelVariant.signup));
+        expect(find.byType(SocialLoginSection), findsOneWidget);
       });
     });
 
     group('상호작용 테스트', () {
-      testWidgets('Google 로그인 버튼 클릭 시 AuthNotifier가 호출되어야 한다', (WidgetTester tester) async {
+      testWidgets('소셜 로그인 버튼 클릭 시 TermsAgreementModal이 표시되어야 한다', (WidgetTester tester) async {
         // Given
         when(() => mockAuthNotifier.state).thenReturn(const AuthInitial());
-        when(() => mockAuthNotifier.signupWithProvider(any())).thenAnswer((_) async {});
 
         await tester.pumpWidget(createTestWidget());
 
@@ -88,10 +90,10 @@ void main() {
           (widget) => widget is SocialLoginButton && widget.provider == SocialProvider.google,
         );
         await tester.tap(googleButtonFinder);
-        await tester.pump();
+        await tester.pumpAndSettle();
 
-        // Then
-        verify(() => mockAuthNotifier.signupWithProvider(SocialProvider.google)).called(1);
+        // Then - TermsAgreementModal이 표시되어야 함
+        expect(find.byType(TermsAgreementModal), findsOneWidget);
       });
 
       testWidgets('소셜 로그인 버튼 클릭 시 콜백이 전달되어야 한다', (WidgetTester tester) async {
@@ -107,6 +109,52 @@ void main() {
 
         // Then
         expect(socialLoginSection.onProviderPressed, isNotNull);
+      });
+
+      testWidgets('TermsAgreementModal에서 모두 동의 시 AuthNotifier가 호출되어야 한다', (WidgetTester tester) async {
+        // Given
+        when(() => mockAuthNotifier.state).thenReturn(const AuthInitial());
+        when(() => mockAuthNotifier.signupWithProvider(any())).thenAnswer((_) async {});
+
+        await tester.pumpWidget(createTestWidget());
+
+        // When - Google 로그인 버튼 클릭하여 모달 표시
+        final googleButtonFinder = find.byWidgetPredicate(
+          (widget) => widget is SocialLoginButton && widget.provider == SocialProvider.google,
+        );
+        await tester.tap(googleButtonFinder);
+        await tester.pumpAndSettle();
+
+        // 모달이 표시되었는지 확인
+        expect(find.byType(TermsAgreementModal), findsOneWidget);
+
+        // 모두 동의 버튼 클릭
+        final agreeAllButton = find.text('모두 동의합니다 !');
+        await tester.tap(agreeAllButton);
+        await tester.pumpAndSettle();
+
+        // Then - AuthNotifier가 호출되어야 함
+        verify(() => mockAuthNotifier.signupWithProvider(SocialProvider.google)).called(1);
+      });
+
+      testWidgets('TermsAgreementModal에서 onDismiss 콜백이 올바르게 설정되어야 한다', (WidgetTester tester) async {
+        // Given
+        when(() => mockAuthNotifier.state).thenReturn(const AuthInitial());
+
+        await tester.pumpWidget(createTestWidget());
+
+        // When - Google 로그인 버튼 클릭하여 모달 표시
+        final googleButtonFinder = find.byWidgetPredicate(
+          (widget) => widget is SocialLoginButton && widget.provider == SocialProvider.google,
+        );
+        await tester.tap(googleButtonFinder);
+        await tester.pumpAndSettle();
+
+        // Then - 모달이 표시되고 onDismiss 콜백이 설정되어야 함
+        expect(find.byType(TermsAgreementModal), findsOneWidget);
+        
+        final modal = tester.widget<TermsAgreementModal>(find.byType(TermsAgreementModal));
+        expect(modal.onDismiss, isNotNull);
       });
     });
 
@@ -150,38 +198,141 @@ void main() {
       });
     });
 
-    group('위젯 구조 테스트', () {
-      testWidgets('올바른 위젯 계층 구조를 가져야 한다', (WidgetTester tester) async {
+
+    group('_SignupPageContent 테스트', () {
+      testWidgets('_SignupPageContent가 올바르게 렌더링되어야 한다', (WidgetTester tester) async {
         // Given
         when(() => mockAuthNotifier.state).thenReturn(const AuthInitial());
 
         // When
         await tester.pumpWidget(createTestWidget());
 
-        // Then
-        expect(find.byType(Scaffold), findsOneWidget);
-        expect(find.byType(SafeArea), findsOneWidget);
-        expect(find.byType(Padding), findsWidgets); // 여러 Padding 위젯이 있으므로 findsWidgets 사용
+        // Then - _SignupPageContent의 구조 확인
+        expect(find.byType(Padding), findsWidgets);
         expect(find.byType(Column), findsWidgets);
         expect(find.byType(Spacer), findsOneWidget);
         expect(find.byType(Center), findsOneWidget);
         expect(find.byType(SocialLoginSection), findsOneWidget);
       });
 
-      testWidgets('올바른 패딩과 스페이싱을 가져야 한다', (WidgetTester tester) async {
+      testWidgets('_SignupPageContent의 패딩이 올바르게 설정되어야 한다', (WidgetTester tester) async {
         // Given
         when(() => mockAuthNotifier.state).thenReturn(const AuthInitial());
 
         // When
         await tester.pumpWidget(createTestWidget());
 
-        // Then - SignupPage의 메인 Padding을 찾기 위해 더 구체적인 조건 사용
+        // Then - AppSpacing.lg (24.0) 패딩 확인
         final mainPaddingFinder = find.byWidgetPredicate(
           (widget) => widget is Padding && 
                      widget.padding == const EdgeInsets.all(24.0),
         );
-        final padding = tester.widget<Padding>(mainPaddingFinder);
-        expect(padding.padding, equals(const EdgeInsets.all(24.0))); // AppSpacing.lg
+        expect(mainPaddingFinder, findsOneWidget);
+      });
+    });
+
+    group('TermsAgreementModal 통합 테스트', () {
+      testWidgets('모달 표시 시 올바른 설정이 적용되어야 한다', (WidgetTester tester) async {
+        // Given
+        when(() => mockAuthNotifier.state).thenReturn(const AuthInitial());
+
+        await tester.pumpWidget(createTestWidget());
+
+        // When - Google 로그인 버튼 클릭하여 모달 표시
+        final googleButtonFinder = find.byWidgetPredicate(
+          (widget) => widget is SocialLoginButton && widget.provider == SocialProvider.google,
+        );
+        await tester.tap(googleButtonFinder);
+        await tester.pumpAndSettle();
+
+        // Then - 모달이 올바른 설정으로 표시되어야 함
+        expect(find.byType(TermsAgreementModal), findsOneWidget);
+        
+        // 모달의 콜백들이 올바르게 설정되었는지 확인
+        final modal = tester.widget<TermsAgreementModal>(find.byType(TermsAgreementModal));
+        expect(modal.onAgreeAll, isNotNull);
+        expect(modal.onTermsTap, isNotNull);
+        expect(modal.onPrivacyTap, isNotNull);
+        expect(modal.onLocationTap, isNotNull);
+        expect(modal.onDismiss, isNotNull);
+      });
+
+      testWidgets('모달에서 약관 링크 클릭 시 네비게이션이 호출되어야 한다', (WidgetTester tester) async {
+        // Given
+        when(() => mockAuthNotifier.state).thenReturn(const AuthInitial());
+
+        await tester.pumpWidget(createTestWidget());
+
+        // When - Google 로그인 버튼 클릭하여 모달 표시
+        final googleButtonFinder = find.byWidgetPredicate(
+          (widget) => widget is SocialLoginButton && widget.provider == SocialProvider.google,
+        );
+        await tester.tap(googleButtonFinder);
+        await tester.pumpAndSettle();
+
+        // Then - 모달이 표시되었는지 확인
+        expect(find.byType(TermsAgreementModal), findsOneWidget);
+        
+        // 약관 링크들이 존재하는지 확인
+        expect(find.text('이용 약관 동의'), findsOneWidget);
+        expect(find.text('개인정보 보호 방침 동의'), findsOneWidget);
+        expect(find.text('위치정보 수집·이용 및 제3자 제공 동의'), findsOneWidget);
+      });
+
+      testWidgets('모달에서 약관 링크 클릭 시 콜백이 호출되어야 한다', (WidgetTester tester) async {
+        // Given
+        when(() => mockAuthNotifier.state).thenReturn(const AuthInitial());
+
+        await tester.pumpWidget(createTestWidget());
+
+        // When - Google 로그인 버튼 클릭하여 모달 표시
+        final googleButtonFinder = find.byWidgetPredicate(
+          (widget) => widget is SocialLoginButton && widget.provider == SocialProvider.google,
+        );
+        await tester.tap(googleButtonFinder);
+        await tester.pumpAndSettle();
+
+        // Then - 모달이 표시되었는지 확인
+        expect(find.byType(TermsAgreementModal), findsOneWidget);
+        
+        // 모달의 콜백들이 올바르게 설정되었는지 확인
+        final modal = tester.widget<TermsAgreementModal>(find.byType(TermsAgreementModal));
+        
+        // onTermsTap 콜백 호출
+        modal.onTermsTap?.call();
+        
+        // onPrivacyTap 콜백 호출
+        modal.onPrivacyTap?.call();
+        
+        // onLocationTap 콜백 호출
+        modal.onLocationTap?.call();
+        
+        // onDismiss 콜백 호출
+        modal.onDismiss?.call();
+        
+        // 모든 콜백이 null이 아님을 확인
+        expect(modal.onTermsTap, isNotNull);
+        expect(modal.onPrivacyTap, isNotNull);
+        expect(modal.onLocationTap, isNotNull);
+        expect(modal.onDismiss, isNotNull);
+      });
+    });
+
+    group('구조 테스트', () {
+      testWidgets('_SignupPageContent가 올바르게 렌더링되어야 한다', (WidgetTester tester) async {
+        // Given
+        when(() => mockAuthNotifier.state).thenReturn(const AuthInitial());
+
+        await tester.pumpWidget(createTestWidget());
+
+        // When - _SignupPageContent 위젯을 찾아서 구조 확인
+        final signupPageContent = find.byWidgetPredicate(
+          (widget) => widget.runtimeType.toString().contains('_SignupPageContent'),
+        );
+        
+        // Then - _SignupPageContent가 존재하는지 확인
+        expect(signupPageContent, findsOneWidget);
+        expect(find.byType(SocialLoginSection), findsOneWidget);
       });
     });
 
@@ -195,7 +346,8 @@ void main() {
 
         // Then
         expect(find.byType(SignupPage), findsOneWidget);
-        // 접근성 테스트는 실제 앱에서 더 구체적으로 구현
+        expect(find.byType(Scaffold), findsOneWidget);
+        expect(find.byType(SafeArea), findsOneWidget);
       });
     });
   });

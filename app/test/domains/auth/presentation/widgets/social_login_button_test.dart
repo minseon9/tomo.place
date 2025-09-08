@@ -10,7 +10,6 @@ void main() {
       required SocialProvider provider,
       VoidCallback? onPressed,
       bool isLoading = false,
-      SocialLabelVariant labelVariant = SocialLabelVariant.signup,
     }) {
       return MaterialApp(
         home: Scaffold(
@@ -18,7 +17,6 @@ void main() {
             provider: provider,
             onPressed: onPressed,
             isLoading: isLoading,
-            labelVariant: labelVariant,
           ),
         ),
       );
@@ -172,7 +170,7 @@ void main() {
     });
 
     group('텍스트 테스트', () {
-      testWidgets('회원가입 모드에서 올바른 텍스트를 표시해야 한다', (WidgetTester tester) async {
+      testWidgets('올바른 텍스트를 표시해야 한다', (WidgetTester tester) async {
         // Given
         final testCases = [
           (SocialProvider.kakao, '카카오로 시작하기 (준비 중)'),
@@ -185,28 +183,6 @@ void main() {
           await tester.pumpWidget(createTestWidget(
             provider: provider,
             onPressed: () {},
-            labelVariant: SocialLabelVariant.signup,
-          ));
-
-          // Then
-          expect(find.text(expectedText), findsOneWidget);
-        }
-      });
-
-      testWidgets('로그인 모드에서 올바른 텍스트를 표시해야 한다', (WidgetTester tester) async {
-        // Given
-        final testCases = [
-          (SocialProvider.kakao, '카카오 로그인 (준비 중)'),
-          (SocialProvider.apple, '애플 로그인 (준비 중)'),
-          (SocialProvider.google, '구글 로그인'),
-        ];
-
-        for (final (provider, expectedText) in testCases) {
-          // When
-          await tester.pumpWidget(createTestWidget(
-            provider: provider,
-            onPressed: () {},
-            labelVariant: SocialLabelVariant.login,
           ));
 
           // Then

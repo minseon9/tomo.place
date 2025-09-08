@@ -8,13 +8,11 @@ import 'package:tomo_place/domains/auth/presentation/widgets/social_login_sectio
 void main() {
   group('SocialLoginSection', () {
     Widget createTestWidget({
-      SocialLabelVariant labelVariant = SocialLabelVariant.signup,
       void Function(SocialProvider provider)? onProviderPressed,
     }) {
       return MaterialApp(
         home: Scaffold(
           body: SocialLoginSection(
-            labelVariant: labelVariant,
             onProviderPressed: onProviderPressed,
           ),
         ),
@@ -185,37 +183,15 @@ void main() {
       });
     });
 
-    group('라벨 변형 테스트', () {
-      testWidgets('회원가입 모드일 때 올바른 라벨을 사용해야 한다', (WidgetTester tester) async {
+    group('버튼 텍스트 테스트', () {
+      testWidgets('모든 버튼이 올바른 텍스트를 표시해야 한다', (WidgetTester tester) async {
         // When
-        await tester.pumpWidget(
-          createTestWidget(labelVariant: SocialLabelVariant.signup),
-        );
+        await tester.pumpWidget(createTestWidget());
 
         // Then
-        final buttons = tester.widgetList<SocialLoginButton>(
-          find.byType(SocialLoginButton),
-        );
-
-        for (final button in buttons) {
-          expect(button.labelVariant, equals(SocialLabelVariant.signup));
-        }
-      });
-
-      testWidgets('로그인 모드일 때 올바른 라벨을 사용해야 한다', (WidgetTester tester) async {
-        // When
-        await tester.pumpWidget(
-          createTestWidget(labelVariant: SocialLabelVariant.login),
-        );
-
-        // Then
-        final buttons = tester.widgetList<SocialLoginButton>(
-          find.byType(SocialLoginButton),
-        );
-
-        for (final button in buttons) {
-          expect(button.labelVariant, equals(SocialLabelVariant.login));
-        }
+        expect(find.text('카카오로 시작하기 (준비 중)'), findsOneWidget);
+        expect(find.text('애플로 시작하기 (준비 중)'), findsOneWidget);
+        expect(find.text('구글로 시작하기'), findsOneWidget);
       });
     });
 
