@@ -1,16 +1,15 @@
 import 'package:dio/dio.dart';
 
-import '../../config/app_config.dart';
-import '../../error_handling/exceptions/network_exception.dart';
-import '../../error_handling/exceptions/server_exception.dart';
+import '../../exception_handler/exceptions/network_exception.dart';
+import '../../exception_handler/exceptions/server_exception.dart';
 
 abstract class BaseClient {
   final Dio _dio;
 
-  BaseClient(List<Interceptor> interceptors)
+  BaseClient(List<Interceptor> interceptors, {String? baseUrl})
     : _dio = Dio(
         BaseOptions(
-          baseUrl: AppConfig.apiUrl,
+          baseUrl: baseUrl ?? 'https://api.example.com',
           connectTimeout: const Duration(seconds: 10),
           receiveTimeout: const Duration(seconds: 10),
           headers: {

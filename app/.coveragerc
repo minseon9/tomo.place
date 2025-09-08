@@ -1,0 +1,66 @@
+[run]
+# 테스트 커버리지에서 제외할 파일들
+omit = 
+    # Generated files
+    */generated/*
+    */build/*
+    
+    # Platform specific
+    */android/*
+    */ios/*
+    */macos/*
+    */windows/*
+    */linux/*
+    
+    # Test files
+    */test/*
+    
+    # Main entry point
+    */main.dart
+    
+    # Configuration files
+    */config/*
+    
+    # Generated code
+    */retrofit/*
+    */json_serializable/*
+    
+    # UI only files (위젯 렌더링)
+    */presentation/widgets/*
+    */presentation/pages/*
+    
+    # Platform channels
+    */platform_channels/*
+
+[report]
+# 커버리지 리포트 설정
+exclude_lines =
+    # Platform specific code
+    pragma: vm:entry-point
+    pragma: vm:prefer-inline
+    
+    # Generated code
+    part of
+    part
+    
+    # Unreachable code
+    throw UnimplementedError
+    throw UnsupportedError
+    
+    # Debug code
+    print\(
+    debugPrint\(
+    
+    # Test code
+    test\(
+    group\(
+    
+    # Coverage ignore
+    coverage:ignore-line
+    coverage:ignore-start
+    coverage:ignore-end
+
+[html]
+# HTML 리포트 설정
+directory = coverage/html
+title = Tomo.place Test Coverage Report

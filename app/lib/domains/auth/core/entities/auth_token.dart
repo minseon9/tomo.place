@@ -1,3 +1,5 @@
+import 'package:clock/clock.dart';
+
 class AuthToken {
   const AuthToken({
     required this.accessToken,
@@ -14,21 +16,21 @@ class AuthToken {
   final String tokenType;
 
   bool get isAccessTokenExpired {
-    return DateTime.now().isAfter(accessTokenExpiresAt);
+    return clock.now().isAfter(accessTokenExpiresAt);
   }
 
   bool get isRefreshTokenExpired {
-    return DateTime.now().isAfter(refreshTokenExpiresAt);
+    return clock.now().isAfter(refreshTokenExpiresAt);
   }
 
   bool get isAccessTokenAboutToExpire {
-    final fiveMinutesFromNow = DateTime.now().add(const Duration(minutes: 5));
+    final fiveMinutesFromNow = clock.now().add(const Duration(minutes: 5));
 
     return fiveMinutesFromNow.isAfter(accessTokenExpiresAt);
   }
 
   bool get isRefreshTokenAboutToExpire {
-    final fiveMinutesFromNow = DateTime.now().add(const Duration(minutes: 5));
+    final fiveMinutesFromNow = clock.now().add(const Duration(minutes: 5));
     return fiveMinutesFromNow.isAfter(refreshTokenExpiresAt);
   }
 

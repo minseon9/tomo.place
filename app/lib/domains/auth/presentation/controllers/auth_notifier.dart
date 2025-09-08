@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../shared/error_handling/exceptions/unknown_exception.dart';
-import '../../../../shared/error_handling/models/exception_interface.dart';
-import '../../../../shared/error_handling/providers.dart';
+import '../../../../shared/exception_handler/exception_notifier.dart';
+import '../../../../shared/exception_handler/exceptions/unknown_exception.dart';
+import '../../../../shared/exception_handler/models/exception_interface.dart';
 import '../../consts/social_provider.dart';
 import '../../core/entities/auth_token.dart';
 import '../../core/entities/authentication_result.dart';
@@ -26,7 +26,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   RefreshTokenUseCase get _refresh => _ref.read(refreshTokenUseCaseProvider);
 
-  ErrorEffects get _effects => _ref.read(errorEffectsProvider.notifier);
+  ExceptionNotifier get _effects => _ref.read(exceptionNotifierProvider.notifier);
 
   Future<void> signupWithProvider(SocialProvider provider) async {
     state = const AuthLoading();

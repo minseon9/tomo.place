@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../domains/auth/presentation/controllers/auth_notifier.dart';
 import '../domains/auth/presentation/models/auth_state.dart';
-import '../shared/application/providers.dart';
-import '../shared/error_handling/models/exception_interface.dart';
-import '../shared/error_handling/providers.dart';
+import '../shared/application/navigation/navigation_actions.dart';
+import '../shared/application/navigation/navigation_key.dart';
+import '../shared/exception_handler/exception_notifier.dart';
+import '../shared/exception_handler/models/exception_interface.dart';
 import '../shared/ui/design_system/tokens/colors.dart';
+import 'pages/splash_page.dart';
 import 'router/app_router.dart';
 
 class TomoPlaceApp extends ConsumerWidget {
@@ -15,6 +17,8 @@ class TomoPlaceApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final navigatorKey = ref.watch(navigatorKeyProvider);
+    final initialRoute = ref.watch(initialRouteProvider);
+    final router = ref.watch(routerProvider);
 
     ref.listen<AuthState>(authNotifierProvider, (prev, next) {
       switch (next) {
@@ -29,7 +33,7 @@ class TomoPlaceApp extends ConsumerWidget {
       }
     });
 
-    ref.listen<ExceptionInterface?>(errorEffectsProvider, (prev, next) {
+    ref.listen<ExceptionInterface?>(exceptionNotifierProvider, (prev, next) {
       if (next != null) {
         final ctx = navigatorKey.currentContext;
         if (ctx != null) {
@@ -37,11 +41,11 @@ class TomoPlaceApp extends ConsumerWidget {
             ctx,
           ).showSnackBar(SnackBar(content: Text(next.userMessage)));
         }
-        ref.read(errorEffectsProvider.notifier).clear();
+        ref.read(exceptionNotifierProvider.notifier).clear();
       }
     });
 
-    return MaterialApp(
+    return  MaterialApp(
       title: 'Tomo Place',
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
@@ -52,8 +56,8 @@ class TomoPlaceApp extends ConsumerWidget {
         useMaterial3: true,
         scaffoldBackgroundColor: DesignTokens.appColors['background'],
       ),
-      onGenerateRoute: AppRouter.generateRoute,
-      initialRoute: '/splash',
+      onGenerateRoute: router,
+      initialRoute: initialRoute,
     );
   }
 }

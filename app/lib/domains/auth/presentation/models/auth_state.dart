@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../../../../shared/error_handling/models/exception_interface.dart';
+import '../../../../shared/exception_handler/models/exception_interface.dart';
 
 abstract class AuthState extends Equatable {
   const AuthState();

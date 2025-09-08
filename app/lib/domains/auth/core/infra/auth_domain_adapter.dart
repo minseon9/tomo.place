@@ -12,7 +12,7 @@ class AuthDomainAdapter implements AuthDomainPort {
   Future<AuthTokenDto?> getValidToken() async {
     final result = await _refreshTokenCallback();
 
-    if (result!.isAuthenticated() || result.token == null) {
+    if (result == null || !result.isAuthenticated() || result.token == null) {
       return null;
     }
 
