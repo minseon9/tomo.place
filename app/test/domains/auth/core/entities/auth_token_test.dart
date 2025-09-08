@@ -1,6 +1,7 @@
-import 'package:app/domains/auth/core/entities/auth_token.dart';
-import 'package:test/test.dart';
 import 'package:faker/faker.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:tomo_place/domains/auth/core/entities/auth_token.dart';
+
 import '../../../../utils/fake_data/fake_data_generator.dart';
 import '../../../../utils/time_test_utils.dart';
 
@@ -40,7 +41,11 @@ void main() {
 
       test('커스텀 tokenType으로 생성되어야 한다', () {
         // Given
-        final customTokenType = faker.randomGenerator.element(['Custom', 'JWT', 'OAuth']);
+        final customTokenType = faker.randomGenerator.element([
+          'Custom',
+          'JWT',
+          'OAuth',
+        ]);
 
         // When
         final token = AuthToken(
@@ -127,7 +132,11 @@ void main() {
       test('커스텀 tokenType으로 올바른 Authorization 헤더를 생성해야 한다', () {
         // Given
         final accessToken = faker.guid.guid();
-        final customTokenType = faker.randomGenerator.element(['Custom', 'JWT', 'OAuth']);
+        final customTokenType = faker.randomGenerator.element([
+          'Custom',
+          'JWT',
+          'OAuth',
+        ]);
         final token = AuthToken(
           accessToken: accessToken,
           accessTokenExpiresAt: TimeTestUtils.hoursFromNow(1),
@@ -155,8 +164,14 @@ void main() {
         // Then
         expect(token.accessToken, equals(json['accessToken']));
         expect(token.refreshToken, equals(json['refreshToken']));
-        expect(token.accessTokenExpiresAt, equals(DateTime.parse(json['accessTokenExpiresAt'])));
-        expect(token.refreshTokenExpiresAt, equals(DateTime.parse(json['refreshTokenExpiresAt'])));
+        expect(
+          token.accessTokenExpiresAt,
+          equals(DateTime.parse(json['accessTokenExpiresAt'])),
+        );
+        expect(
+          token.refreshTokenExpiresAt,
+          equals(DateTime.parse(json['refreshTokenExpiresAt'])),
+        );
         expect(token.tokenType, equals('Bearer'));
       });
     });
@@ -187,8 +202,14 @@ void main() {
         // Then
         expect(token1.accessToken, equals(token2.accessToken));
         expect(token1.refreshToken, equals(token2.refreshToken));
-        expect(token1.accessTokenExpiresAt, equals(token2.accessTokenExpiresAt));
-        expect(token1.refreshTokenExpiresAt, equals(token2.refreshTokenExpiresAt));
+        expect(
+          token1.accessTokenExpiresAt,
+          equals(token2.accessTokenExpiresAt),
+        );
+        expect(
+          token1.refreshTokenExpiresAt,
+          equals(token2.refreshTokenExpiresAt),
+        );
         expect(token1.tokenType, equals(token2.tokenType));
       });
 
@@ -218,8 +239,14 @@ void main() {
         // Then
         expect(token1.accessToken, isNot(equals(token2.accessToken)));
         expect(token1.refreshToken, equals(token2.refreshToken));
-        expect(token1.accessTokenExpiresAt, equals(token2.accessTokenExpiresAt));
-        expect(token1.refreshTokenExpiresAt, equals(token2.refreshTokenExpiresAt));
+        expect(
+          token1.accessTokenExpiresAt,
+          equals(token2.accessTokenExpiresAt),
+        );
+        expect(
+          token1.refreshTokenExpiresAt,
+          equals(token2.refreshTokenExpiresAt),
+        );
         expect(token1.tokenType, equals(token2.tokenType));
       });
     });

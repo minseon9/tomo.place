@@ -1,11 +1,11 @@
-import 'package:app/domains/auth/data/models/refresh_token_api_response.dart';
-import 'package:app/domains/auth/data/models/signup_api_response.dart';
-import 'package:app/shared/exception_handler/exceptions/network_exception.dart';
-import 'package:app/shared/exception_handler/exceptions/server_exception.dart';
+import 'package:tomo_place/domains/auth/data/models/refresh_token_api_response.dart';
+import 'package:tomo_place/domains/auth/data/models/signup_api_response.dart';
+import 'package:tomo_place/shared/exception_handler/exceptions/network_exception.dart';
+import 'package:tomo_place/shared/exception_handler/exceptions/server_exception.dart';
 import 'package:clock/clock.dart';
 import 'package:faker/faker.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 import '../../../../../utils/mock_factory/auth_mock_factory.dart';
 

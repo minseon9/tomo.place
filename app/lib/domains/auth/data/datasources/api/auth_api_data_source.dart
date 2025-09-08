@@ -1,4 +1,4 @@
-import 'package:app/shared/infrastructure/network/base_client.dart';
+import 'package:tomo_place/shared/infrastructure/network/base_client.dart';
 
 import '../../models/refresh_token_api_response.dart';
 import '../../models/signup_api_response.dart';

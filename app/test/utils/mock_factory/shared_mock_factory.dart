@@ -1,8 +1,8 @@
 import 'package:mocktail/mocktail.dart';
 
-import 'package:app/shared/infrastructure/network/base_client.dart';
-import 'package:app/shared/infrastructure/storage/access_token_memory_store.dart';
-import 'package:app/shared/infrastructure/storage/token_storage_service.dart';
+import 'package:tomo_place/shared/infrastructure/network/base_client.dart';
+import 'package:tomo_place/shared/infrastructure/storage/access_token_memory_store.dart';
+import 'package:tomo_place/shared/infrastructure/storage/token_storage_service.dart';
 
 /// Shared 인프라 Mock 클래스들
 class MockBaseClient extends Mock implements BaseClient {}

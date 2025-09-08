@@ -1,4 +1,4 @@
-import 'package:app/shared/config/env_config.dart';
+import 'package:tomo_place/shared/config/env_config.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../utils/test_env_config.dart';

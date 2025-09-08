@@ -1,4 +1,4 @@
-import 'package:app/shared/infrastructure/network/base_client.dart';
+import 'package:tomo_place/shared/infrastructure/network/base_client.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class AuthClient extends BaseClient {

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:app/domains/auth/core/repositories/auth_token_repository.dart';
+import 'package:tomo_place/domains/auth/core/repositories/auth_token_repository.dart';
 
 void main() {
   group('AuthTokenRepository', () {

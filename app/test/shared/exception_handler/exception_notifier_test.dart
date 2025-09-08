@@ -1,11 +1,11 @@
-import 'package:app/shared/exception_handler/exception_notifier.dart';
-import 'package:app/shared/exception_handler/exceptions/generic_exception.dart';
-import 'package:app/shared/exception_handler/exceptions/network_exception.dart';
-import 'package:app/shared/exception_handler/exceptions/server_exception.dart';
-import 'package:app/shared/exception_handler/exceptions/unknown_exception.dart';
-import 'package:app/shared/exception_handler/models/exception_interface.dart';
+import 'package:tomo_place/shared/exception_handler/exception_notifier.dart';
+import 'package:tomo_place/shared/exception_handler/exceptions/generic_exception.dart';
+import 'package:tomo_place/shared/exception_handler/exceptions/network_exception.dart';
+import 'package:tomo_place/shared/exception_handler/exceptions/server_exception.dart';
+import 'package:tomo_place/shared/exception_handler/exceptions/unknown_exception.dart';
+import 'package:tomo_place/shared/exception_handler/models/exception_interface.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('ExceptionNotifier', () {
@@ -58,12 +58,14 @@ void main() {
         expect(currentState, equals(exception));
         expect(currentState, isA<NetworkException>());
         expect(currentState?.message, equals('Connection timeout occurred'));
-        expect(currentState?.userMessage, equals('네트워크 연결 시간이 초과되었습니다. 다시 시도해주세요.'));
+        expect(currentState?.userMessage,
+            equals('네트워크 연결 시간이 초과되었습니다. 다시 시도해주세요.'));
       });
 
       test('ServerException을 보고할 수 있어야 한다', () {
         // Given
-        final exception = ServerException.internalServerError(message: 'Database connection failed');
+        final exception = ServerException.internalServerError(
+            message: 'Database connection failed');
 
         // When
         exceptionNotifier.report(exception);
@@ -72,8 +74,10 @@ void main() {
         final currentState = container.read(exceptionNotifierProvider);
         expect(currentState, equals(exception));
         expect(currentState, isA<ServerException>());
-        expect(currentState?.message, equals('Internal server error: Database connection failed'));
-        expect(currentState?.userMessage, equals('서버 내부 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'));
+        expect(currentState?.message,
+            equals('Internal server error: Database connection failed'));
+        expect(currentState?.userMessage,
+            equals('서버 내부 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'));
       });
 
       test('GenericException을 보고할 수 있어야 한다', () {
@@ -100,14 +104,17 @@ void main() {
         // Given
         const firstException = UnknownException(message: 'First error');
         final secondException = NetworkException.noConnection();
-        final thirdException = ServerException.badRequest(message: 'Bad request');
+        final thirdException = ServerException.badRequest(
+            message: 'Bad request');
 
         // When
         exceptionNotifier.report(firstException);
-        expect(container.read(exceptionNotifierProvider), equals(firstException));
+        expect(
+            container.read(exceptionNotifierProvider), equals(firstException));
 
         exceptionNotifier.report(secondException);
-        expect(container.read(exceptionNotifierProvider), equals(secondException));
+        expect(
+            container.read(exceptionNotifierProvider), equals(secondException));
 
         exceptionNotifier.report(thirdException);
 
@@ -150,7 +157,8 @@ void main() {
 
         // When
         exceptionNotifier.report(firstException);
-        expect(container.read(exceptionNotifierProvider), equals(firstException));
+        expect(
+            container.read(exceptionNotifierProvider), equals(firstException));
 
         exceptionNotifier.clear();
         expect(container.read(exceptionNotifierProvider), isNull);
@@ -238,9 +246,10 @@ void main() {
         for (int i = 0; i < exceptions.length; i++) {
           final exception = exceptions[i];
           exceptionNotifier.report(exception);
-          
+
           final currentState = container.read(exceptionNotifierProvider);
-          expect(currentState, equals(exception), reason: 'Exception at index $i should be reported correctly');
+          expect(currentState, equals(exception),
+              reason: 'Exception at index $i should be reported correctly');
         }
       });
 
@@ -277,7 +286,8 @@ void main() {
 
         // Then
         expect(provider, isNotNull);
-        expect(provider, isA<StateNotifierProvider<ExceptionNotifier, ExceptionInterface?>>());
+        expect(provider, isA<
+            StateNotifierProvider<ExceptionNotifier, ExceptionInterface?>>());
       });
 
       test('Provider를 통해 notifier에 접근할 수 있어야 한다', () {
@@ -309,7 +319,8 @@ void main() {
         ExceptionInterface? nullException;
 
         // When & Then
-        expect(() => exceptionNotifier.report(nullException!), throwsA(isA<TypeError>()));
+        expect(() => exceptionNotifier.report(nullException!),
+            throwsA(isA<TypeError>()));
       });
 
       test('빈 메시지를 가진 예외도 처리할 수 있어야 한다', () {
@@ -327,7 +338,8 @@ void main() {
 
       test('특수 문자가 포함된 메시지도 처리할 수 있어야 한다', () {
         // Given
-        const exception = UnknownException(message: 'Error with special chars: !@#\$%^&*()');
+        const exception = UnknownException(
+            message: 'Error with special chars: !@#\$%^&*()');
 
         // When
         exceptionNotifier.report(exception);
@@ -335,7 +347,8 @@ void main() {
         // Then
         final currentState = container.read(exceptionNotifierProvider);
         expect(currentState, equals(exception));
-        expect(currentState?.message, equals('Error with special chars: !@#\$%^&*()'));
+        expect(currentState?.message,
+            equals('Error with special chars: !@#\$%^&*()'));
       });
 
       test('유니코드 문자가 포함된 메시지도 처리할 수 있어야 한다', () {

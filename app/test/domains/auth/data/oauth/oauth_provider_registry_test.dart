@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:faker/faker.dart';
 
-import 'package:app/domains/auth/data/oauth/oauth_provider_registry.dart';
-import 'package:app/domains/auth/data/oauth/oauth_provider.dart';
-import 'package:app/domains/auth/data/oauth/oauth_result.dart';
-import 'package:app/domains/auth/consts/social_provider.dart';
+import 'package:tomo_place/domains/auth/data/oauth/oauth_provider_registry.dart';
+import 'package:tomo_place/domains/auth/data/oauth/oauth_provider.dart';
+import 'package:tomo_place/domains/auth/data/oauth/oauth_result.dart';
+import 'package:tomo_place/domains/auth/consts/social_provider.dart';
 
 void main() {
   group('OAuthProviderRegistry', () {

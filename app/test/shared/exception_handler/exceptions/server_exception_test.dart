@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:app/shared/exception_handler/exceptions/server_exception.dart';
-import 'package:app/shared/exception_handler/models/exception_codes.dart';
-import 'package:app/shared/exception_handler/models/exception_types.dart';
+import 'package:tomo_place/shared/exception_handler/exceptions/server_exception.dart';
+import 'package:tomo_place/shared/exception_handler/models/exception_codes.dart';
+import 'package:tomo_place/shared/exception_handler/models/exception_types.dart';
 
 void main() {
   group('ServerException', () {

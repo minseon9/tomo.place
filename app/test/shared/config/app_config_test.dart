@@ -2,8 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:app/shared/config/app_config.dart';
-import 'package:app/shared/config/env_config.dart';
+import 'package:tomo_place/shared/config/app_config.dart';
+import 'package:tomo_place/shared/config/env_config.dart';
 
 // Mock EnvConfigInterface
 class MockEnvConfigInterface extends Mock implements EnvConfigInterface {}

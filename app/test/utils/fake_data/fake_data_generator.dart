@@ -1,5 +1,5 @@
-import 'package:app/domains/auth/core/entities/auth_token.dart';
-import 'package:app/domains/auth/core/entities/authentication_result.dart';
+import 'package:tomo_place/domains/auth/core/entities/auth_token.dart';
+import 'package:tomo_place/domains/auth/core/entities/authentication_result.dart';
 import 'fake_auth_token_generator.dart';
 import 'fake_authentication_result_generator.dart';
 import 'fake_user_generator.dart';

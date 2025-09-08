@@ -1,13 +1,13 @@
 import 'package:mocktail/mocktail.dart';
 
-import 'package:app/domains/auth/core/repositories/auth_repository.dart';
-import 'package:app/domains/auth/core/repositories/auth_token_repository.dart';
-import 'package:app/domains/auth/core/usecases/check_auth_status_usecase.dart';
-import 'package:app/domains/auth/core/usecases/logout_usecase.dart';
-import 'package:app/domains/auth/core/usecases/refresh_token_usecase.dart';
-import 'package:app/domains/auth/core/usecases/signup_with_social_usecase.dart';
-import 'package:app/domains/auth/data/datasources/api/auth_api_data_source.dart';
-import 'package:app/domains/auth/data/datasources/storage/auth_storage_data_source.dart';
+import 'package:tomo_place/domains/auth/core/repositories/auth_repository.dart';
+import 'package:tomo_place/domains/auth/core/repositories/auth_token_repository.dart';
+import 'package:tomo_place/domains/auth/core/usecases/check_auth_status_usecase.dart';
+import 'package:tomo_place/domains/auth/core/usecases/logout_usecase.dart';
+import 'package:tomo_place/domains/auth/core/usecases/refresh_token_usecase.dart';
+import 'package:tomo_place/domains/auth/core/usecases/signup_with_social_usecase.dart';
+import 'package:tomo_place/domains/auth/data/datasources/api/auth_api_data_source.dart';
+import 'package:tomo_place/domains/auth/data/datasources/storage/auth_storage_data_source.dart';
 
 /// Auth 도메인 전용 Mock 클래스들
 class MockAuthRepository extends Mock implements AuthRepository {}

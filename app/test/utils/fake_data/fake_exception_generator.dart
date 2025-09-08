@@ -1,6 +1,6 @@
 import 'package:faker/faker.dart';
-import 'package:app/domains/auth/core/exceptions/auth_exception.dart';
-import 'package:app/domains/auth/core/exceptions/oauth_exception.dart';
+import 'package:tomo_place/domains/auth/core/exceptions/auth_exception.dart';
+import 'package:tomo_place/domains/auth/core/exceptions/oauth_exception.dart';
 
 /// 테스트용 예외 생성 유틸리티
 class FakeExceptionGenerator {

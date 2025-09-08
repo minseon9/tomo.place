@@ -1,5 +1,5 @@
-import 'package:app/shared/infrastructure/storage/access_token_memory_store.dart';
-import 'package:test/test.dart';
+import 'package:tomo_place/shared/infrastructure/storage/access_token_memory_store.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('AccessTokenMemoryStore', () {

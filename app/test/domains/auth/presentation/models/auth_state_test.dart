@@ -1,7 +1,7 @@
-import 'package:app/domains/auth/presentation/models/auth_state.dart';
-import 'package:app/shared/exception_handler/models/exception_interface.dart';
 import 'package:faker/faker.dart';
-import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:tomo_place/domains/auth/presentation/models/auth_state.dart';
+import 'package:tomo_place/shared/exception_handler/models/exception_interface.dart';
 
 void main() {
   group('AuthState', () {
@@ -225,6 +225,7 @@ void main() {
 
 /// 테스트용 Mock ExceptionInterface 구현
 class _MockExceptionInterface implements ExceptionInterface {
+  @override
   final String message;
 
   const _MockExceptionInterface({this.message = 'Mock error'});
@@ -244,7 +245,6 @@ class _MockExceptionInterface implements ExceptionInterface {
   @override
   String? get suggestedAction => 'Mock action';
 
-  @override
   List<Object?> get props => [message];
 
   @override

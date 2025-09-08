@@ -1,4 +1,4 @@
-import 'package:app/domains/auth/core/entities/auth_token.dart';
+import 'package:tomo_place/domains/auth/core/entities/auth_token.dart';
 import 'package:faker/faker.dart';
 import '../time_test_utils.dart';
 

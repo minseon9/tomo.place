@@ -1,5 +1,5 @@
-import 'package:app/domains/auth/data/models/signup_api_response.dart';
-import 'package:app/domains/auth/data/models/refresh_token_api_response.dart';
+import 'package:tomo_place/domains/auth/data/models/signup_api_response.dart';
+import 'package:tomo_place/domains/auth/data/models/refresh_token_api_response.dart';
 import 'package:clock/clock.dart';
 import 'package:faker/faker.dart';
 import '../time_test_utils.dart';

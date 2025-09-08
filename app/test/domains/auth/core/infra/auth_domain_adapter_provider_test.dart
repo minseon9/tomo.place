@@ -2,12 +2,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:app/domains/auth/core/infra/auth_domain_adapter_provider.dart';
-import 'package:app/domains/auth/core/infra/auth_domain_adapter.dart';
-import 'package:app/domains/auth/core/entities/authentication_result.dart';
-import 'package:app/domains/auth/core/entities/auth_token.dart';
-import 'package:app/domains/auth/presentation/controllers/auth_notifier.dart';
-import 'package:app/shared/infrastructure/ports/auth_domain_port.dart';
+import 'package:tomo_place/domains/auth/core/infra/auth_domain_adapter_provider.dart';
+import 'package:tomo_place/domains/auth/core/infra/auth_domain_adapter.dart';
+import 'package:tomo_place/domains/auth/core/entities/authentication_result.dart';
+import 'package:tomo_place/domains/auth/core/entities/auth_token.dart';
+import 'package:tomo_place/domains/auth/presentation/controllers/auth_notifier.dart';
+import 'package:tomo_place/shared/infrastructure/ports/auth_domain_port.dart';
 
 void main() {
   group('authDomainAdapterProvider', () {

@@ -1,12 +1,11 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:faker/faker.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-
-import 'package:app/domains/auth/core/entities/authentication_result.dart';
-import 'package:app/domains/auth/core/entities/auth_token.dart';
-import 'package:app/domains/auth/core/infra/auth_domain_adapter.dart';
-import 'package:app/shared/infrastructure/ports/auth_domain_port.dart';
-import 'package:app/shared/infrastructure/ports/auth_token_dto.dart';
+import 'package:tomo_place/domains/auth/core/entities/auth_token.dart';
+import 'package:tomo_place/domains/auth/core/entities/authentication_result.dart';
+import 'package:tomo_place/domains/auth/core/infra/auth_domain_adapter.dart';
+import 'package:tomo_place/shared/infrastructure/ports/auth_domain_port.dart';
+import 'package:tomo_place/shared/infrastructure/ports/auth_token_dto.dart';
 
 void main() {
   group('AuthDomainAdapter', () {
@@ -14,7 +13,7 @@ void main() {
     late Future<AuthenticationResult?> Function() mockRefreshTokenCallback;
 
     setUp(() {
-      mockRefreshTokenCallback = MockRefreshTokenCallback();
+      mockRefreshTokenCallback = MockRefreshTokenCallback().call;
       adapter = AuthDomainAdapter(mockRefreshTokenCallback);
     });
 
@@ -51,8 +50,10 @@ void main() {
           refreshTokenExpiresAt: DateTime.now().add(const Duration(days: 7)),
         );
         final authResult = AuthenticationResult.authenticated(authToken);
-        
-        when(() => mockRefreshTokenCallback()).thenAnswer((_) async => authResult);
+
+        when(
+          () => mockRefreshTokenCallback(),
+        ).thenAnswer((_) async => authResult);
 
         // When
         final result = await adapter.getValidToken();
@@ -61,15 +62,20 @@ void main() {
         expect(result, isNotNull);
         expect(result, isA<AuthTokenDto>());
         expect(result!.accessToken, equals(authToken.accessToken));
-        expect(result.accessTokenExpiresAt, equals(authToken.accessTokenExpiresAt));
+        expect(
+          result.accessTokenExpiresAt,
+          equals(authToken.accessTokenExpiresAt),
+        );
         expect(result.tokenType, equals(authToken.tokenType));
       });
 
       test('인증되지 않은 사용자의 경우 null을 반환해야 한다', () async {
         // Given
         final authResult = AuthenticationResult.unauthenticated();
-        
-        when(() => mockRefreshTokenCallback()).thenAnswer((_) async => authResult);
+
+        when(
+          () => mockRefreshTokenCallback(),
+        ).thenAnswer((_) async => authResult);
 
         // When
         final result = await adapter.getValidToken();
@@ -91,13 +97,12 @@ void main() {
 
       test('refreshTokenCallback에서 예외가 발생하는 경우 예외를 전파해야 한다', () async {
         // Given
-        when(() => mockRefreshTokenCallback()).thenThrow(Exception('Network error'));
+        when(
+          () => mockRefreshTokenCallback(),
+        ).thenThrow(Exception('Network error'));
 
         // When & Then
-        await expectLater(
-          adapter.getValidToken(),
-          throwsA(isA<Exception>()),
-        );
+        await expectLater(adapter.getValidToken(), throwsA(isA<Exception>()));
       });
     });
 
@@ -112,8 +117,10 @@ void main() {
           tokenType: 'Bearer',
         );
         final authResult = AuthenticationResult.authenticated(authToken);
-        
-        when(() => mockRefreshTokenCallback()).thenAnswer((_) async => authResult);
+
+        when(
+          () => mockRefreshTokenCallback(),
+        ).thenAnswer((_) async => authResult);
 
         // When
         final result = await adapter.getValidToken();
@@ -121,7 +128,10 @@ void main() {
         // Then
         expect(result, isNotNull);
         expect(result!.accessToken, equals('test_access_token'));
-        expect(result.accessTokenExpiresAt, equals(DateTime(2024, 1, 1, 12, 0, 0)));
+        expect(
+          result.accessTokenExpiresAt,
+          equals(DateTime(2024, 1, 1, 12, 0, 0)),
+        );
         expect(result.tokenType, equals('Bearer'));
       });
 
@@ -135,8 +145,10 @@ void main() {
           tokenType: 'Custom',
         );
         final authResult = AuthenticationResult.authenticated(authToken);
-        
-        when(() => mockRefreshTokenCallback()).thenAnswer((_) async => authResult);
+
+        when(
+          () => mockRefreshTokenCallback(),
+        ).thenAnswer((_) async => authResult);
 
         // When
         final result = await adapter.getValidToken();
@@ -152,13 +164,17 @@ void main() {
         // Given
         final expiredToken = AuthToken(
           accessToken: faker.guid.guid(),
-          accessTokenExpiresAt: DateTime.now().subtract(const Duration(hours: 1)),
+          accessTokenExpiresAt: DateTime.now().subtract(
+            const Duration(hours: 1),
+          ),
           refreshToken: faker.guid.guid(),
           refreshTokenExpiresAt: DateTime.now().add(const Duration(days: 7)),
         );
         final authResult = AuthenticationResult.authenticated(expiredToken);
-        
-        when(() => mockRefreshTokenCallback()).thenAnswer((_) async => authResult);
+
+        when(
+          () => mockRefreshTokenCallback(),
+        ).thenAnswer((_) async => authResult);
 
         // When
         final result = await adapter.getValidToken();
@@ -176,9 +192,13 @@ void main() {
           refreshToken: faker.guid.guid(),
           refreshTokenExpiresAt: DateTime.now().add(const Duration(days: 7)),
         );
-        final authResult = AuthenticationResult.authenticated(aboutToExpireToken);
-        
-        when(() => mockRefreshTokenCallback()).thenAnswer((_) async => authResult);
+        final authResult = AuthenticationResult.authenticated(
+          aboutToExpireToken,
+        );
+
+        when(
+          () => mockRefreshTokenCallback(),
+        ).thenAnswer((_) async => authResult);
 
         // When
         final result = await adapter.getValidToken();
@@ -197,8 +217,10 @@ void main() {
           refreshTokenExpiresAt: DateTime.now().add(const Duration(days: 7)),
         );
         final authResult = AuthenticationResult.authenticated(validToken);
-        
-        when(() => mockRefreshTokenCallback()).thenAnswer((_) async => authResult);
+
+        when(
+          () => mockRefreshTokenCallback(),
+        ).thenAnswer((_) async => authResult);
 
         // When
         final result = await adapter.getValidToken();
@@ -206,7 +228,10 @@ void main() {
         // Then
         expect(result, isNotNull);
         expect(result!.accessToken, equals(validToken.accessToken));
-        expect(result.accessTokenExpiresAt, equals(validToken.accessTokenExpiresAt));
+        expect(
+          result.accessTokenExpiresAt,
+          equals(validToken.accessTokenExpiresAt),
+        );
         expect(result.tokenType, equals(validToken.tokenType));
       });
     });

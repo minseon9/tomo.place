@@ -1,5 +1,5 @@
-import 'package:app/domains/auth/core/usecases/logout_usecase.dart';
-import 'package:test/test.dart';
+import 'package:tomo_place/domains/auth/core/usecases/logout_usecase.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../../utils/mock_factory/auth_mock_factory.dart';

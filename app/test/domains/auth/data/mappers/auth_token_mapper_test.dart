@@ -1,6 +1,6 @@
-import 'package:app/domains/auth/data/mappers/auth_token_mapper.dart';
-import 'package:app/domains/auth/data/models/refresh_token_api_response.dart';
-import 'package:app/domains/auth/data/models/signup_api_response.dart';
+import 'package:tomo_place/domains/auth/data/mappers/auth_token_mapper.dart';
+import 'package:tomo_place/domains/auth/data/models/refresh_token_api_response.dart';
+import 'package:tomo_place/domains/auth/data/models/signup_api_response.dart';
 import 'package:faker/faker.dart';
 import 'package:flutter_test/flutter_test.dart';
 

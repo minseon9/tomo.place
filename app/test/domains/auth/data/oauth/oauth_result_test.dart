@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:faker/faker.dart';
 
-import 'package:app/domains/auth/data/oauth/oauth_result.dart';
+import 'package:tomo_place/domains/auth/data/oauth/oauth_result.dart';
 
 void main() {
   group('OAuthResult', () {
