@@ -1,0 +1,111 @@
+name: Flutter Build
+
+on:
+  pull_request:
+    paths:
+      - 'app/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: android
+            build-cmd: flutter build apk --release
+          - os: macos-latest
+            platform: ios
+            build-cmd: flutter build ios --release --no-codesign
+
+    defaults:
+      run:
+        working-directory: app
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Cache pub
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Precache (platform)
+        run: |
+          if [ "${{ matrix.platform }}" = "android" ]; then
+            flutter precache --android
+          else
+            flutter precache --ios
+          fi
+
+      - name: Setup Java (Android only)
+        if: ${{ matrix.platform == 'android' }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Cache Gradle (Android only)
+        if: ${{ matrix.platform == 'android' }}
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Setup Android SDK (Android only)
+        if: ${{ matrix.platform == 'android' }}
+        uses: android-actions/setup-android@v3
+        with:
+          api-level: 34
+          build-tools: 34.0.0
+
+      - name: Accept Android licenses (Android only)
+        if: ${{ matrix.platform == 'android' }}
+        run: yes | sdkmanager --licenses || true
+
+      - name: Setup Xcode (iOS only)
+        if: ${{ matrix.platform == 'ios' }}
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Cache CocoaPods (iOS only)
+        if: ${{ matrix.platform == 'ios' }}
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Caches/CocoaPods
+            Pods
+            ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
+      - name: Build ${{ matrix.platform }}
+        run: ${{ matrix.build-cmd }}
+
+      - name: Build success notification
+        run: echo "🎉 ${{ matrix.platform }} build completed successfully!"
