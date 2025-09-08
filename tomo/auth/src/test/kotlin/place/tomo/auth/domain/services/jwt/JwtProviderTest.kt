@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.jwt.JwtEncoder
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters
+import place.tomo.auth.domain.constants.JwtType
 import place.tomo.auth.domain.dtos.JwtPropertiesDTO
 import java.time.Instant
 
@@ -63,6 +64,7 @@ class JwtProviderTest {
             assertThat(claims.getClaim<String>("sub")).isEqualTo(subject)
             assertThat(claims.getClaim<List<String>>("aud")).isEqualTo(jwtProperties.audiences)
             assertThat(claims.getClaim<Instant>("exp")).isAfter(Instant.now())
+            assertThat(claims.getClaim<JwtType>("type")).isEqualTo(JwtType.ACCESS)
         }
 
         @Test
@@ -90,6 +92,7 @@ class JwtProviderTest {
             assertThat(claims.getClaim<String>("sub")).isEqualTo(subject)
             assertThat(claims.getClaim<List<String>>("aud")).isEqualTo(jwtProperties.audiences)
             assertThat(claims.getClaim<Instant>("exp")).isAfter(Instant.now())
+            assertThat(claims.getClaim<JwtType>("type")).isEqualTo(JwtType.REFRESH)
 
             verify { jwtEncoder.encode(any()) }
         }

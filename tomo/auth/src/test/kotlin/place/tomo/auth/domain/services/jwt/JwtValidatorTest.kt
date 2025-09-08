@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.jwt.JwtDecoder
 import org.springframework.security.oauth2.jwt.JwtException
+import place.tomo.auth.domain.constants.JwtType
 import place.tomo.auth.domain.exception.InvalidRefreshTokenException
 
 @DisplayName("RefreshTokenValidationService")
@@ -38,6 +39,7 @@ class JwtValidatorTest {
             val mockJwt =
                 mockk<Jwt> {
                     every { subject } returns userEmail
+                    every { getClaim<JwtType>("type") } returns JwtType.REFRESH
                 }
             every { jwtDecoder.decode(refreshToken) } returns mockJwt
 
@@ -54,6 +56,22 @@ class JwtValidatorTest {
             every { jwtDecoder.decode(refreshToken) } throws JwtException("유효하지 않은 토큰입니다.")
 
             assertThatThrownBy { service.validateRefreshToken(refreshToken) }
+                .isInstanceOf(InvalidRefreshTokenException::class.java)
+        }
+
+        // NOTE: JwtDecoder의 validation 동작들은 JwtConfigTest에서 검증힙니다.
+        @Test
+        @DisplayName("refresh type이 아닌 경우 예외를 던진다")
+        fun `decode refresh token when type is not REFRESH expect exception thrown`() {
+            val notRefreshToken = "not refresh token"
+
+            val mockJwt =
+                mockk<Jwt> {
+                    every { getClaim<JwtType>("type") } returns JwtType.ACCESS
+                }
+            every { jwtDecoder.decode(notRefreshToken) } returns mockJwt
+
+            assertThatThrownBy { service.validateRefreshToken(notRefreshToken) }
                 .isInstanceOf(InvalidRefreshTokenException::class.java)
         }
     }
