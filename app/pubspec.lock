@@ -146,7 +146,7 @@ packages:
     source: hosted
     version: "0.2.0"
   clock:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: clock
       sha256: fddb70d9b5277016c77a80201021d40a2247104d9f4aa7bab7157b7e3f05b84b
@@ -392,14 +392,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.0"
-  get_it:
-    dependency: "direct main"
-    description:
-      name: get_it
-      sha256: d85128a5dae4ea777324730dc65edd9c9f43155c109d5cc0a69cab74139fbac1
-      url: "https://pub.dev"
-    source: hosted
-    version: "7.7.0"
   glob:
     dependency: transitive
     description:
