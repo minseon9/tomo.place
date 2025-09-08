@@ -16,7 +16,7 @@ class JwtValidator(
             val jwt = jwtDecoder.decode(refreshToken)
 
             if (jwt.getClaim<JwtType>("type") != JwtType.REFRESH) {
-                throw InvalidRefreshTokenException("유효하지 않은 토큰입니다.")
+                throw InvalidRefreshTokenException("유효하지 않은 토큰 유형입니다.")
             }
 
             return jwt.subject

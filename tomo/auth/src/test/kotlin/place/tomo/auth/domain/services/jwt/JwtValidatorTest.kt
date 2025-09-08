@@ -59,7 +59,6 @@ class JwtValidatorTest {
                 .isInstanceOf(InvalidRefreshTokenException::class.java)
         }
 
-        // NOTE: JwtDecoder의 validation 동작들은 JwtConfigTest에서 검증힙니다.
         @Test
         @DisplayName("refresh type이 아닌 경우 예외를 던진다")
         fun `decode refresh token when type is not REFRESH expect exception thrown`() {
@@ -73,6 +72,25 @@ class JwtValidatorTest {
 
             assertThatThrownBy { service.validateRefreshToken(notRefreshToken) }
                 .isInstanceOf(InvalidRefreshTokenException::class.java)
+                .message()
+                .isEqualTo("유효하지 않은 토큰 유형입니다.")
+        }
+
+        @Test
+        @DisplayName("type claim이 null인 경우 예외를 던진다")
+        fun `decode refresh token when type is null expect exception thrown`() {
+            val typeNullRefreshToken = "type null refresh token"
+
+            val mockJwt =
+                mockk<Jwt> {
+                    every { getClaim<JwtType>("type") } returns null
+                }
+            every { jwtDecoder.decode(typeNullRefreshToken) } returns mockJwt
+
+            assertThatThrownBy { service.validateRefreshToken(typeNullRefreshToken) }
+                .isInstanceOf(InvalidRefreshTokenException::class.java)
+                .message()
+                .isEqualTo("유효하지 않은 토큰 유형입니다.")
         }
     }
 }
