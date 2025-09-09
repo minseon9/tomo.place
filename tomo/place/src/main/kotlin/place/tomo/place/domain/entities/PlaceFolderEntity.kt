@@ -33,7 +33,7 @@ import java.time.LocalDateTime
 class PlaceFolderEntity(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)
     val name: String,
     @Column(name = "owner_id", nullable = false)
     val ownerId: Long,

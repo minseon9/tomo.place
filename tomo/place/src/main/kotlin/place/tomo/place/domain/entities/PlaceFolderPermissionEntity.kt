@@ -10,7 +10,9 @@ import jakarta.persistence.Id
 import jakarta.persistence.Index
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
+import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.annotations.Type
+import org.hibernate.type.SqlTypes
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
@@ -40,8 +42,8 @@ class PlaceFolderPermissionEntity(
     val placeFolderId: Long,
     @Column(name = "granted_by", nullable = false)
     val grantedBy: Long,
-    @Type(JsonBinaryType::class)
     @Column(columnDefinition = "jsonb", nullable = false)
+    @JdbcTypeCode(SqlTypes.JSON)
     val permissions: PlacePermission,
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)

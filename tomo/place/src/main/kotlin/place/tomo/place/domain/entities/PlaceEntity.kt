@@ -48,7 +48,7 @@ class PlaceEntity(
     val address: String,
     @Column(name = "address_detail")
     val addressDetail: String? = null,
-    @Column(name = "location", columnDefinition = "GEOMETRY(Point, 4326)")
+    @Column(name = "location", columnDefinition = "GEOMETRY(Point, 4326)", nullable = false)
     @JdbcTypeCode(SqlTypes.GEOMETRY)
     val location: Point,
     @Column(nullable = false)
@@ -56,9 +56,8 @@ class PlaceEntity(
     val type: PlaceType,
     @Column(name = "sub_category")
     val subCategory: String? = null,
-    @Type(JsonBinaryType::class)
-    @Column(name = "external_ids", columnDefinition = "JSONB")
-    val externalIds: Map<String, String>? = null,
+    @Column(name = "external_id", nullable= false)
+    val externalId: String,
     @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "search_vector", columnDefinition = "tsvector")
     val searchVector: String? = null,
