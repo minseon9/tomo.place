@@ -32,8 +32,13 @@ services:
       - "5432:5432"
     environment:
       POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - tomo-network
+
+volumes:
+  postgres_data:
 
 networks:
   tomo-network:
