@@ -1,5 +1,9 @@
 databaseChangeLog:
 - include:
-    file: auth/src/main/resources/db/changelog/db.changelog-auth.yml
+    file: migrations/postgresql-change-changelog.yml
 - include:
     file: user/src/main/resources/db/changelog/db.changelog-user.yml
+- include:
+    file: auth/src/main/resources/db/changelog/db.changelog-auth.yml
+- include:
+    file: place/src/main/resources/db/changelog/db.changelog-place.yml
