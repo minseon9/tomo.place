@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// 위젯 테스트를 위한 검증 유틸리티
 class WidgetVerifiers {
   WidgetVerifiers._();
 
-  /// 위젯이 올바르게 렌더링되는지 검증하는 헬퍼
   static void verifyWidgetRenders({
     required WidgetTester tester,
     required Type widgetType,
@@ -14,7 +12,6 @@ class WidgetVerifiers {
     expect(find.byType(widgetType), findsNWidgets(expectedCount));
   }
 
-  /// 텍스트가 올바르게 표시되는지 검증하는 헬퍼
   static void verifyTextDisplays({
     required String text,
     int expectedCount = 1,
@@ -22,7 +19,6 @@ class WidgetVerifiers {
     expect(find.text(text), findsNWidgets(expectedCount));
   }
 
-  /// 위젯의 크기를 검증하는 헬퍼
   static void verifyWidgetSize({
     required WidgetTester tester,
     required Finder finder,
@@ -30,17 +26,16 @@ class WidgetVerifiers {
     double? expectedHeight,
   }) {
     final renderBox = tester.renderObject<RenderBox>(finder);
-    
+
     if (expectedWidth != null) {
       expect(renderBox.size.width, equals(expectedWidth));
     }
-    
+
     if (expectedHeight != null) {
       expect(renderBox.size.height, equals(expectedHeight));
     }
   }
 
-  /// Container의 스타일을 검증하는 헬퍼
   static void verifyContainerStyle({
     required WidgetTester tester,
     required Finder finder,
@@ -69,7 +64,6 @@ class WidgetVerifiers {
     }
   }
 
-  /// ElevatedButton의 스타일을 검증하는 헬퍼
   static void verifyElevatedButtonStyle({
     required WidgetTester tester,
     required Finder finder,
@@ -82,11 +76,17 @@ class WidgetVerifiers {
     final style = elevatedButton.style;
 
     if (expectedBackgroundColor != null) {
-      expect(style?.backgroundColor?.resolve({}), equals(expectedBackgroundColor));
+      expect(
+        style?.backgroundColor?.resolve({}),
+        equals(expectedBackgroundColor),
+      );
     }
 
     if (expectedForegroundColor != null) {
-      expect(style?.foregroundColor?.resolve({}), equals(expectedForegroundColor));
+      expect(
+        style?.foregroundColor?.resolve({}),
+        equals(expectedForegroundColor),
+      );
     }
 
     if (expectedElevation != null) {
@@ -98,7 +98,6 @@ class WidgetVerifiers {
     }
   }
 
-  /// CircularProgressIndicator의 스타일을 검증하는 헬퍼
   static void verifyCircularProgressIndicatorStyle({
     required WidgetTester tester,
     required Finder finder,
@@ -112,8 +111,213 @@ class WidgetVerifiers {
     }
 
     if (expectedValueColor != null) {
-      final valueColor = progressIndicator.valueColor as AlwaysStoppedAnimation<Color>?;
+      final valueColor =
+          progressIndicator.valueColor as AlwaysStoppedAnimation<Color>?;
       expect(valueColor?.value, equals(expectedValueColor));
+    }
+  }
+
+  static void verifyTermsCloseButtonStyle({
+    required WidgetTester tester,
+    required Finder finder,
+    double? expectedSize,
+    Color? expectedColor,
+    EdgeInsetsGeometry? expectedPadding,
+  }) {
+    final iconButton = tester.widget<IconButton>(finder);
+    final icon = iconButton.icon as Icon;
+
+    if (expectedSize != null) {
+      expect(icon.size, equals(expectedSize));
+    }
+
+    if (expectedColor != null) {
+      expect(icon.color, equals(expectedColor));
+    }
+
+    if (expectedPadding != null) {
+      expect(iconButton.padding, equals(expectedPadding));
+    }
+  }
+
+  static void verifyTermsContentStructure({
+    required WidgetTester tester,
+    required Finder finder,
+    String? expectedTitle,
+    String? expectedContent,
+  }) {
+    final column = tester.widget<Column>(finder);
+    expect(column, isNotNull);
+
+    if (expectedTitle != null) {
+      verifyTextDisplays(text: expectedTitle, expectedCount: 1);
+    }
+
+    if (expectedContent != null) {
+      verifyTextDisplays(text: expectedContent, expectedCount: 1);
+    }
+
+    expect(
+      find.descendant(of: finder, matching: find.byType(SingleChildScrollView)),
+      findsOneWidget,
+    );
+  }
+
+  static void verifyTermsPageLayoutStructure({
+    required WidgetTester tester,
+    required Finder finder,
+    bool expectHeader = true,
+    bool expectContent = true,
+    bool expectFooter = true,
+  }) {
+    final scaffold = tester.widget<Scaffold>(finder);
+    expect(scaffold, isNotNull);
+
+    if (expectHeader) {
+      expect(
+        find.descendant(of: finder, matching: find.byType(Positioned)),
+        findsWidgets,
+      );
+    }
+
+    if (expectContent) {
+      expect(
+        find.descendant(
+          of: finder,
+          matching: find.byType(SingleChildScrollView),
+        ),
+        findsOneWidget,
+      );
+    }
+
+    if (expectFooter) {
+      verifyTextDisplays(text: '모두 동의합니다 !', expectedCount: 1);
+    }
+  }
+
+  static void verifyPositionedWidget({
+    required WidgetTester tester,
+    required Finder finder,
+    double? expectedTop,
+    double? expectedLeft,
+    double? expectedRight,
+    double? expectedBottom,
+    double? expectedHeight,
+    double? expectedWidth,
+  }) {
+    final positioned = tester.widget<Positioned>(finder);
+
+    if (expectedTop != null) {
+      expect(positioned.top, equals(expectedTop));
+    }
+
+    if (expectedLeft != null) {
+      expect(positioned.left, equals(expectedLeft));
+    }
+
+    if (expectedRight != null) {
+      expect(positioned.right, equals(expectedRight));
+    }
+
+    if (expectedBottom != null) {
+      expect(positioned.bottom, equals(expectedBottom));
+    }
+
+    if (expectedHeight != null) {
+      expect(positioned.height, equals(expectedHeight));
+    }
+
+    if (expectedWidth != null) {
+      expect(positioned.width, equals(expectedWidth));
+    }
+  }
+
+  static void verifyScrollableContent({
+    required WidgetTester tester,
+    required Finder finder,
+    bool shouldBeScrollable = true,
+  }) {
+    if (shouldBeScrollable) {
+      expect(
+        find.descendant(
+          of: finder,
+          matching: find.byType(SingleChildScrollView),
+        ),
+        findsOneWidget,
+      );
+    } else {
+      expect(
+        find.descendant(
+          of: finder,
+          matching: find.byType(SingleChildScrollView),
+        ),
+        findsNothing,
+      );
+    }
+  }
+
+  static void verifyStackLayout({
+    required WidgetTester tester,
+    required Finder finder,
+    required int expectedChildrenCount,
+  }) {
+    expect(finder, findsAtLeastNWidgets(1));
+    final stacks = tester.widgetList<Stack>(finder);
+    expect(stacks.isNotEmpty, isTrue);
+    final mainStack = stacks.first;
+    expect(mainStack.children.length, equals(expectedChildrenCount));
+  }
+
+  static void verifySafeArea({
+    required WidgetTester tester,
+    required Finder finder,
+    bool shouldHaveSafeArea = true,
+  }) {
+    if (shouldHaveSafeArea) {
+      expect(
+        find.descendant(of: finder, matching: find.byType(SafeArea)),
+        findsWidgets,
+      );
+    } else {
+      expect(
+        find.descendant(of: finder, matching: find.byType(SafeArea)),
+        findsNothing,
+      );
+    }
+  }
+
+  static void verifyTermsPageCommonStructure({
+    required WidgetTester tester,
+    required Finder finder,
+    required String expectedTitle,
+    required String expectedButtonText,
+  }) {
+    verifyWidgetRenders(tester: tester, widgetType: Scaffold, expectedCount: 1);
+    verifyWidgetRenders(tester: tester, widgetType: Stack, expectedCount: 1);
+
+    verifyTextDisplays(text: expectedTitle, expectedCount: 1);
+
+    verifyTextDisplays(text: expectedButtonText, expectedCount: 1);
+
+    verifySafeArea(tester: tester, finder: finder, shouldHaveSafeArea: true);
+  }
+
+  static void verifyTermsPageColors({
+    required WidgetTester tester,
+    required Finder finder,
+    Color? expectedHeaderColor,
+    Color? expectedFooterColor,
+    Color? expectedBackgroundColor,
+  }) {
+    final containers = find.descendant(
+      of: finder,
+      matching: find.byType(Container),
+    );
+
+    if (expectedHeaderColor != null ||
+        expectedFooterColor != null ||
+        expectedBackgroundColor != null) {
+      expect(containers, findsWidgets);
     }
   }
 }

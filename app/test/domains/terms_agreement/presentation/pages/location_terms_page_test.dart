@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tomo_place/domains/terms_agreement/presentation/pages/location_terms_page.dart';
+import 'package:tomo_place/domains/terms_agreement/presentation/widgets/molecules/terms_content.dart';
+import 'package:tomo_place/domains/terms_agreement/presentation/widgets/organisms/terms_page_layout.dart';
 
 import '../../../../utils/mock_factory/terms_mock_factory.dart';
+import '../../../../utils/widget/app_wrappers.dart';
 import '../../../../utils/widget/verifiers.dart';
 
 void main() {
@@ -15,7 +18,7 @@ void main() {
     });
 
     Widget createTestWidget() {
-      return MaterialApp(home: const LocationTermsPage());
+      return AppWrappers.wrapWithMaterialApp(const LocationTermsPage());
     }
 
     group('렌더링 테스트', () {
@@ -29,11 +32,13 @@ void main() {
           widgetType: LocationTermsPage,
           expectedCount: 1,
         );
-        WidgetVerifiers.verifyWidgetRenders(
-          tester: tester,
-          widgetType: Scaffold,
-          expectedCount: 1,
+        // Scaffold는 TermsPageLayout 내부에 있으므로 1개여야 함
+        final termsPageLayout = find.byType(TermsPageLayout);
+        final scaffoldInLayout = find.descendant(
+          of: termsPageLayout,
+          matching: find.byType(Scaffold),
         );
+        expect(scaffoldInLayout, findsOneWidget);
       });
 
       testWidgets('Scaffold 구조를 가져야 한다', (WidgetTester tester) async {
@@ -41,113 +46,138 @@ void main() {
         await tester.pumpWidget(createTestWidget());
 
         // Then
-        final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
+        final termsPageLayout = find.byType(TermsPageLayout);
+        final scaffoldInLayout = find.descendant(
+          of: termsPageLayout,
+          matching: find.byType(Scaffold),
+        );
+        expect(scaffoldInLayout, findsOneWidget);
+        final scaffold = tester.widget<Scaffold>(scaffoldInLayout);
         expect(scaffold, isNotNull);
-        expect(scaffold.appBar, isNotNull);
-        expect(scaffold.body, isNotNull);
+        expect(scaffold.backgroundColor, equals(Colors.white));
       });
     });
 
-    group('AppBar 테스트', () {
-      testWidgets('AppBar가 올바르게 렌더링되어야 한다', (WidgetTester tester) async {
-        // Given & When
-        await tester.pumpWidget(createTestWidget());
-
-        // Then
-        WidgetVerifiers.verifyWidgetRenders(
-          tester: tester,
-          widgetType: AppBar,
-          expectedCount: 1,
-        );
-      });
-
-      testWidgets('AppBar 제목이 "위치정보 약관"이어야 한다', (WidgetTester tester) async {
-        // Given & When
-        await tester.pumpWidget(createTestWidget());
-
-        // Then
-        WidgetVerifiers.verifyTextDisplays(text: '위치정보 약관', expectedCount: 1);
-      });
-
-      testWidgets('AppBar 스타일이 올바르게 적용되어야 한다', (WidgetTester tester) async {
-        // Given & When
-        await tester.pumpWidget(createTestWidget());
-
-        // Then
-        final appBar = tester.widget<AppBar>(find.byType(AppBar));
-        expect(appBar.backgroundColor, equals(Colors.white));
-        expect(appBar.foregroundColor, equals(Colors.black));
-        expect(appBar.elevation, equals(0));
-      });
-
-      testWidgets('AppTypography.head3 스타일이 적용되어야 한다', (
+    group('TermsPageLayout 테스트', () {
+      testWidgets('TermsPageLayout이 올바르게 렌더링되어야 한다', (
         WidgetTester tester,
       ) async {
         // Given & When
         await tester.pumpWidget(createTestWidget());
 
         // Then
-        final titleText = tester.widget<Text>(find.text('위치정보 약관'));
-        expect(titleText.style, isNotNull);
-        expect(titleText.style?.fontSize, equals(18));
-        expect(titleText.style?.fontWeight, equals(FontWeight.w600));
-      });
-    });
-
-    group('Body 테스트', () {
-      testWidgets('Center 위젯이 렌더링되어야 한다', (WidgetTester tester) async {
-        // Given & When
-        await tester.pumpWidget(createTestWidget());
-
-        // Then
         WidgetVerifiers.verifyWidgetRenders(
           tester: tester,
-          widgetType: Center,
+          widgetType: TermsPageLayout,
           expectedCount: 1,
         );
       });
 
-      testWidgets('Padding 위젯이 렌더링되어야 한다', (WidgetTester tester) async {
-        // Given & When
-        await tester.pumpWidget(createTestWidget());
-
-        // Then
-        WidgetVerifiers.verifyWidgetRenders(
-          tester: tester,
-          widgetType: Padding,
-          expectedCount: 2, // MaterialApp과 LocationTermsPage에서 각각 Padding이 있음
-        );
-      });
-
-      testWidgets('텍스트 내용이 표시되어야 한다', (WidgetTester tester) async {
+      testWidgets('제목이 "위치정보 수집·이용 및 제3자 제공 동의"여야 한다', (
+        WidgetTester tester,
+      ) async {
         // Given & When
         await tester.pumpWidget(createTestWidget());
 
         // Then
         WidgetVerifiers.verifyTextDisplays(
-          text:
-              '위치정보 약관 내용이 여기에 표시됩니다.\n\n이 페이지는 추후 실제 위치정보 약관 내용으로 업데이트될 예정입니다.',
+          text: '📌 위치정보 수집·이용 및 제3자 제공 동의',
           expectedCount: 1,
         );
-        // 전체 텍스트가 하나의 Text 위젯에 포함되어 있으므로 개별 검증은 제거
       });
 
-      testWidgets('텍스트 스타일이 올바르게 적용되어야 한다', (WidgetTester tester) async {
+      testWidgets('Stack 레이아웃이 올바르게 구성되어야 한다', (WidgetTester tester) async {
         // Given & When
         await tester.pumpWidget(createTestWidget());
 
         // Then
-        final textWidgets = find.byType(Text);
-        expect(textWidgets, findsWidgets);
+        WidgetVerifiers.verifyStackLayout(
+          tester: tester,
+          finder: find.byType(Stack),
+          expectedChildrenCount: 3,
+        );
+      });
 
-        // 첫 번째 텍스트 (제목 제외)
-        final contentText = tester.widget<Text>(textWidgets.at(1));
-        expect(
-          contentText.style?.fontSize,
-          equals(18.0),
-        ); // MaterialApp 기본 테마 적용
-        // textAlign은 MaterialApp 테마에 의해 null이 될 수 있음
-        expect(contentText.textAlign, anyOf(equals(TextAlign.center), isNull));
+      testWidgets('Positioned 위젯들이 올바르게 배치되어야 한다', (WidgetTester tester) async {
+        // Given & When
+        await tester.pumpWidget(createTestWidget());
+
+        // Then
+        WidgetVerifiers.verifyWidgetRenders(
+          tester: tester,
+          widgetType: Positioned,
+          expectedCount: 4, // Header, CloseButton, Content, Footer
+        );
+      });
+    });
+
+    group('콘텐츠 테스트', () {
+      testWidgets('TermsContent가 렌더링되어야 한다', (WidgetTester tester) async {
+        // Given & When
+        await tester.pumpWidget(createTestWidget());
+
+        // Then
+        WidgetVerifiers.verifyWidgetRenders(
+          tester: tester,
+          widgetType: TermsContent,
+          expectedCount: 1,
+        );
+      });
+
+      testWidgets('SingleChildScrollView가 렌더링되어야 한다', (
+        WidgetTester tester,
+      ) async {
+        // Given & When
+        await tester.pumpWidget(createTestWidget());
+
+        // Then
+        WidgetVerifiers.verifyWidgetRenders(
+          tester: tester,
+          widgetType: SingleChildScrollView,
+          expectedCount: 1,
+        );
+      });
+
+      testWidgets('위치정보 약관 내용이 표시되어야 한다', (WidgetTester tester) async {
+        // Given & When
+        await tester.pumpWidget(createTestWidget());
+
+        // Then
+        final allTexts = find.byType(Text);
+        expect(allTexts, findsWidgets);
+
+        bool foundContent = false;
+        for (int i = 0; i < allTexts.evaluate().length; i++) {
+          final text = tester.widget<Text>(allTexts.at(i));
+          if (text.data != null && text.data!.contains('단말기 위치정보')) {
+            foundContent = true;
+            break;
+          }
+        }
+        expect(foundContent, isTrue, reason: '위치정보 약관 내용이 표시되어야 함');
+      });
+
+      testWidgets('동의 버튼이 표시되어야 한다', (WidgetTester tester) async {
+        // Given & When
+        await tester.pumpWidget(createTestWidget());
+
+        // Then
+        WidgetVerifiers.verifyTextDisplays(
+          text: '모두 동의합니다 !',
+          expectedCount: 1,
+        );
+      });
+
+      testWidgets('닫기 버튼이 표시되어야 한다', (WidgetTester tester) async {
+        // Given & When
+        await tester.pumpWidget(createTestWidget());
+
+        // Then
+        WidgetVerifiers.verifyWidgetRenders(
+          tester: tester,
+          widgetType: IconButton,
+          expectedCount: 1,
+        );
       });
     });
 
@@ -159,17 +189,22 @@ void main() {
         // Then
         final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
         expect(scaffold, isNotNull);
-        // 접근성 테스트는 실제 앱에서 더 구체적으로 구현
+        // Scaffold는 자동으로 접근성 지원을 제공함
       });
 
-      testWidgets('뒤로가기 버튼이 동작해야 한다', (WidgetTester tester) async {
+      testWidgets('모든 텍스트가 읽기 가능해야 한다', (WidgetTester tester) async {
         // Given & When
         await tester.pumpWidget(createTestWidget());
 
         // Then
-        final appBar = tester.widget<AppBar>(find.byType(AppBar));
-        expect(appBar, isNotNull);
-        // AppBar는 자동으로 뒤로가기 버튼을 제공함
+        final textWidgets = find.byType(Text);
+        expect(textWidgets, findsWidgets);
+
+        // 모든 텍스트가 비어있지 않아야 함
+        for (int i = 0; i < textWidgets.evaluate().length; i++) {
+          final text = tester.widget<Text>(textWidgets.at(i));
+          expect(text.data, isNotEmpty);
+        }
       });
     });
 
@@ -179,32 +214,67 @@ void main() {
         await tester.pumpWidget(createTestWidget());
 
         // Then
-        final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
-        expect(scaffold.appBar, isNotNull);
-        expect(scaffold.body, isNotNull);
+        // TermsPageLayout 내부의 Scaffold를 찾아서 검증
+        final termsPageLayout = find.byType(TermsPageLayout);
+        final scaffoldInLayout = find.descendant(
+          of: termsPageLayout,
+          matching: find.byType(Scaffold),
+        );
+        expect(scaffoldInLayout, findsOneWidget);
 
-        final center = tester.widget<Center>(find.byType(Center).first);
-        expect(center, isNotNull);
-
-        final padding = tester.widget<Padding>(find.byType(Padding).first);
-        expect(padding, isNotNull);
+        // 제목과 버튼 텍스트 확인
+        WidgetVerifiers.verifyTextDisplays(
+          text: '📌 위치정보 수집·이용 및 제3자 제공 동의',
+          expectedCount: 1,
+        );
+        WidgetVerifiers.verifyTextDisplays(
+          text: '모두 동의합니다 !',
+          expectedCount: 1,
+        );
       });
 
-      testWidgets('텍스트가 중앙 정렬되어야 한다', (WidgetTester tester) async {
+      testWidgets('Position Fixed 레이아웃이 올바르게 구성되어야 한다', (
+        WidgetTester tester,
+      ) async {
         // Given & When
         await tester.pumpWidget(createTestWidget());
 
         // Then
-        final center = tester.widget<Center>(find.byType(Center).first);
-        expect(center, isNotNull);
+        final termsPageLayout = find.byType(TermsPageLayout);
+        final positionedWidgets = find.descendant(
+          of: termsPageLayout,
+          matching: find.byType(Positioned),
+        );
+        expect(
+          positionedWidgets,
+          findsNWidgets(4),
+        ); // Header, CloseButton, Content, Footer
 
-        // body의 Text 위젯을 찾기 위해 더 구체적인 finder 사용
-        final textWidgets = find.byType(Text);
-        final contentText = tester.widget<Text>(
-          textWidgets.at(1),
-        ); // 두 번째 Text 위젯 (body 내용)
-        // textAlign은 MaterialApp 테마에 의해 null이 될 수 있음
-        expect(contentText.textAlign, anyOf(equals(TextAlign.center), isNull));
+        // 헤더 위치 확인
+        final headerPositioned = tester.widget<Positioned>(
+          positionedWidgets.at(0),
+        );
+        expect(headerPositioned.top, equals(0));
+        expect(headerPositioned.height, equals(88));
+
+        // 푸터 위치 확인
+        final footerPositioned = tester.widget<Positioned>(
+          positionedWidgets.at(3),
+        );
+        expect(footerPositioned.bottom, equals(0));
+        expect(footerPositioned.height, equals(124));
+      });
+
+      testWidgets('SafeArea가 올바르게 적용되어야 한다', (WidgetTester tester) async {
+        // Given & When
+        await tester.pumpWidget(createTestWidget());
+
+        // Then
+        WidgetVerifiers.verifySafeArea(
+          tester: tester,
+          finder: find.byType(LocationTermsPage),
+          shouldHaveSafeArea: true,
+        );
       });
     });
 
