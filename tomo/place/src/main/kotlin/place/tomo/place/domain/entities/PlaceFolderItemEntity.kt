@@ -28,7 +28,7 @@ import java.time.LocalDateTime
         UniqueConstraint(columnNames = ["folder_id", "place_id"]),
     ],
 )
-class PlaceFolderPlaceEntity(
+class PlaceFolderItemEntity(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
     @ManyToOne(fetch = FetchType.LAZY)
@@ -38,7 +38,7 @@ class PlaceFolderPlaceEntity(
     @JoinColumn(name = "place_id", nullable = false)
     val place: PlaceEntity,
     @Column(name = "created_by_user_id", nullable = false)
-    val created_by_user_id: Long,
+    val createdByUserId: Long,
     @Column()
     val order: Int = 0,
     @CreatedDate
