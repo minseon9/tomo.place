@@ -1,30 +1,46 @@
 import 'package:flutter/material.dart';
-import '../../../../shared/ui/design_system/tokens/typography.dart';
+import '../widgets/organisms/terms_page_layout.dart';
 
-/// 이용약관 페이지
 class TermsOfServicePage extends StatelessWidget {
   const TermsOfServicePage({super.key});
 
+  static const String _termsContent = '''
+제1조 (목적)
+본 약관은 [서비스명]이 제공하는 서비스(이하 "서비스")의 이용 조건 및 절차, 회사와 회원 간의 권리·의무 및 책임 사항, 기타 필요한 사항을 규정함을 목적으로 합니다.
+
+제2조 (회원의 의무)
+1. 회원은 관계 법령 및 본 약관의 규정을 준수하여야 하며, 서비스 운영을 방해하는 행위를 해서는 안 됩니다.
+2. 회원은 타인의 권리를 침해하거나, 타인의 개인정보를 무단으로 수집·이용해서는 안 됩니다.
+
+제3조 (서비스 이용)
+1. 회사는 회원에게 위치 기반 정보, 후기/사진 작성 및 열람 서비스 등을 제공합니다.
+2. 회원이 작성한 게시물(후기, 사진 등)은 서비스 내 공개될 수 있으며, 다른 회원이 열람할 수 있습니다.
+3. 회원의 명시적 동의가 있는 경우, 다른 회원이 게시물에 대한 보완·수정 제안을 할 수 있습니다.
+
+제4조 (저작권 및 콘텐츠 관리)
+1. 회원이 작성한 콘텐츠(후기, 사진 등)의 저작권은 원칙적으로 회원 본인에게 귀속됩니다.
+2. 다만, 회사는 서비스 운영·홍보를 위해 해당 콘텐츠를 무상으로 이용·복제·배포·전송할 수 있습니다.
+3. 회원이 탈퇴한 경우, 작성한 게시물은 익명화 또는 삭제될 수 있으며, 단 법적 대응이나 분쟁 해결을 위해 탈퇴 후 n개월간 보관할 수 있습니다.
+4. 보관 기간이 경과하면 모든 개인정보 및 게시물은 지체 없이 삭제됩니다.
+
+제5조 (서비스 중단 및 변경)
+회사는 천재지변, 시스템 장애, 법령 개정 등 불가피한 사유가 있을 경우 사전 공지 후 서비스를 변경하거나 중단할 수 있습니다.
+
+제6조 (책임의 제한)
+1. 회사는 회원 간 또는 회원과 제3자 간의 분쟁에 대해 개입하지 않으며, 이에 따른 책임을 지지 않습니다.
+2. 단, 회사의 고의 또는 중대한 과실로 인한 손해에 대해서는 책임을 부담합니다.
+
+제7조 (연령 제한)
+만 14세 이상인 경우에만 서비스 이용이 가능하며, 만 14세 미만 아동은 보호자의 동의 없이는 회원가입을 할 수 없습니다.
+''';
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('이용약관', style: AppTypography.head3),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
-      ),
-      body: const Center(
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Text(
-            '이용약관 내용이 여기에 표시됩니다.\n\n'
-            '이 페이지는 추후 실제 약관 내용으로 업데이트될 예정입니다.',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 16),
-          ),
-        ),
-      ),
+    return TermsPageLayout(
+      title: '이용 약관 동의',
+      content: _termsContent,
+      onClose: () => Navigator.of(context).pop(),
+      onAgree: () => Navigator.of(context).pop(),
     );
   }
 }

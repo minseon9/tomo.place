@@ -1,17 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../../../../shared/ui/design_system/tokens/colors.dart';
-import '../../../../../shared/ui/design_system/tokens/typography.dart';
-import '../../../../../shared/ui/design_system/tokens/radius.dart';
 
-/// 약관 동의 완료 버튼 컴포넌트
-/// 
-/// "모두 동의합니다 !" 텍스트가 포함된 버튼으로,
-/// 클릭 시 모든 약관에 동의한 것으로 처리됩니다.
+import '../../../../../shared/ui/design_system/tokens/colors.dart';
+import '../../../../../shared/ui/design_system/tokens/radius.dart';
+import '../../../../../shared/ui/design_system/tokens/typography.dart';
+
 class TermsAgreeButton extends StatelessWidget {
-  const TermsAgreeButton({
-    super.key,
-    required this.onPressed,
-  });
+  const TermsAgreeButton({super.key, required this.onPressed});
 
   final VoidCallback onPressed;
 

@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
+
 import '../../../../../shared/ui/design_system/tokens/colors.dart';
 import '../../../../../shared/ui/design_system/tokens/radius.dart';
-import '../molecules/terms_agreement_item.dart';
 import '../atoms/terms_agree_button.dart';
+import '../molecules/terms_agreement_item.dart';
 
-/// 약관 동의 모달 컴포넌트
-/// 
-/// 4개의 약관 동의 항목과 모두 동의 버튼을 포함하는 모달입니다.
-/// 외부 터치나 드래그로 모달을 닫을 수 있으며, 예외 처리 없이 단순히 닫힙니다.
 class TermsAgreementModal extends StatelessWidget {
   const TermsAgreementModal({
     super.key,
@@ -22,12 +19,12 @@ class TermsAgreementModal extends StatelessWidget {
   final VoidCallback? onTermsTap;
   final VoidCallback? onPrivacyTap;
   final VoidCallback? onLocationTap;
-  final VoidCallback? onDismiss; // 모달 닫기 콜백
+  final VoidCallback? onDismiss;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onDismiss, // 외부 터치 시 모달 닫기
+      onTap: onDismiss,
       child: Container(
         width: 394,
         height: 359,
@@ -46,13 +43,11 @@ class TermsAgreementModal extends StatelessWidget {
           ],
         ),
         child: GestureDetector(
-          onTap: () {}, // 모달 내부 터치 시 이벤트 전파 방지
+          onTap: () {},
           child: Column(
             children: [
-              // 상단 그랩바 (드래그 가능)
               GestureDetector(
                 onPanUpdate: (details) {
-                  // 아래로 드래그 시 모달 닫기
                   if (details.delta.dy > 0) {
                     onDismiss?.call();
                   }
@@ -67,8 +62,7 @@ class TermsAgreementModal extends StatelessWidget {
                   ),
                 ),
               ),
-              
-              // 약관 동의 항목들
+
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(29, 21, 29, 0),
@@ -104,8 +98,7 @@ class TermsAgreementModal extends StatelessWidget {
                   ),
                 ),
               ),
-              
-              // 하단 버튼
+
               Padding(
                 padding: const EdgeInsets.fromLTRB(47, 0, 47, 0),
                 child: TermsAgreeButton(onPressed: onAgreeAll ?? () {}),
