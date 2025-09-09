@@ -1,0 +1,79 @@
+package place.tomo.place.domain.entities
+
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.EntityListeners
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+import jakarta.persistence.Index
+import jakarta.persistence.Table
+import jakarta.persistence.UniqueConstraint
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.annotations.Type
+import org.hibernate.spatial.JTSGeometryJavaType
+import org.hibernate.type.SqlTypes
+import org.locationtech.jts.geom.Point
+import org.springframework.data.annotation.CreatedDate
+import org.springframework.data.annotation.LastModifiedDate
+import org.springframework.data.jpa.domain.support.AuditingEntityListener
+import place.tomo.place.domain.constants.PlaceType
+import java.time.LocalDateTime
+import java.util.UUID
+
+@Entity
+@EntityListeners(AuditingEntityListener::class)
+@Table(
+    name = "place",
+    uniqueConstraints = [
+        UniqueConstraint(columnNames = ["entity_id"]),
+    ],
+    indexes = [
+        Index(name = "idx_place_location_gist", columnList = "location"),
+        Index(name = "idx_place_type", columnList = "type"),
+        Index(name = "idx_place_search_vector", columnList = "search_vector"),
+    ],
+)
+class PlaceEntity(
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    val id: Long = 0,
+    @Column(name = "entity_id", nullable = false)
+    val entityId: UUID,
+    @Column(nullable = false)
+    val name: String,
+    @Column(nullable = false)
+    val address: String,
+    @Column(name = "address_detail")
+    val addressDetail: String? = null,
+    @Column(name = "location", columnDefinition = "GEOMETRY(Point, 4326)")
+    @JdbcTypeCode(SqlTypes.GEOMETRY)
+    val location: Point,
+    @Column(nullable = false)
+    val latitude: Double,
+    @Column(nullable = false)
+    val longitude: Double,
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    val type: PlaceType,
+    @Column(name = "sub_category")
+    val subCategory: String? = null,
+    @Type(JsonBinaryType::class)
+    @Column(name = "external_ids", columnDefinition = "JSONB")
+    val externalIds: Map<String, String>? = null,
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(name = "search_vector", columnDefinition = "tsvector")
+    val searchVector: String? = null,
+    @CreatedDate
+    @Column(name = "created_at", nullable = false, updatable = false)
+    val createdAt: LocalDateTime = LocalDateTime.now(),
+    @LastModifiedDate
+    @Column(name = "updated_at", nullable = false)
+    var updatedAt: LocalDateTime = LocalDateTime.now(),
+    @Column(name = "deleted_at")
+    var deletedAt: LocalDateTime? = null,
+) {
+    fun isClosed() = this.deletedAt != null
+}
