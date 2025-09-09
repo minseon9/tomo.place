@@ -1,0 +1,454 @@
+databaseChangeLog:
+- changeSet:
+    id: 1757354382439-23
+    author: ian (generated)
+    changes:
+    - dropForeignKeyConstraint:
+        baseTableName: social_account
+        constraintName: FKqg7naq00cg9s76a2tljlyafn6
+- changeSet:
+    id: 1757354382439-1
+    author: ian (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            autoIncrement: true
+            constraints:
+              nullable: false
+              primaryKey: true
+              primaryKeyName: placePK
+            name: id
+            type: BIGINT
+        - column:
+            constraints:
+              nullable: false
+            name: address
+            type: VARCHAR(255)
+        - column:
+            name: address_detail
+            type: VARCHAR(255)
+        - column:
+            constraints:
+              nullable: false
+            name: created_at
+            type: TIMESTAMP(6) WITHOUT TIME ZONE
+        - column:
+            name: deleted_at
+            type: TIMESTAMP(6) WITHOUT TIME ZONE
+        - column:
+            constraints:
+              nullable: false
+            name: entity_id
+            type: UUID
+        - column:
+            name: external_ids
+            type: JSONB
+        - column:
+            constraints:
+              nullable: false
+            name: latitude
+            type: FLOAT(53)
+        - column:
+            name: location
+            type: GEOMETRY
+        - column:
+            constraints:
+              nullable: false
+            name: longitude
+            type: FLOAT(53)
+        - column:
+            constraints:
+              nullable: false
+            name: name
+            type: VARCHAR(255)
+        - column:
+            name: search_vector
+            type: TSVECTOR
+        - column:
+            name: sub_category
+            type: VARCHAR(255)
+        - column:
+            constraints:
+              nullable: false
+            name: type
+            type: VARCHAR(255)
+        - column:
+            constraints:
+              nullable: false
+            name: updated_at
+            type: TIMESTAMP(6) WITHOUT TIME ZONE
+        tableName: place
+- changeSet:
+    id: 1757354382439-2
+    author: ian (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            autoIncrement: true
+            constraints:
+              nullable: false
+              primaryKey: true
+              primaryKeyName: place_folderPK
+            name: id
+            type: BIGINT
+        - column:
+            constraints:
+              nullable: false
+            name: created_at
+            type: TIMESTAMP(6) WITHOUT TIME ZONE
+        - column:
+            name: deleted_at
+            type: TIMESTAMP(6) WITHOUT TIME ZONE
+        - column:
+            constraints:
+              nullable: false
+            name: display_type
+            type: VARCHAR(255)
+        - column:
+            constraints:
+              nullable: false
+            name: name
+            type: VARCHAR(255)
+        - column:
+            name: order
+            type: INTEGER
+        - column:
+            constraints:
+              nullable: false
+            name: owner_id
+            type: BIGINT
+        - column:
+            name: tags
+            type: TEXT[]
+        - column:
+            constraints:
+              nullable: false
+            name: updated_at
+            type: TIMESTAMP(6) WITHOUT TIME ZONE
+        - column:
+            constraints:
+              nullable: false
+            name: visibility
+            type: SMALLINT
+        tableName: place_folder
+- changeSet:
+    id: 1757354382439-3
+    author: ian (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            autoIncrement: true
+            constraints:
+              nullable: false
+              primaryKey: true
+              primaryKeyName: place_folder_itemPK
+            name: id
+            type: BIGINT
+        - column:
+            constraints:
+              nullable: false
+            name: created_at
+            type: TIMESTAMP(6) WITHOUT TIME ZONE
+        - column:
+            constraints:
+              nullable: false
+            name: created_by_user_id
+            type: BIGINT
+        - column:
+            name: deleted_at
+            type: TIMESTAMP(6) WITHOUT TIME ZONE
+        - column:
+            name: order
+            type: INTEGER
+        - column:
+            constraints:
+              nullable: false
+            name: updated_at
+            type: TIMESTAMP(6) WITHOUT TIME ZONE
+        - column:
+            constraints:
+              nullable: false
+            name: folder_id
+            type: BIGINT
+        - column:
+            constraints:
+              nullable: false
+            name: place_id
+            type: BIGINT
+        tableName: place_folder_item
+- changeSet:
+    id: 1757354382439-4
+    author: ian (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            autoIncrement: true
+            constraints:
+              nullable: false
+              primaryKey: true
+              primaryKeyName: place_folder_permissionPK
+            name: id
+            type: BIGINT
+        - column:
+            constraints:
+              nullable: false
+            name: created_at
+            type: TIMESTAMP(6) WITHOUT TIME ZONE
+        - column:
+            name: deleted_at
+            type: TIMESTAMP(6) WITHOUT TIME ZONE
+        - column:
+            name: granted_by
+            type: BIGINT
+        - column:
+            constraints:
+              nullable: false
+            name: permissions
+            type: JSONB
+        - column:
+            constraints:
+              nullable: false
+            name: place_folder_id
+            type: BIGINT
+        - column:
+            constraints:
+              nullable: false
+            name: updated_at
+            type: TIMESTAMP(6) WITHOUT TIME ZONE
+        - column:
+            constraints:
+              nullable: false
+            name: user_id
+            type: BIGINT
+        tableName: place_folder_permission
+- changeSet:
+    id: 1757354382439-5
+    author: ian (generated)
+    changes:
+    - addUniqueConstraint:
+        columnNames: user_id, place_folder_id
+        constraintName: UK9falwmiiwcqgaqbgm4f80f5fd
+        tableName: place_folder_permission
+- changeSet:
+    id: 1757354382439-6
+    author: ian (generated)
+    changes:
+    - addUniqueConstraint:
+        columnNames: entity_id
+        constraintName: UKckbw21ixhsfaob0lnm400j47s
+        tableName: place
+- changeSet:
+    id: 1757354382439-7
+    author: ian (generated)
+    changes:
+    - addUniqueConstraint:
+        columnNames: folder_id, place_id
+        constraintName: UKpaxwlqgx20baeaquu4wrfwcp5
+        tableName: place_folder_item
+- changeSet:
+    id: 1757354382439-8
+    author: ian (generated)
+    changes:
+    - createIndex:
+        columns:
+        - column:
+            name: deleted_at
+        indexName: idx_folder_deleted
+        tableName: place_folder
+- changeSet:
+    id: 1757354382439-9
+    author: ian (generated)
+    changes:
+    - createIndex:
+        columns:
+        - column:
+            name: folder_id
+        indexName: idx_folder_item_folder
+        tableName: place_folder_item
+- changeSet:
+    id: 1757354382439-10
+    author: ian (generated)
+    changes:
+    - createIndex:
+        columns:
+        - column:
+            name: folder_id
+        - column:
+            name: order
+        indexName: idx_folder_item_order
+        tableName: place_folder_item
+- changeSet:
+    id: 1757354382439-11
+    author: ian (generated)
+    changes:
+    - createIndex:
+        columns:
+        - column:
+            name: place_id
+        indexName: idx_folder_item_place
+        tableName: place_folder_item
+- changeSet:
+    id: 1757354382439-12
+    author: ian (generated)
+    changes:
+    - createIndex:
+        columns:
+        - column:
+            name: created_by_user_id
+        indexName: idx_folder_item_user
+        tableName: place_folder_item
+- changeSet:
+    id: 1757354382439-13
+    author: ian (generated)
+    changes:
+    - createIndex:
+        columns:
+        - column:
+            name: owner_id
+        indexName: idx_folder_owner
+        tableName: place_folder
+- changeSet:
+    id: 1757354382439-14
+    author: ian (generated)
+    changes:
+    - createIndex:
+        columns:
+        - column:
+            name: tags
+        indexName: idx_folder_tags
+        tableName: place_folder
+- changeSet:
+    id: 1757354382439-15
+    author: ian (generated)
+    changes:
+    - createIndex:
+        columns:
+        - column:
+            name: place_folder_id
+        indexName: idx_permission_folder
+        tableName: place_folder_permission
+- changeSet:
+    id: 1757354382439-16
+    author: ian (generated)
+    changes:
+    - createIndex:
+        columns:
+        - column:
+            name: permissions
+        indexName: idx_permission_type
+        tableName: place_folder_permission
+- changeSet:
+    id: 1757354382439-17
+    author: ian (generated)
+    changes:
+    - createIndex:
+        columns:
+        - column:
+            name: user_id
+        indexName: idx_permission_user
+        tableName: place_folder_permission
+- changeSet:
+    id: 1757354382439-18
+    author: ian (generated)
+    changes:
+    - createIndex:
+        columns:
+        - column:
+            name: location
+        indexName: idx_place_location_gist
+        tableName: place
+- changeSet:
+    id: 1757354382439-19
+    author: ian (generated)
+    changes:
+    - createIndex:
+        columns:
+        - column:
+            name: search_vector
+        indexName: idx_place_search_vector
+        tableName: place
+- changeSet:
+    id: 1757354382439-20
+    author: ian (generated)
+    changes:
+    - createIndex:
+        columns:
+        - column:
+            name: type
+        indexName: idx_place_type
+        tableName: place
+- changeSet:
+    id: 1757354382439-21
+    author: ian (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: folder_id
+        baseTableName: place_folder_item
+        constraintName: FKd1sovl3iu3uftq1vnqgtj0jhf
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: place_folder
+        validate: true
+- changeSet:
+    id: 1757354382439-22
+    author: ian (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: place_id
+        baseTableName: place_folder_item
+        constraintName: FKpuu91jcikdothh2cv27hj3oi7
+        deferrable: false
+        initiallyDeferred: false
+        referencedColumnNames: id
+        referencedTableName: place
+        validate: true
+- changeSet:
+    id: 1757354382439-24
+    author: ian (generated)
+    changes:
+    - dropUniqueConstraint:
+        constraintName: UK7qvotc6xu79jjtlvadwc2rgjh
+        tableName: social_account
+- changeSet:
+    id: 1757354382439-25
+    author: ian (generated)
+    changes:
+    - dropUniqueConstraint:
+        constraintName: uc_usersemail_col
+        tableName: users
+- changeSet:
+    id: 1757354382439-26
+    author: ian (generated)
+    changes:
+    - dropView:
+        viewName: geography_columns
+- changeSet:
+    id: 1757354382439-27
+    author: ian (generated)
+    changes:
+    - dropView:
+        viewName: geometry_columns
+- changeSet:
+    id: 1757354382439-28
+    author: ian (generated)
+    changes:
+    - dropTable:
+        tableName: social_account
+- changeSet:
+    id: 1757354382439-29
+    author: ian (generated)
+    changes:
+    - dropTable:
+        tableName: spatial_ref_sys
+- changeSet:
+    id: 1757354382439-30
+    author: ian (generated)
+    changes:
+    - dropTable:
+        tableName: users
+
