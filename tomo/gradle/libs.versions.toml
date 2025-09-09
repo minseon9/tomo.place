@@ -16,6 +16,9 @@ springdoc-openapi = "2.7.0"
 # Additional versions for dependencies without explicit versions
 postgresql = "42.7.3"
 h2 = "2.2.224"
+jts = "1.19.0"
+hibernate-spatial = "6.2.7.Final"
+hibernate-types = "2.21.1"
 kotlinx-coroutines = "1.8.0"
 mockito = "5.11.0"
 netty = "4.1.107.Final"
@@ -60,6 +63,12 @@ kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", v
 # Database
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 h2 = { module = "com.h2database:h2", version.ref = "h2" }
+
+## Postgresql
+jts-core = { module = "org.locationtech.jts:jts-core", version.ref = "jts" }
+jts-io = { module = "org.locationtech.jts.io:jts-io-common", version.ref = "jts" }
+hibernate-spatial = { module = "org.hibernate:hibernate-spatial", version.ref = "hibernate-spatial"}
+hibernate-types = { module = "com.vladmihalcea:hibernate-types-60", version.ref = "hibernate-types" }
 
 # Testing
 spring-security-test = { module = "org.springframework.security:spring-security-test", version.ref = "spring-framework" }
@@ -116,6 +125,13 @@ spring-boot-web-services = [
 # Spring Boot 데이터 액세스
 spring-boot-data = [
     "spring-boot-starter-data-jpa"
+]
+
+postgresql = [
+    "jts-core",
+    "jts-io",
+    "hibernate-spatial",
+    "hibernate-types"
 ]
 
 # 테스트 핵심
