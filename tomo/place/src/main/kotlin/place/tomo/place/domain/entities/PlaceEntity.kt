@@ -52,10 +52,6 @@ class PlaceEntity(
     @JdbcTypeCode(SqlTypes.GEOMETRY)
     val location: Point,
     @Column(nullable = false)
-    val latitude: Double,
-    @Column(nullable = false)
-    val longitude: Double,
-    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     val type: PlaceType,
     @Column(name = "sub_category")
