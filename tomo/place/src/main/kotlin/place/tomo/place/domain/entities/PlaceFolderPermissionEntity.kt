@@ -42,7 +42,7 @@ class PlaceFolderPermissionEntity(
     val userId: Long,
     @Column(name = "place_folder_id", nullable = false)
     val placeFolderId: Long,
-    @Column(name = "granted_by")
+    @Column(name = "granted_by", nullable = false)
     val grantedBy: Long,
     @Type(JsonBinaryType::class)
     @Column(columnDefinition = "jsonb", nullable = false)
