@@ -1,10 +1,10 @@
-import 'package:app/domains/auth/consts/social_provider.dart';
-import 'package:app/domains/auth/consts/social_label_variant.dart';
-import 'package:app/domains/auth/presentation/controllers/auth_notifier.dart';
-import 'package:app/domains/auth/presentation/models/auth_state.dart';
-import 'package:app/domains/auth/presentation/pages/signup_page.dart';
-import 'package:app/domains/auth/presentation/widgets/social_login_section.dart';
-import 'package:app/domains/auth/presentation/widgets/social_login_button.dart';
+import 'package:tomo_place/domains/auth/consts/social_provider.dart';
+import 'package:tomo_place/domains/auth/consts/social_label_variant.dart';
+import 'package:tomo_place/domains/auth/presentation/controllers/auth_notifier.dart';
+import 'package:tomo_place/domains/auth/presentation/models/auth_state.dart';
+import 'package:tomo_place/domains/auth/presentation/pages/signup_page.dart';
+import 'package:tomo_place/domains/auth/presentation/widgets/social_login_section.dart';
+import 'package:tomo_place/domains/auth/presentation/widgets/social_login_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

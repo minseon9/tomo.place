@@ -1,9 +1,9 @@
-import 'package:app/domains/auth/core/entities/auth_token.dart';
-import 'package:app/domains/auth/data/datasources/storage/auth_storage_data_source.dart';
+import 'package:tomo_place/domains/auth/core/entities/auth_token.dart';
+import 'package:tomo_place/domains/auth/data/datasources/storage/auth_storage_data_source.dart';
 import 'package:clock/clock.dart';
 import 'package:faker/faker.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 import '../../../../../utils/mock_factory/shared_mock_factory.dart';
 

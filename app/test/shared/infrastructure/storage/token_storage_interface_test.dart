@@ -1,4 +1,4 @@
-import 'package:app/shared/infrastructure/storage/token_storage_service.dart';
+import 'package:tomo_place/shared/infrastructure/storage/token_storage_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import '../../../utils/mock_factory/shared_mock_factory.dart';

@@ -1,7 +1,7 @@
-import 'package:app/domains/auth/core/usecases/refresh_token_usecase.dart';
-import 'package:app/domains/auth/core/entities/auth_token.dart';
-import 'package:app/domains/auth/core/entities/authentication_result.dart';
-import 'package:test/test.dart';
+import 'package:tomo_place/domains/auth/core/usecases/refresh_token_usecase.dart';
+import 'package:tomo_place/domains/auth/core/entities/auth_token.dart';
+import 'package:tomo_place/domains/auth/core/entities/authentication_result.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:faker/faker.dart';
 import 'package:clock/clock.dart';

@@ -1,6 +1,6 @@
-import 'package:app/domains/auth/data/models/signup_api_response.dart';
+import 'package:tomo_place/domains/auth/data/models/signup_api_response.dart';
 import 'package:faker/faker.dart';
-import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('SignupApiResponse', () {

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:app/domains/auth/consts/social_label_variant.dart';
+import 'package:tomo_place/domains/auth/consts/social_label_variant.dart';
 
 void main() {
   group('SocialLabelVariant', () {

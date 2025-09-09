@@ -1,6 +1,6 @@
-import 'package:app/app/pages/splash_page.dart';
-import 'package:app/domains/auth/presentation/controllers/auth_notifier.dart';
-import 'package:app/domains/auth/presentation/models/auth_state.dart';
+import 'package:tomo_place/app/pages/splash_page.dart';
+import 'package:tomo_place/domains/auth/presentation/controllers/auth_notifier.dart';
+import 'package:tomo_place/domains/auth/presentation/models/auth_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -1,7 +1,7 @@
-import 'package:app/domains/auth/core/exceptions/oauth_exception.dart';
-import 'package:app/domains/auth/core/exceptions/error_codes.dart';
-import 'package:app/domains/auth/core/exceptions/error_types.dart';
-import 'package:test/test.dart';
+import 'package:tomo_place/domains/auth/core/exceptions/oauth_exception.dart';
+import 'package:tomo_place/domains/auth/core/exceptions/error_codes.dart';
+import 'package:tomo_place/domains/auth/core/exceptions/error_types.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:faker/faker.dart';
 import '../../../../utils/fake_data/fake_exception_generator.dart';
 

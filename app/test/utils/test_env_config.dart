@@ -1,6 +1,5 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
-import '../../lib/shared/config/env_config.dart';
+import 'package:tomo_place/shared/config/env_config.dart';
 
 class TestEnvConfig extends EnvConfig {
   static bool _testIsAndroid = false;
@@ -60,7 +59,7 @@ class TestEnvConfig extends EnvConfig {
 
     if (missingVars.isNotEmpty) {
       throw StateError(
-          'Required environment variables are missing: ${missingVars.join(', ')}'
+        'Required environment variables are missing: ${missingVars.join(', ')}',
       );
     }
   }
@@ -76,11 +75,16 @@ class TestEnvConfig extends EnvConfig {
 
   /// 테스트용 getter들 (부모의 static 메서드를 오버라이드할 수 없으므로 새로 정의)
   static String get testApiUrl => testRequire('API_URL');
+
   static String get testGoogleClientId => testRequire(testGoogleClientIdKey);
-  static String get testGoogleServerClientId => testRequire('GOOGLE_SERVER_CLIENT_ID');
+
+  static String get testGoogleServerClientId =>
+      testRequire('GOOGLE_SERVER_CLIENT_ID');
+
   static String get testGoogleRedirectUri => testRequire('GOOGLE_REDIRECT_URI');
 
   // 선택적 값들
   static String get testAppleClientId => dotenv.env['APPLE_CLIENT_ID'] ?? '';
+
   static String get testKakaoClientId => dotenv.env['KAKAO_CLIENT_ID'] ?? '';
 }

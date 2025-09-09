@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:app/shared/exception_handler/exceptions/generic_exception.dart';
+import 'package:tomo_place/shared/exception_handler/exceptions/generic_exception.dart';
 
 void main() {
   group('GenericException', () {

@@ -1,5 +1,5 @@
-import 'package:app/domains/auth/core/entities/authentication_result.dart';
-import 'package:app/shared/infrastructure/ports/auth_domain_port.dart';
+import 'package:tomo_place/domains/auth/core/entities/authentication_result.dart';
+import 'package:tomo_place/shared/infrastructure/ports/auth_domain_port.dart';
 
 import '../../../../shared/infrastructure/ports/auth_token_dto.dart';
 

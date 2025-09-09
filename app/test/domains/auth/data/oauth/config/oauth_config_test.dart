@@ -1,4 +1,4 @@
-import 'package:app/domains/auth/data/oauth/config/google_oauth_config.dart';
+import 'package:tomo_place/domains/auth/data/oauth/config/google_oauth_config.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

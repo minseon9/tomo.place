@@ -1,4 +1,4 @@
-import 'package:app/domains/auth/consts/social_provider.dart';
+import 'package:tomo_place/domains/auth/consts/social_provider.dart';
 
 import '../../../../../shared/config/env_config.dart';
 import 'google_oauth_config.dart'; // OAuthProviderConfig 모델 사용

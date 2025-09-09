@@ -1,5 +1,5 @@
-import 'package:app/shared/ui/design_system/atoms/indicators/divider_line.dart';
-import 'package:app/shared/ui/design_system/tokens/colors.dart';
+import 'package:tomo_place/shared/ui/design_system/atoms/indicators/divider_line.dart';
+import 'package:tomo_place/shared/ui/design_system/tokens/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

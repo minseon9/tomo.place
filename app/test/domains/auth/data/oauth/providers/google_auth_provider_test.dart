@@ -1,5 +1,5 @@
-import 'package:app/domains/auth/data/oauth/oauth_provider.dart';
-import 'package:app/domains/auth/data/oauth/providers/google_auth_provider.dart';
+import 'package:tomo_place/domains/auth/data/oauth/oauth_provider.dart';
+import 'package:tomo_place/domains/auth/data/oauth/providers/google_auth_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

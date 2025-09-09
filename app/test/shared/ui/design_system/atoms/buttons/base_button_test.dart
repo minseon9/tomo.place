@@ -1,8 +1,8 @@
-import 'package:app/shared/ui/design_system/atoms/buttons/base_button.dart';
-import 'package:app/shared/ui/design_system/tokens/radius.dart';
-import 'package:app/shared/ui/design_system/tokens/spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tomo_place/shared/ui/design_system/atoms/buttons/base_button.dart';
+import 'package:tomo_place/shared/ui/design_system/tokens/radius.dart';
+import 'package:tomo_place/shared/ui/design_system/tokens/spacing.dart';
 
 import '../../../../../utils/design_system/design_system_test_utils.dart';
 import '../../../../../utils/widget/actions.dart';
@@ -75,7 +75,6 @@ void main() {
           DesignSystemTestUtils.wrapWithMaterialApp(
             child: BaseButton(
               onPressed: () {},
-              child: const Text('Custom Button'),
               backgroundColor: Colors.blue,
               foregroundColor: Colors.white,
               borderColor: Colors.red,
@@ -83,6 +82,7 @@ void main() {
               height: 60.0,
               width: 200.0,
               elevation: 2.0,
+              child: const Text('Custom Button'),
             ),
           ),
         );
@@ -96,13 +96,13 @@ void main() {
 
       testWidgets('커스텀 패딩으로 올바르게 렌더링되어야 한다', (WidgetTester tester) async {
         const customPadding = EdgeInsets.all(20.0);
-        
+
         await tester.pumpWidget(
           DesignSystemTestUtils.wrapWithMaterialApp(
             child: BaseButton(
               onPressed: () {},
-              child: const Text('Padded Button'),
               padding: customPadding,
+              child: const Text('Padded Button'),
             ),
           ),
         );
@@ -118,7 +118,7 @@ void main() {
     group('상호작용 테스트', () {
       testWidgets('버튼 클릭 시 콜백이 올바르게 호출되어야 한다', (WidgetTester tester) async {
         bool callbackCalled = false;
-        
+
         await tester.pumpWidget(
           DesignSystemTestUtils.wrapWithMaterialApp(
             child: BaseButton(
@@ -138,15 +138,15 @@ void main() {
 
       testWidgets('비활성화된 버튼은 클릭되지 않아야 한다', (WidgetTester tester) async {
         bool callbackCalled = false;
-        
+
         await tester.pumpWidget(
           DesignSystemTestUtils.wrapWithMaterialApp(
             child: BaseButton(
               onPressed: () {
                 callbackCalled = true;
               },
-              child: const Text('Disabled Button'),
               isDisabled: true,
+              child: const Text('Disabled Button'),
             ),
           ),
         );
@@ -157,7 +157,9 @@ void main() {
         expect(callbackCalled, isFalse);
       });
 
-      testWidgets('onPressed가 null인 버튼은 클릭되지 않아야 한다', (WidgetTester tester) async {
+      testWidgets('onPressed가 null인 버튼은 클릭되지 않아야 한다', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           DesignSystemTestUtils.wrapWithMaterialApp(
             child: const BaseButton(
@@ -167,19 +169,23 @@ void main() {
           ),
         );
 
-        final elevatedButton = tester.widget<ElevatedButton>(WidgetFinders.byType<ElevatedButton>());
+        final elevatedButton = tester.widget<ElevatedButton>(
+          WidgetFinders.byType<ElevatedButton>(),
+        );
         expect(elevatedButton.onPressed, isNull);
       });
     });
 
     group('로딩 상태 테스트', () {
-      testWidgets('로딩 상태에서 CircularProgressIndicator가 표시되어야 한다', (WidgetTester tester) async {
+      testWidgets('로딩 상태에서 CircularProgressIndicator가 표시되어야 한다', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           DesignSystemTestUtils.wrapWithMaterialApp(
             child: BaseButton(
               onPressed: () {},
-              child: const Text('Loading Button'),
               isLoading: true,
+              child: const Text('Loading Button'),
             ),
           ),
         );
@@ -193,15 +199,15 @@ void main() {
 
       testWidgets('로딩 상태에서 버튼이 비활성화되어야 한다', (WidgetTester tester) async {
         bool callbackCalled = false;
-        
+
         await tester.pumpWidget(
           DesignSystemTestUtils.wrapWithMaterialApp(
             child: BaseButton(
               onPressed: () {
                 callbackCalled = true;
               },
-              child: const Text('Loading Button'),
               isLoading: true,
+              child: const Text('Loading Button'),
             ),
           ),
         );
@@ -212,14 +218,16 @@ void main() {
         expect(callbackCalled, isFalse);
       });
 
-      testWidgets('로딩 상태의 CircularProgressIndicator 스타일이 올바르게 설정되어야 한다', (WidgetTester tester) async {
+      testWidgets('로딩 상태의 CircularProgressIndicator 스타일이 올바르게 설정되어야 한다', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           DesignSystemTestUtils.wrapWithMaterialApp(
             child: BaseButton(
               onPressed: () {},
-              child: const Text('Loading Button'),
               isLoading: true,
               foregroundColor: Colors.red,
+              child: const Text('Loading Button'),
             ),
           ),
         );
@@ -256,9 +264,9 @@ void main() {
           DesignSystemTestUtils.wrapWithMaterialApp(
             child: BaseButton(
               onPressed: () {},
-              child: const Text('Custom Size Button'),
               height: 80.0,
               width: 300.0,
+              child: const Text('Custom Size Button'),
             ),
           ),
         );
@@ -317,8 +325,8 @@ void main() {
           DesignSystemTestUtils.wrapWithMaterialApp(
             child: BaseButton(
               onPressed: () {},
-              child: const Text('Custom Elevation Button'),
               elevation: 5.0,
+              child: const Text('Custom Elevation Button'),
             ),
           ),
         );
@@ -339,8 +347,8 @@ void main() {
           DesignSystemTestUtils.wrapWithMaterialApp(
             child: BaseButton(
               onPressed: () {},
-              child: const Text('Zero Height Button'),
               height: 0.0,
+              child: const Text('Zero Height Button'),
             ),
           ),
         );
@@ -351,13 +359,15 @@ void main() {
         );
       });
 
-      testWidgets('borderRadius가 0일 때도 올바르게 렌더링되어야 한다', (WidgetTester tester) async {
+      testWidgets('borderRadius가 0일 때도 올바르게 렌더링되어야 한다', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           DesignSystemTestUtils.wrapWithMaterialApp(
             child: BaseButton(
               onPressed: () {},
-              child: const Text('Zero Radius Button'),
               borderRadius: 0.0,
+              child: const Text('Zero Radius Button'),
             ),
           ),
         );
@@ -370,14 +380,16 @@ void main() {
     });
 
     group('복합 상태 테스트', () {
-      testWidgets('비활성화와 로딩 상태가 동시에 있을 때 로딩이 우선되어야 한다', (WidgetTester tester) async {
+      testWidgets('비활성화와 로딩 상태가 동시에 있을 때 로딩이 우선되어야 한다', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           DesignSystemTestUtils.wrapWithMaterialApp(
             child: BaseButton(
               onPressed: () {},
-              child: const Text('Complex State Button'),
               isDisabled: true,
               isLoading: true,
+              child: const Text('Complex State Button'),
             ),
           ),
         );
@@ -389,13 +401,15 @@ void main() {
         expect(WidgetFinders.byText('Complex State Button'), findsNothing);
       });
 
-      testWidgets('onPressed가 null이고 로딩 상태일 때도 로딩이 표시되어야 한다', (WidgetTester tester) async {
+      testWidgets('onPressed가 null이고 로딩 상태일 때도 로딩이 표시되어야 한다', (
+        WidgetTester tester,
+      ) async {
         await tester.pumpWidget(
           DesignSystemTestUtils.wrapWithMaterialApp(
             child: const BaseButton(
               onPressed: null,
-              child: Text('Null Callback Loading Button'),
               isLoading: true,
+              child: Text('Null Callback Loading Button'),
             ),
           ),
         );

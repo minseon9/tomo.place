@@ -1,4 +1,4 @@
-import 'package:app/shared/infrastructure/ports/auth_token_dto.dart';
+import 'package:tomo_place/shared/infrastructure/ports/auth_token_dto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

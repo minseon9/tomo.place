@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:app/domains/auth/consts/social_provider.dart';
+import 'package:tomo_place/domains/auth/consts/social_provider.dart';
 
 void main() {
   group('SocialProvider', () {

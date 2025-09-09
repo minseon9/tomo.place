@@ -1,4 +1,4 @@
-import 'package:app/shared/config/app_config.dart';
+import 'package:tomo_place/shared/config/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

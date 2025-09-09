@@ -1,6 +1,6 @@
-import 'package:app/domains/auth/core/entities/authentication_result.dart';
+import 'package:tomo_place/domains/auth/core/entities/authentication_result.dart';
 import 'package:faker/faker.dart';
-import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 import '../../../../utils/fake_data/fake_data_generator.dart';
 

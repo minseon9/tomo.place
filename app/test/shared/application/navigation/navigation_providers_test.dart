@@ -1,5 +1,5 @@
-import 'package:app/shared/application/navigation/navigation_actions.dart';
-import 'package:app/shared/application/navigation/navigation_key.dart';
+import 'package:tomo_place/shared/application/navigation/navigation_actions.dart';
+import 'package:tomo_place/shared/application/navigation/navigation_key.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
