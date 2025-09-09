@@ -41,6 +41,7 @@ class PlaceFolderEntity(
     @Enumerated(EnumType.STRING)
     val displayType: PlaceFolderDisplayType,
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     val visibility: PlaceFolderVisibilityType = PlaceFolderVisibilityType.PRIVATE,
     @Column(name = "tags", columnDefinition = "text[]")
     @JdbcTypeCode(SqlTypes.ARRAY)
