@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../../shared/ui/design_system/tokens/radius.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class TermsCheckbox extends StatelessWidget {
   const TermsCheckbox({
@@ -15,23 +15,35 @@ class TermsCheckbox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 42,
-      height: 42,
-      child: Checkbox(
-        value: isChecked,
-        onChanged: isEnabled ? onChanged : null,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.round),
+    return GestureDetector(
+      onTap: isEnabled ? () => onChanged?.call(!isChecked) : null,
+      child: Container(
+        width: 48, // Figma: 48x48px 전체 프레임
+        height: 48,
+        decoration: const BoxDecoration(
+          color: Colors.transparent,
         ),
-        fillColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.disabled)) {
-            return Colors.grey[200];
-          }
-          return null;
-        }),
-        checkColor: Colors.black,
-        activeColor: Colors.grey[300],
+        child: Center( // SVG를 프레임 정중앙에 배치
+          child: isChecked
+              ? SizedBox(
+                  width: 15, // SVG 크기를 15x15로 줄임
+                  height: 15,
+                  child: SvgPicture.asset(
+                    'assets/icons/checkbox_checked.svg',
+                    colorFilter: const ColorFilter.mode(
+                      Color(0xFF146C2E), // #146C2E
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                )
+              : Container(
+                  width: 15,
+                  height: 15,
+                  decoration: const BoxDecoration(
+                    color: Colors.transparent,
+                  ),
+                ),
+        ),
       ),
     );
   }

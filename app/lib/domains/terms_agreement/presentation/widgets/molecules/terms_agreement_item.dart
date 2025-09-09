@@ -21,26 +21,42 @@ class TermsAgreementItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 47,
-      child: Row(
-        children: [
-          TermsCheckbox(isChecked: isChecked, isEnabled: false),
-
-          const SizedBox(width: 1),
-
-          Expanded(
-            child: Text(
-              title,
-              style: AppTypography.caption.copyWith(
-                color: DesignTokens.tomoBlack,
-                letterSpacing: -0.24,
+    return GestureDetector(
+      onTap: hasExpandIcon ? onExpandTap : null,
+      behavior: HitTestBehavior.opaque, // 투명한 영역도 터치 감지
+      child: SizedBox(
+        width: double.infinity,
+        height: 47,
+        child: Row(
+          children: [
+            TermsCheckbox(isChecked: isChecked, isEnabled: false),
+            Expanded(
+              child: SizedBox(
+                height: 48,
+                child: Stack(
+                  children: [
+                    Positioned(
+                      left: 0,
+                      top: 24,
+                      child: Transform.translate(
+                        offset: const Offset(0, -6),
+                        child: Text(
+                          title,
+                          style: AppTypography.caption.copyWith(
+                            color: AppColors.tomoBlack,
+                            letterSpacing: -0.24,
+                          ),
+                          textAlign: TextAlign.left,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-
-          if (hasExpandIcon) TermsExpandIcon(onTap: onExpandTap),
-        ],
+            if (hasExpandIcon) TermsExpandIcon(),
+          ],
+        ),
       ),
     );
   }

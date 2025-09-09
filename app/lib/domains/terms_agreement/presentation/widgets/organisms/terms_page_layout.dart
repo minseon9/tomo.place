@@ -1,83 +1,72 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../shared/ui/design_system/tokens/colors.dart';
-import '../atoms/close_button.dart';
-import '../atoms/terms_agree_button.dart';
+import '../../../../../shared/ui/design_system/tokens/typography.dart';
+import '../atoms/terms_page_agree_button.dart';
 import '../molecules/terms_content.dart';
 
 class TermsPageLayout extends StatelessWidget {
   const TermsPageLayout({
     super.key,
     required this.title,
-    required this.content,
-    required this.onClose,
+    required this.contentMap,
     required this.onAgree,
   });
 
   final String title;
-  final String content;
-  final VoidCallback onClose;
+  final Map<String, String> contentMap;
   final VoidCallback onAgree;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Stack(
+      body: Column(
         children: [
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 88,
-            child: Container(
-              decoration: BoxDecoration(
-                color: DesignTokens.tomoPrimary200, // #f2e5cc
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(2),
-                  bottomRight: Radius.circular(2),
-                ),
+          // 상단 헤더
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.tomoPrimary200, // #f2e5cc
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(2),
+                bottomRight: Radius.circular(2),
               ),
-              child: SafeArea(
-                child: Stack(
-                  children: [
-                    // 닫기 버튼 (우상단)
-                    Positioned(
-                      top: 19,
-                      right: 16,
-                      child: TermsCloseButton(onPressed: onClose),
+            ),
+            child: SafeArea(
+              bottom: false,
+              child: Container(
+                padding: const EdgeInsets.only(
+                  top: 10,
+                  left: 23,
+                  bottom: 10,
+                  right: 20,
+                ),
+                child: Align(
+                  alignment: Alignment.bottomLeft,
+                  child: Text(
+                    '📌 $title',
+                    style: AppTypography.header2.copyWith(
+                      letterSpacing: 0.5,
+                      height: 1.5,
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
           ),
 
-          Positioned(
-            top: 88,
-            left: 23,
-            right: 23,
-            bottom: 124,
-            child: TermsContent(title: title, content: content),
+          // 본문
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 20, left: 23, right: 23),
+              child: TermsContent(contentMap: contentMap),
+            ),
           ),
 
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: 124,
-            child: Container(
-              decoration: BoxDecoration(
-                color: DesignTokens.tomoPrimary200, // #f2e5cc
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(2),
-                  topRight: Radius.circular(2),
-                ),
-              ),
-              child: SafeArea(
-                child: Center(child: TermsAgreeButton(onPressed: onAgree)),
-              ),
-            ),
+          // 하단 버튼
+          Padding(
+            padding: const EdgeInsets.only(left: 47, right: 47, bottom: 20),
+            child: TermsPageAgreeButton(onPressed: onAgree),
           ),
         ],
       ),

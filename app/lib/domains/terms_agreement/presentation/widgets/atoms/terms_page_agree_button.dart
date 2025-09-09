@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../../../shared/ui/design_system/tokens/colors.dart';
 import '../../../../../shared/ui/design_system/tokens/typography.dart';
 
-class TermsAgreeButton extends StatelessWidget {
-  const TermsAgreeButton({super.key, required this.onPressed});
+class TermsPageAgreeButton extends StatelessWidget {
+  const TermsPageAgreeButton({super.key, required this.onPressed});
 
   final VoidCallback onPressed;
 
@@ -14,8 +14,8 @@ class TermsAgreeButton extends StatelessWidget {
       width: 300,
       height: 45,
       decoration: BoxDecoration(
-        color: AppColors.tomoPrimary300,
-        borderRadius: BorderRadius.circular(6.0),
+        color: AppColors.tomoPrimary300, // #ebd9b8
+        borderRadius: BorderRadius.circular(20.0), // rounded-[20px]
         border: Border.all(
           color: const Color.fromRGBO(0, 0, 0, 0.5), // rgba(0,0,0,0.5)
           width: 1,
@@ -25,14 +25,11 @@ class TermsAgreeButton extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onPressed,
-          borderRadius: BorderRadius.circular(6.0),
+          borderRadius: BorderRadius.circular(20.0),
           child: Center(
             child: Text(
-              '모두 동의합니다 !',
-              style: AppTypography.button.copyWith(
-                color: const Color.fromRGBO(0, 0, 0, 0.85), // rgba(0,0,0,0.85)
-                letterSpacing: -0.28,
-              ),
+              '동의',
+              style: AppTypography.button.copyWith(letterSpacing: -0.28),
             ),
           ),
         ),
