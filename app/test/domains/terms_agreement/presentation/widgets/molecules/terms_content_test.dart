@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tomo_place/domains/terms_agreement/presentation/widgets/molecules/terms_content.dart';
 
-import '../../../../../utils/fake_data/fake_terms_data_generator.dart';
 import '../../../../../utils/mock_factory/terms_mock_factory.dart';
 import '../../../../../utils/widget/app_wrappers.dart';
 import '../../../../../utils/widget/verifiers.dart';
@@ -17,16 +16,17 @@ void main() {
     });
 
     Widget createTestWidget({
-      String? title,
-      String? content,
+      Map<String, String>? contentMap,
     }) {
       return AppWrappers.wrapWithMaterialApp(
         Scaffold(
           body: SizedBox(
             height: 400, // 테스트를 위한 고정 높이
             child: TermsContent(
-              title: title ?? FakeTermsDataGenerator.createFakeTermsTitle(type: 'terms'),
-              content: content ?? FakeTermsDataGenerator.createFakeTermsContentText(type: 'terms'),
+              contentMap: contentMap ?? {
+                '제1조 (목적)': '본 약관은 tomo place가 제공하는 서비스의 이용 조건 및 절차를 규정함을 목적으로 합니다.',
+                '제2조 (회원의 의무)': '회원은 관계 법령 및 본 약관의 규정을 준수하여야 합니다.',
+              },
             ),
           ),
         ),
@@ -44,11 +44,13 @@ void main() {
           widgetType: TermsContent,
           expectedCount: 1,
         );
-        WidgetVerifiers.verifyWidgetRenders(
-          tester: tester,
-          widgetType: Column,
-          expectedCount: 1,
-        );
+        // TermsContent의 Column만 찾기
+        final termsContent = find.byType(TermsContent);
+        final column = find.descendant(
+          of: termsContent,
+          matching: find.byType(Column),
+        ).first;
+        expect(column, findsOneWidget);
         WidgetVerifiers.verifyWidgetRenders(
           tester: tester,
           widgetType: SingleChildScrollView,
@@ -61,7 +63,12 @@ void main() {
         await tester.pumpWidget(createTestWidget());
 
         // Then
-        final column = tester.widget<Column>(find.byType(Column));
+        // TermsContent의 Column만 찾기
+        final termsContent = find.byType(TermsContent);
+        final column = tester.widget<Column>(find.descendant(
+          of: termsContent,
+          matching: find.byType(Column),
+        ).first);
         expect(column, isNotNull);
         expect(column.crossAxisAlignment, equals(CrossAxisAlignment.start));
       });
@@ -72,7 +79,7 @@ void main() {
 
         // Then
         WidgetVerifiers.verifyTextDisplays(
-          text: '📌 이용 약관 동의',
+          text: '제1조 (목적)',
           expectedCount: 1,
         );
         
@@ -82,12 +89,12 @@ void main() {
         
         // 첫 번째 텍스트 (제목) 확인
         final titleText = tester.widget<Text>(allTexts.first);
-        expect(titleText.data, contains('📌 이용 약관 동의'));
+        expect(titleText.data, contains('제1조 (목적)'));
         
         // 두 번째 텍스트 (본문) 확인
         if (allTexts.evaluate().length > 1) {
           final contentText = tester.widget<Text>(allTexts.at(1));
-          expect(contentText.data, contains('제1조 (목적)'));
+          expect(contentText.data, contains('본 약관은 tomo place가 제공하는 서비스'));
         }
       });
     });
@@ -98,11 +105,11 @@ void main() {
         await tester.pumpWidget(createTestWidget());
 
         // Then
-        final titleText = tester.widget<Text>(find.text('📌 이용 약관 동의'));
+        final titleText = tester.widget<Text>(find.text('제1조 (목적)'));
         expect(titleText.style, isNotNull);
-        expect(titleText.style?.fontSize, equals(24));
+        expect(titleText.style?.fontSize, equals(20));
         expect(titleText.style?.fontWeight, equals(FontWeight.w600));
-        expect(titleText.style?.letterSpacing, equals(-0.48));
+        expect(titleText.style?.letterSpacing, equals(-0.4));
       });
 
       testWidgets('본문에 올바른 스타일이 적용되어야 한다', (WidgetTester tester) async {
@@ -115,7 +122,8 @@ void main() {
         expect(contentText.style, isNotNull);
         expect(contentText.style?.fontSize, equals(16));
         expect(contentText.style?.fontWeight, equals(FontWeight.w400));
-        expect(contentText.style?.height, equals(1.5));
+        expect(contentText.style?.height, equals(1.2));
+        expect(contentText.style?.letterSpacing, equals(0.5));
       });
 
       testWidgets('텍스트 색상이 올바르게 적용되어야 한다', (WidgetTester tester) async {
@@ -123,7 +131,7 @@ void main() {
         await tester.pumpWidget(createTestWidget());
 
         // Then
-        final titleText = tester.widget<Text>(find.text('📌 이용 약관 동의'));
+        final titleText = tester.widget<Text>(find.text('제1조 (목적)'));
         final contentTexts = find.byType(Text);
         final contentText = tester.widget<Text>(contentTexts.at(1));
 
@@ -147,8 +155,11 @@ void main() {
 
       testWidgets('긴 내용이 스크롤 가능해야 한다', (WidgetTester tester) async {
         // Given
-        final longContent = FakeTermsDataGenerator.createFakeTermsContentText(type: 'terms') * 10;
-        await tester.pumpWidget(createTestWidget(content: longContent));
+        final longContentMap = <String, String>{};
+        for (int i = 1; i <= 10; i++) {
+          longContentMap['제$i조 (목적)'] = '본 약관은 tomo place가 제공하는 서비스의 이용 조건 및 절차를 규정함을 목적으로 합니다. ' * 5;
+        }
+        await tester.pumpWidget(createTestWidget(contentMap: longContentMap));
 
         // When & Then
         final scrollView = tester.widget<SingleChildScrollView>(find.byType(SingleChildScrollView));
@@ -158,8 +169,11 @@ void main() {
 
       testWidgets('스크롤 동작이 정상적으로 작동해야 한다', (WidgetTester tester) async {
         // Given
-        final longContent = FakeTermsDataGenerator.createFakeTermsContentText(type: 'terms') * 5;
-        await tester.pumpWidget(createTestWidget(content: longContent));
+        final longContentMap = <String, String>{};
+        for (int i = 1; i <= 5; i++) {
+          longContentMap['제$i조 (목적)'] = '본 약관은 tomo place가 제공하는 서비스의 이용 조건 및 절차를 규정함을 목적으로 합니다. ' * 3;
+        }
+        await tester.pumpWidget(createTestWidget(contentMap: longContentMap));
 
         // When
         await tester.drag(find.byType(SingleChildScrollView), const Offset(0, -100));
@@ -182,23 +196,29 @@ void main() {
           of: termsContent,
           matching: find.byType(SizedBox),
         );
-        expect(sizedBoxInContent, findsOneWidget);
+        expect(sizedBoxInContent, findsWidgets); // 여러 SizedBox가 있음
         
-        // SizedBox의 높이가 24인 것을 확인
-        final spacingBox = tester.widget<SizedBox>(sizedBoxInContent);
-        expect(spacingBox.height, equals(24));
+        // 첫 번째 SizedBox의 높이가 10인 것을 확인 (제목과 본문 사이)
+        final spacingBox1 = tester.widget<SizedBox>(sizedBoxInContent.at(0));
+        expect(spacingBox1.height, equals(10));
+        
+        // 두 번째 SizedBox의 높이가 35인 것을 확인 (섹션 사이)
+        final spacingBox2 = tester.widget<SizedBox>(sizedBoxInContent.at(1));
+        expect(spacingBox2.height, equals(35));
       });
 
-      testWidgets('Expanded 위젯이 본문을 감싸야 한다', (WidgetTester tester) async {
+      testWidgets('Column 구조가 올바르게 구성되어야 한다', (WidgetTester tester) async {
         // Given & When
         await tester.pumpWidget(createTestWidget());
 
         // Then
-        WidgetVerifiers.verifyWidgetRenders(
-          tester: tester,
-          widgetType: Expanded,
-          expectedCount: 1,
-        );
+        // TermsContent의 Column만 찾기
+        final termsContent = find.byType(TermsContent);
+        final column = tester.widget<Column>(find.descendant(
+          of: termsContent,
+          matching: find.byType(Column),
+        ).first);
+        expect(column.crossAxisAlignment, equals(CrossAxisAlignment.start));
       });
 
       testWidgets('전체 레이아웃이 올바르게 구성되어야 한다', (WidgetTester tester) async {
@@ -206,8 +226,13 @@ void main() {
         await tester.pumpWidget(createTestWidget());
 
         // Then
-        final column = tester.widget<Column>(find.byType(Column));
-        expect(column.children.length, equals(3)); // Text, SizedBox, Expanded
+        // TermsContent의 Column만 찾기
+        final termsContent = find.byType(TermsContent);
+        final column = tester.widget<Column>(find.descendant(
+          of: termsContent,
+          matching: find.byType(Column),
+        ).first);
+        expect(column.children.length, equals(2)); // 2개의 섹션 (각각 Text, SizedBox, Text, SizedBox)
       });
     });
 
@@ -215,13 +240,15 @@ void main() {
       testWidgets('이용약관 내용이 올바르게 표시되어야 한다', (WidgetTester tester) async {
         // Given & When
         await tester.pumpWidget(createTestWidget(
-          title: FakeTermsDataGenerator.createFakeTermsTitle(type: 'terms'),
-          content: FakeTermsDataGenerator.createFakeTermsContentText(type: 'terms'),
+          contentMap: {
+            '제1조 (목적)': '본 약관은 tomo place가 제공하는 서비스의 이용 조건 및 절차를 규정함을 목적으로 합니다.',
+            '제2조 (회원의 의무)': '회원은 관계 법령 및 본 약관의 규정을 준수하여야 합니다.',
+          },
         ));
 
         // Then
         WidgetVerifiers.verifyTextDisplays(
-          text: '📌 이용 약관 동의',
+          text: '제1조 (목적)',
           expectedCount: 1,
         );
         
@@ -232,20 +259,22 @@ void main() {
         // 본문 텍스트 확인
         if (allTexts.evaluate().length > 1) {
           final contentText = tester.widget<Text>(allTexts.at(1));
-          expect(contentText.data, contains('제1조 (목적)'));
+          expect(contentText.data, contains('본 약관은 tomo place가 제공하는 서비스'));
         }
       });
 
       testWidgets('개인정보보호방침 내용이 올바르게 표시되어야 한다', (WidgetTester tester) async {
         // Given & When
         await tester.pumpWidget(createTestWidget(
-          title: FakeTermsDataGenerator.createFakeTermsTitle(type: 'privacy'),
-          content: FakeTermsDataGenerator.createFakeTermsContentText(type: 'privacy'),
+          contentMap: {
+            '수집·이용 목적': '회원 식별 및 본인 확인, 서비스 제공 및 맞춤형 기능 제공',
+            '수집 항목': '필수: 이메일, 프로필 정보, 위치정보',
+          },
         ));
 
         // Then
         WidgetVerifiers.verifyTextDisplays(
-          text: '📌 개인 정보 보호 방침 동의',
+          text: '수집·이용 목적',
           expectedCount: 1,
         );
         
@@ -256,20 +285,22 @@ void main() {
         // 본문 텍스트 확인
         if (allTexts.evaluate().length > 1) {
           final contentText = tester.widget<Text>(allTexts.at(1));
-          expect(contentText.data, contains('수집·이용 목적'));
+          expect(contentText.data, contains('회원 식별 및 본인 확인'));
         }
       });
 
       testWidgets('위치정보 약관 내용이 올바르게 표시되어야 한다', (WidgetTester tester) async {
         // Given & When
         await tester.pumpWidget(createTestWidget(
-          title: FakeTermsDataGenerator.createFakeTermsTitle(type: 'location'),
-          content: FakeTermsDataGenerator.createFakeTermsContentText(type: 'location'),
+          contentMap: {
+            '수집·이용 목적': '사용자 위치 기반 서비스 제공, 타인과 위치 공유 기능 제공',
+            '수집 항목': '단말기 위치정보(GPS, 기지국, Wi-Fi 등)',
+          },
         ));
 
         // Then
         WidgetVerifiers.verifyTextDisplays(
-          text: '📌 위치정보 수집·이용 및 제3자 제공 동의',
+          text: '수집·이용 목적',
           expectedCount: 1,
         );
         
@@ -291,7 +322,12 @@ void main() {
         await tester.pumpWidget(createTestWidget());
 
         // Then
-        final column = tester.widget<Column>(find.byType(Column));
+        // TermsContent의 Column만 찾기
+        final termsContent = find.byType(TermsContent);
+        final column = tester.widget<Column>(find.descendant(
+          of: termsContent,
+          matching: find.byType(Column),
+        ).first);
         expect(column, isNotNull);
         // Text 위젯들은 자동으로 스크린 리더 지원을 제공함
       });

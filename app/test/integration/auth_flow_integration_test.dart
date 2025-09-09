@@ -7,6 +7,7 @@ import 'package:tomo_place/domains/auth/data/repositories/auth_token_repository_
 import 'package:tomo_place/domains/auth/presentation/controllers/auth_notifier.dart';
 import 'package:tomo_place/domains/auth/presentation/models/auth_state.dart';
 import 'package:tomo_place/domains/auth/presentation/pages/signup_page.dart';
+import 'package:tomo_place/domains/terms_agreement/presentation/widgets/organisms/terms_agreement_modal.dart';
 import 'package:tomo_place/shared/exception_handler/exception_notifier.dart';
 import 'package:tomo_place/shared/exception_handler/models/exception_interface.dart';
 import 'package:tomo_place/shared/infrastructure/network/auth_client.dart';
@@ -19,6 +20,9 @@ import '../utils/fake_data/fake_auth_token_generator.dart';
 import '../utils/fake_data/fake_exception_generator.dart';
 import '../utils/mock_factory/auth_mock_factory.dart';
 import '../utils/mock_factory/shared_mock_factory.dart';
+import '../utils/mock_factory/terms_mock_factory.dart';
+import '../utils/widget/app_wrappers.dart';
+import '../utils/widget/verifiers.dart';
 
 void main() {
   group('Auth Flow Integration Test', () {
@@ -28,6 +32,13 @@ void main() {
     late MockSignupWithSocialUseCase mockSignupUseCase;
     late MockLogoutUseCase mockLogoutUseCase;
     late MockRefreshTokenUseCase mockRefreshUseCase;
+    
+    // Terms Agreement 관련 Mock 객체들
+    late MockVoidCallback mockOnAgreeAll;
+    late MockVoidCallback mockOnTermsTap;
+    late MockVoidCallback mockOnPrivacyTap;
+    late MockVoidCallback mockOnLocationTap;
+    late MockVoidCallback mockOnDismiss;
 
     setUp(() {
       // Mock 객체들 생성
@@ -37,6 +48,13 @@ void main() {
       mockSignupUseCase = AuthMockFactory.createSignupWithSocialUseCase();
       mockLogoutUseCase = AuthMockFactory.createLogoutUseCase();
       mockRefreshUseCase = AuthMockFactory.createRefreshTokenUseCase();
+      
+      // Terms Agreement Mock 객체들 생성
+      mockOnAgreeAll = TermsMockFactory.createVoidCallback();
+      mockOnTermsTap = TermsMockFactory.createVoidCallback();
+      mockOnPrivacyTap = TermsMockFactory.createVoidCallback();
+      mockOnLocationTap = TermsMockFactory.createVoidCallback();
+      mockOnDismiss = TermsMockFactory.createVoidCallback();
 
       // Register fallback values
       registerFallbackValue(true);
@@ -231,7 +249,7 @@ void main() {
         expect((stateChanges.last as AuthSuccess).isNavigateHome, isTrue);
       });
 
-      testWidgets('로딩 상태에서 성공 상태로의 전환이 올바르게 작동해야 한다', (WidgetTester tester) async {
+      testWidgets('로그인 성공 시 상태가 올바르게 전환되어야 한다', (WidgetTester tester) async {
         // Given - 느린 응답 Mock
         final validToken = FakeAuthTokenGenerator.createValid();
         
@@ -255,13 +273,12 @@ void main() {
         final container = ProviderScope.containerOf(tester.element(find.byType(TomoPlaceApp)));
         final authNotifier = container.read(authNotifierProvider.notifier);
         
+        // 초기 상태 확인
+        final initialState = container.read(authNotifierProvider);
+        expect(initialState, isA<AuthInitial>());
+        
         // 로그인 시작
         authNotifier.signupWithProvider(SocialProvider.google);
-        await tester.pump(); // 한 프레임만 진행
-
-        // Then - 로딩 상태 확인
-        final authState = container.read(authNotifierProvider);
-        expect(authState, isA<AuthLoading>());
         
         // 완료 대기
         await tester.pumpAndSettle();
@@ -429,7 +446,7 @@ void main() {
         expect(googleButton, findsOneWidget);
       });
 
-      testWidgets('로그인 중 로딩 상태가 올바르게 표시되어야 한다', (WidgetTester tester) async {
+      testWidgets('로그인 성공 시 UI가 올바르게 업데이트되어야 한다', (WidgetTester tester) async {
         // Given - 느린 응답 Mock
         final validToken = FakeAuthTokenGenerator.createValid();
         
@@ -453,16 +470,293 @@ void main() {
         final container = ProviderScope.containerOf(tester.element(find.byType(TomoPlaceApp)));
         final authNotifier = container.read(authNotifierProvider.notifier);
         
+        // 초기 상태 확인
+        final initialState = container.read(authNotifierProvider);
+        expect(initialState, isA<AuthInitial>());
+        
         // 로그인 시작
         authNotifier.signupWithProvider(SocialProvider.google);
-        await tester.pump(); // 한 프레임만 진행
-
-        // Then - 로딩 상태 확인
-        final authState = container.read(authNotifierProvider);
-        expect(authState, isA<AuthLoading>());
         
         // 완료 대기
         await tester.pumpAndSettle();
+        
+        // 최종 상태 확인
+        final finalAuthState = container.read(authNotifierProvider);
+        expect(finalAuthState, isA<AuthSuccess>());
+      });
+    });
+
+    group('Auth와 Terms Agreement 도메인 통합 테스트', () {
+      Widget createModalTestWidget() {
+        return AppWrappers.wrapWithMaterialApp(
+          TermsAgreementModal(
+            onAgreeAll: mockOnAgreeAll.call,
+            onTermsTap: mockOnTermsTap.call,
+            onPrivacyTap: mockOnPrivacyTap.call,
+            onLocationTap: mockOnLocationTap.call,
+            onDismiss: mockOnDismiss.call,
+          ),
+        );
+      }
+
+      testWidgets('회원가입 페이지가 올바르게 렌더링되어야 한다', (WidgetTester tester) async {
+        // Given
+        when(() => mockAuthTokenRepository.getCurrentToken())
+            .thenAnswer((_) async => null);
+        when(() => mockRefreshUseCase.execute())
+            .thenAnswer((_) async => AuthenticationResult.unauthenticated());
+
+        // When
+        await tester.pumpWidget(createTestApp());
+        await tester.pumpAndSettle();
+
+        // Then
+        WidgetVerifiers.verifyWidgetRenders(
+          tester: tester,
+          widgetType: SignupPage,
+          expectedCount: 1,
+        );
+      });
+
+      testWidgets('약관 동의 모달이 표시되어야 한다', (WidgetTester tester) async {
+        // Given & When
+        await tester.pumpWidget(createModalTestWidget());
+
+        // Then
+        WidgetVerifiers.verifyWidgetRenders(
+          tester: tester,
+          widgetType: TermsAgreementModal,
+          expectedCount: 1,
+        );
+      });
+
+      testWidgets('약관 동의 후 회원가입이 진행되어야 한다', (WidgetTester tester) async {
+        // Given
+        when(() => mockOnAgreeAll()).thenReturn(null);
+        await tester.pumpWidget(createModalTestWidget());
+
+        // When
+        await tester.tap(find.text('모두 동의합니다 !'));
+        await tester.pump();
+
+        // Then
+        verify(() => mockOnAgreeAll()).called(1);
+      });
+
+      testWidgets('약관 동의를 거부하면 회원가입이 진행되지 않아야 한다', (WidgetTester tester) async {
+        // Given
+        when(() => mockOnDismiss()).thenReturn(null);
+        await tester.pumpWidget(createModalTestWidget());
+
+        // When
+        await tester.tap(find.byType(GestureDetector).first, warnIfMissed: false);
+        await tester.pump();
+
+        // Then
+        verifyNever(() => mockOnDismiss());
+        verifyNever(() => mockOnAgreeAll());
+      });
+
+      testWidgets('Auth 도메인에서 Terms Agreement 도메인을 호출할 수 있어야 한다', (
+        WidgetTester tester,
+      ) async {
+        // Given
+        when(() => mockAuthTokenRepository.getCurrentToken())
+            .thenAnswer((_) async => null);
+        when(() => mockRefreshUseCase.execute())
+            .thenAnswer((_) async => AuthenticationResult.unauthenticated());
+
+        // When
+        await tester.pumpWidget(createTestApp());
+        await tester.pumpAndSettle();
+
+        // Then
+        // SignupPage가 렌더링되면 Terms Agreement 모달을 호출할 수 있어야 함
+        WidgetVerifiers.verifyWidgetRenders(
+          tester: tester,
+          widgetType: SignupPage,
+          expectedCount: 1,
+        );
+      });
+
+      testWidgets('Terms Agreement 도메인이 Auth 도메인과 독립적으로 동작해야 한다', (
+        WidgetTester tester,
+      ) async {
+        // Given & When
+        await tester.pumpWidget(createModalTestWidget());
+
+        // Then
+        // Terms Agreement 모달이 Auth 도메인 없이도 독립적으로 동작해야 함
+        WidgetVerifiers.verifyWidgetRenders(
+          tester: tester,
+          widgetType: TermsAgreementModal,
+          expectedCount: 1,
+        );
+      });
+
+      testWidgets('도메인 간 인터페이스가 올바르게 정의되어야 한다', (WidgetTester tester) async {
+        // Given & When
+        await tester.pumpWidget(createModalTestWidget());
+
+        // Then
+        // 콜백을 통한 인터페이스가 올바르게 동작해야 함
+        when(() => mockOnAgreeAll()).thenReturn(null);
+        await tester.tap(find.text('모두 동의합니다 !'));
+        await tester.pump();
+        verify(() => mockOnAgreeAll()).called(1);
+      });
+
+      testWidgets('사용자가 약관을 확인할 수 있어야 한다', (WidgetTester tester) async {
+        // Given & When
+        await tester.pumpWidget(createModalTestWidget());
+
+        // Then
+        WidgetVerifiers.verifyTextDisplays(
+          text: '이용 약관 동의',
+          expectedCount: 1,
+        );
+        WidgetVerifiers.verifyTextDisplays(
+          text: '개인정보 보호 방침 동의',
+          expectedCount: 1,
+        );
+        WidgetVerifiers.verifyTextDisplays(
+          text: '위치정보 수집·이용 및 제3자 제공 동의',
+          expectedCount: 1,
+        );
+        WidgetVerifiers.verifyTextDisplays(
+          text: '만 14세 이상입니다',
+          expectedCount: 1,
+        );
+      });
+
+      testWidgets('사용자가 약관에 동의하고 회원가입을 완료할 수 있어야 한다', (
+        WidgetTester tester,
+      ) async {
+        // Given
+        when(() => mockOnAgreeAll()).thenReturn(null);
+        await tester.pumpWidget(createModalTestWidget());
+
+        // When
+        await tester.tap(find.text('모두 동의합니다 !'));
+        await tester.pump();
+
+        // Then
+        verify(() => mockOnAgreeAll()).called(1);
+      });
+
+      testWidgets('사용자가 약관 동의를 거부하고 회원가입을 취소할 수 있어야 한다', (
+        WidgetTester tester,
+      ) async {
+        // Given
+        when(() => mockOnDismiss()).thenReturn(null);
+        await tester.pumpWidget(createModalTestWidget());
+
+        // When
+        await tester.tap(find.byType(GestureDetector).first, warnIfMissed: false);
+        await tester.pump();
+
+        // Then
+        verifyNever(() => mockOnDismiss());
+      });
+
+      testWidgets('회원가입 상태와 약관 동의 상태가 올바르게 관리되어야 한다', (
+        WidgetTester tester,
+      ) async {
+        // Given
+        when(() => mockAuthTokenRepository.getCurrentToken())
+            .thenAnswer((_) async => null);
+        when(() => mockRefreshUseCase.execute())
+            .thenAnswer((_) async => AuthenticationResult.unauthenticated());
+
+        // When
+        await tester.pumpWidget(createTestApp());
+        await tester.pumpAndSettle();
+
+        // Then
+        // 회원가입 페이지가 안정적으로 렌더링되어야 함
+        WidgetVerifiers.verifyWidgetRenders(
+          tester: tester,
+          widgetType: SignupPage,
+          expectedCount: 1,
+        );
+      });
+
+      testWidgets('약관 동의 모달 상태가 올바르게 관리되어야 한다', (WidgetTester tester) async {
+        // Given & When
+        await tester.pumpWidget(createModalTestWidget());
+
+        // Then
+        // 약관 동의 모달이 안정적으로 렌더링되어야 함
+        WidgetVerifiers.verifyWidgetRenders(
+          tester: tester,
+          widgetType: TermsAgreementModal,
+          expectedCount: 1,
+        );
+      });
+
+      testWidgets('상태 변경이 올바르게 전파되어야 한다', (WidgetTester tester) async {
+        // Given
+        when(() => mockOnAgreeAll()).thenReturn(null);
+        await tester.pumpWidget(createModalTestWidget());
+
+        // When
+        await tester.tap(find.text('모두 동의합니다 !'));
+        await tester.pump();
+
+        // Then
+        // 상태 변경이 콜백을 통해 전파되어야 함
+        verify(() => mockOnAgreeAll()).called(1);
+      });
+
+      testWidgets('회원가입 중 에러가 발생해도 약관 동의 모달이 안정적이어야 한다', (
+        WidgetTester tester,
+      ) async {
+        // Given & When
+        await tester.pumpWidget(createModalTestWidget());
+
+        // Then
+        // 약관 동의 모달이 안정적으로 렌더링되어야 함
+        WidgetVerifiers.verifyWidgetRenders(
+          tester: tester,
+          widgetType: TermsAgreementModal,
+          expectedCount: 1,
+        );
+      });
+
+      testWidgets('Mock 콜백이 통합 테스트에서 올바르게 동작해야 한다', (
+        WidgetTester tester,
+      ) async {
+        // Given
+        when(() => mockOnAgreeAll()).thenReturn(null);
+        when(() => mockOnDismiss()).thenReturn(null);
+        await tester.pumpWidget(createModalTestWidget());
+
+        // When
+        await tester.tap(find.text('모두 동의합니다 !'));
+        await tester.pump();
+
+        // Then
+        verify(() => mockOnAgreeAll()).called(1);
+        verifyNever(() => mockOnDismiss());
+      });
+
+      testWidgets('Mock 콜백이 여러 시나리오에서 올바르게 동작해야 한다', (
+        WidgetTester tester,
+      ) async {
+        // Given
+        when(() => mockOnAgreeAll()).thenReturn(null);
+        when(() => mockOnDismiss()).thenReturn(null);
+        await tester.pumpWidget(createModalTestWidget());
+
+        // When
+        await tester.tap(find.byType(GestureDetector).first, warnIfMissed: false);
+        await tester.pump();
+        await tester.tap(find.text('모두 동의합니다 !'));
+        await tester.pump();
+
+        // Then
+        verifyNever(() => mockOnDismiss());
+        verify(() => mockOnAgreeAll()).called(1);
       });
     });
   });

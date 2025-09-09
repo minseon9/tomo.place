@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tomo_place/domains/terms_agreement/presentation/widgets/atoms/terms_checkbox.dart';
 
@@ -42,7 +43,12 @@ void main() {
         );
         WidgetVerifiers.verifyWidgetRenders(
           tester: tester,
-          widgetType: Checkbox,
+          widgetType: GestureDetector,
+          expectedCount: 1,
+        );
+        WidgetVerifiers.verifyWidgetRenders(
+          tester: tester,
+          widgetType: Container,
           expectedCount: 1,
         );
       });
@@ -52,8 +58,8 @@ void main() {
         await tester.pumpWidget(createTestWidget(isChecked: true));
 
         // Then
-        final checkbox = tester.widget<Checkbox>(find.byType(Checkbox));
-        expect(checkbox.value, isTrue);
+        final svgPicture = find.byType(SvgPicture);
+        expect(svgPicture, findsOneWidget);
       });
 
       testWidgets('체크되지 않은 상태로 표시되어야 한다', (WidgetTester tester) async {
@@ -61,8 +67,10 @@ void main() {
         await tester.pumpWidget(createTestWidget(isChecked: false));
 
         // Then
-        final checkbox = tester.widget<Checkbox>(find.byType(Checkbox));
-        expect(checkbox.value, isFalse);
+        final svgPicture = find.byType(SvgPicture);
+        expect(svgPicture, findsNothing);
+        final container = find.byType(Container);
+        expect(container, findsWidgets);
       });
     });
 
@@ -72,28 +80,29 @@ void main() {
         await tester.pumpWidget(createTestWidget());
 
         // Then
-        final sizedBox = tester.widget<SizedBox>(find.byType(SizedBox));
-        expect(sizedBox.width, equals(42));
-        expect(sizedBox.height, equals(42));
+        final container = tester.widget<Container>(find.byType(Container));
+        expect(container.constraints?.maxWidth, equals(48));
+        expect(container.constraints?.maxHeight, equals(48));
       });
 
-      testWidgets('둥근 모서리 스타일이 적용되어야 한다', (WidgetTester tester) async {
+      testWidgets('투명한 배경이 적용되어야 한다', (WidgetTester tester) async {
         // Given & When
         await tester.pumpWidget(createTestWidget());
 
         // Then
-        final checkbox = tester.widget<Checkbox>(find.byType(Checkbox));
-        expect(checkbox.shape, isA<RoundedRectangleBorder>());
+        final container = tester.widget<Container>(find.byType(Container));
+        final decoration = container.decoration as BoxDecoration;
+        expect(decoration.color, equals(Colors.transparent));
       });
 
-      testWidgets('올바른 색상 스타일이 적용되어야 한다', (WidgetTester tester) async {
+      testWidgets('체크된 상태에서 SVG가 표시되어야 한다', (WidgetTester tester) async {
         // Given & When
-        await tester.pumpWidget(createTestWidget());
+        await tester.pumpWidget(createTestWidget(isChecked: true));
 
         // Then
-        final checkbox = tester.widget<Checkbox>(find.byType(Checkbox));
-        expect(checkbox.checkColor, equals(Colors.black));
-        expect(checkbox.activeColor, equals(Colors.grey[300]));
+        final svgPicture = tester.widget<SvgPicture>(find.byType(SvgPicture));
+        expect(svgPicture, isNotNull);
+        expect(svgPicture.colorFilter, isNotNull);
       });
     });
 
@@ -105,7 +114,7 @@ void main() {
         );
 
         // When
-        await tester.tap(find.byType(Checkbox));
+        await tester.tap(find.byType(GestureDetector));
         await tester.pump();
 
         // Then
@@ -121,33 +130,33 @@ void main() {
         );
 
         // When
-        await tester.tap(find.byType(Checkbox));
+        await tester.tap(find.byType(GestureDetector));
         await tester.pump();
 
         // Then
         verify(() => mockOnChanged(any())).called(1);
       });
 
-      testWidgets('비활성화 상태에서 onChanged가 null이어야 한다', (
+      testWidgets('비활성화 상태에서 GestureDetector onTap이 null이어야 한다', (
         WidgetTester tester,
       ) async {
         // Given & When
         await tester.pumpWidget(createTestWidget(isEnabled: false));
 
         // Then
-        final checkbox = tester.widget<Checkbox>(find.byType(Checkbox));
-        expect(checkbox.onChanged, isNull);
+        final gestureDetector = tester.widget<GestureDetector>(find.byType(GestureDetector));
+        expect(gestureDetector.onTap, isNull);
       });
 
-      testWidgets('활성화 상태에서 onChanged가 설정되어야 한다', (WidgetTester tester) async {
+      testWidgets('활성화 상태에서 GestureDetector onTap이 설정되어야 한다', (WidgetTester tester) async {
         // Given & When
         await tester.pumpWidget(
           createTestWidget(isEnabled: true, onChanged: mockOnChanged.call),
         );
 
         // Then
-        final checkbox = tester.widget<Checkbox>(find.byType(Checkbox));
-        expect(checkbox.onChanged, isNotNull);
+        final gestureDetector = tester.widget<GestureDetector>(find.byType(GestureDetector));
+        expect(gestureDetector.onTap, isNotNull);
       });
     });
 
@@ -157,8 +166,8 @@ void main() {
         await tester.pumpWidget(createTestWidget());
 
         // Then
-        final checkbox = tester.widget<Checkbox>(find.byType(Checkbox));
-        expect(checkbox, isA<Checkbox>());
+        final gestureDetector = tester.widget<GestureDetector>(find.byType(GestureDetector));
+        expect(gestureDetector, isA<GestureDetector>());
         // 접근성 테스트는 실제 앱에서 더 구체적으로 구현
       });
     });
@@ -172,7 +181,7 @@ void main() {
         );
 
         // When
-        await tester.tap(find.byType(Checkbox));
+        await tester.tap(find.byType(GestureDetector));
         await tester.pump();
 
         // Then
@@ -187,7 +196,7 @@ void main() {
         );
 
         // When
-        await tester.tap(find.byType(Checkbox));
+        await tester.tap(find.byType(GestureDetector));
         await tester.pump();
 
         // Then
