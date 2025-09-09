@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
 class AppTypography {
-  AppTypography._();
-
   static const String _fontFamily = 'Apple SD Gothic Neo';
 
   static const TextStyle header1 = TextStyle(
@@ -26,6 +24,15 @@ class AppTypography {
     fontWeight: FontWeight.w600,
     height: 1.0,
     letterSpacing: -0.2,
+  );
+
+  static const TextStyle header3 = TextStyle(
+    fontFamily: _fontFamily,
+    fontSize: 20,
+    // tomo-header3
+    fontWeight: FontWeight.w600,
+    height: 1.0,
+    letterSpacing: -0.4,
   );
 
   static const TextStyle body = TextStyle(
