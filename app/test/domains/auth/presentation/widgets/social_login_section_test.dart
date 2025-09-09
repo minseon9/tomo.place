@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tomo_place/domains/auth/consts/social_label_variant.dart';
 import 'package:tomo_place/domains/auth/consts/social_provider.dart';
 import 'package:tomo_place/domains/auth/presentation/widgets/social_login_button.dart';
 import 'package:tomo_place/domains/auth/presentation/widgets/social_login_section.dart';
@@ -12,9 +11,7 @@ void main() {
     }) {
       return MaterialApp(
         home: Scaffold(
-          body: SocialLoginSection(
-            onProviderPressed: onProviderPressed,
-          ),
+          body: SocialLoginSection(onProviderPressed: onProviderPressed),
         ),
       );
     }
