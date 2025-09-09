@@ -1,6 +1,6 @@
 databaseChangeLog:
 - changeSet:
-    id: 1757437714491-1
+    id: 1757440564101-1
     author: ian (generated)
     changes:
     - createTable:
@@ -35,9 +35,13 @@ databaseChangeLog:
             name: entity_id
             type: UUID
         - column:
-            name: external_ids
-            type: JSONB
+            constraints:
+              nullable: false
+            name: external_id
+            type: VARCHAR(255)
         - column:
+            constraints:
+              nullable: false
             name: location
             type: GEOMETRY
         - column:
@@ -63,7 +67,7 @@ databaseChangeLog:
             type: TIMESTAMP(6) WITHOUT TIME ZONE
         tableName: place
 - changeSet:
-    id: 1757437714491-2
+    id: 1757440564101-2
     author: ian (generated)
     changes:
     - createTable:
@@ -93,7 +97,7 @@ databaseChangeLog:
             constraints:
               nullable: false
             name: name
-            type: VARCHAR(255)
+            type: VARCHAR(20)
         - column:
             name: order
             type: INTEGER
@@ -117,7 +121,7 @@ databaseChangeLog:
             type: VARCHAR(255)
         tableName: place_folder
 - changeSet:
-    id: 1757437714491-3
+    id: 1757440564101-3
     author: ian (generated)
     changes:
     - createTable:
@@ -163,7 +167,7 @@ databaseChangeLog:
             type: BIGINT
         tableName: place_folder_item
 - changeSet:
-    id: 1757437714491-4
+    id: 1757440564101-4
     author: ian (generated)
     changes:
     - createTable:
@@ -211,7 +215,7 @@ databaseChangeLog:
             type: BIGINT
         tableName: place_folder_permission
 - changeSet:
-    id: 1757437714491-5
+    id: 1757440564101-5
     author: ian (generated)
     changes:
     - addUniqueConstraint:
@@ -219,7 +223,7 @@ databaseChangeLog:
         constraintName: UK9falwmiiwcqgaqbgm4f80f5fd
         tableName: place_folder_permission
 - changeSet:
-    id: 1757437714491-6
+    id: 1757440564101-6
     author: ian (generated)
     changes:
     - addUniqueConstraint:
@@ -227,7 +231,7 @@ databaseChangeLog:
         constraintName: UKckbw21ixhsfaob0lnm400j47s
         tableName: place
 - changeSet:
-    id: 1757437714491-7
+    id: 1757440564101-7
     author: ian (generated)
     changes:
     - addUniqueConstraint:
@@ -235,7 +239,7 @@ databaseChangeLog:
         constraintName: UKpaxwlqgx20baeaquu4wrfwcp5
         tableName: place_folder_item
 - changeSet:
-    id: 1757437714491-8
+    id: 1757440564101-8
     author: ian (generated)
     changes:
     - createIndex:
@@ -245,7 +249,7 @@ databaseChangeLog:
         indexName: idx_folder_deleted
         tableName: place_folder
 - changeSet:
-    id: 1757437714491-9
+    id: 1757440564101-9
     author: ian (generated)
     changes:
     - createIndex:
@@ -255,7 +259,7 @@ databaseChangeLog:
         indexName: idx_folder_item_folder
         tableName: place_folder_item
 - changeSet:
-    id: 1757437714491-10
+    id: 1757440564101-10
     author: ian (generated)
     changes:
     - createIndex:
@@ -267,7 +271,7 @@ databaseChangeLog:
         indexName: idx_folder_item_order
         tableName: place_folder_item
 - changeSet:
-    id: 1757437714491-11
+    id: 1757440564101-11
     author: ian (generated)
     changes:
     - createIndex:
@@ -277,7 +281,7 @@ databaseChangeLog:
         indexName: idx_folder_item_place
         tableName: place_folder_item
 - changeSet:
-    id: 1757437714491-12
+    id: 1757440564101-12
     author: ian (generated)
     changes:
     - createIndex:
@@ -287,7 +291,7 @@ databaseChangeLog:
         indexName: idx_folder_item_user
         tableName: place_folder_item
 - changeSet:
-    id: 1757437714491-13
+    id: 1757440564101-13
     author: ian (generated)
     changes:
     - createIndex:
@@ -297,7 +301,7 @@ databaseChangeLog:
         indexName: idx_folder_owner
         tableName: place_folder
 - changeSet:
-    id: 1757437714491-14
+    id: 1757440564101-14
     author: ian (generated)
     changes:
     - createIndex:
@@ -307,7 +311,7 @@ databaseChangeLog:
         indexName: idx_folder_tags
         tableName: place_folder
 - changeSet:
-    id: 1757437714491-15
+    id: 1757440564101-15
     author: ian (generated)
     changes:
     - createIndex:
@@ -317,7 +321,7 @@ databaseChangeLog:
         indexName: idx_permission_folder
         tableName: place_folder_permission
 - changeSet:
-    id: 1757437714491-16
+    id: 1757440564101-16
     author: ian (generated)
     changes:
     - createIndex:
@@ -327,7 +331,7 @@ databaseChangeLog:
         indexName: idx_permission_type
         tableName: place_folder_permission
 - changeSet:
-    id: 1757437714491-17
+    id: 1757440564101-17
     author: ian (generated)
     changes:
     - createIndex:
@@ -337,7 +341,7 @@ databaseChangeLog:
         indexName: idx_permission_user
         tableName: place_folder_permission
 - changeSet:
-    id: 1757437714491-18
+    id: 1757440564101-18
     author: ian (generated)
     changes:
     - createIndex:
@@ -347,7 +351,7 @@ databaseChangeLog:
         indexName: idx_place_location_gist
         tableName: place
 - changeSet:
-    id: 1757437714491-19
+    id: 1757440564101-19
     author: ian (generated)
     changes:
     - createIndex:
@@ -357,7 +361,7 @@ databaseChangeLog:
         indexName: idx_place_search_vector
         tableName: place
 - changeSet:
-    id: 1757437714491-20
+    id: 1757440564101-20
     author: ian (generated)
     changes:
     - createIndex:
@@ -367,7 +371,7 @@ databaseChangeLog:
         indexName: idx_place_type
         tableName: place
 - changeSet:
-    id: 1757437714491-21
+    id: 1757440564101-21
     author: ian (generated)
     changes:
     - addForeignKeyConstraint:
@@ -380,7 +384,7 @@ databaseChangeLog:
         referencedTableName: place_folder
         validate: true
 - changeSet:
-    id: 1757437714491-22
+    id: 1757440564101-22
     author: ian (generated)
     changes:
     - addForeignKeyConstraint:
@@ -392,3 +396,4 @@ databaseChangeLog:
         referencedColumnNames: id
         referencedTableName: place
         validate: true
+
