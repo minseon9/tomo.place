@@ -65,13 +65,6 @@ void main() {
       }
     }
 
-    void verifyRefreshTokenCalled(bool expected) {
-      if (expected) {
-        verify(() => mockAuthNotifier.refreshToken(true)).called(1);
-      } else {
-        verifyNever(() => mockAuthNotifier.refreshToken(any()));
-      }
-    }
 
     void verifyUIElements(WidgetTester tester) {
       expect(find.byType(CircularProgressIndicator), findsOneWidget);

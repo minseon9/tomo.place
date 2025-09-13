@@ -45,16 +45,16 @@ class TomoPlaceApp extends ConsumerWidget {
       }
     });
 
-    return  MaterialApp(
+    return MaterialApp(
       title: 'Tomo Place',
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: DesignTokens.appColors['primary_200']!,
+          seedColor: AppColors.appColors['primary_200']!,
         ),
         useMaterial3: true,
-        scaffoldBackgroundColor: DesignTokens.appColors['background'],
+        scaffoldBackgroundColor: AppColors.appColors['background'],
       ),
       onGenerateRoute: router,
       initialRoute: initialRoute,

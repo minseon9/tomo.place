@@ -1,51 +1,43 @@
 import 'package:flutter/material.dart';
-import '../../../../../shared/ui/design_system/tokens/typography.dart';
+
 import '../../../../../shared/ui/design_system/tokens/colors.dart';
+import '../../../../../shared/ui/responsive/responsive_spacing.dart';
+import '../../../../../shared/ui/responsive/responsive_typography.dart';
 
-/// 약관 내용 표시 컴포넌트
-/// 
-/// 약관 제목과 본문을 표시하며, 본문이 길 경우 스크롤 가능합니다.
-/// Figma 디자인에 따라 📌 아이콘과 함께 제목을 표시하고,
-/// 본문은 구조화된 섹션으로 구성됩니다.
 class TermsContent extends StatelessWidget {
-  const TermsContent({
-    super.key,
-    required this.title,
-    required this.content,
-  });
+  const TermsContent({super.key, required this.contentMap});
 
-  final String title;
-  final String content;
+  final Map<String, String> contentMap;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // 제목 (📌 아이콘 + 약관명)
-        Text(
-          '📌 $title',
-          style: AppTypography.header2.copyWith(
-            color: DesignTokens.tomoBlack,
-            letterSpacing: -0.48,
-          ),
-        ),
-        
-        const SizedBox(height: 24),
-        
-        // 본문 내용 (스크롤 가능)
-        Expanded(
-          child: SingleChildScrollView(
-            child: Text(
-              content,
-              style: AppTypography.body.copyWith(
-                color: DesignTokens.tomoBlack,
-                height: 1.5,
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: contentMap.entries.map((entry) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                entry.key,
+                style: ResponsiveTypography.getResponsiveHeader3(
+                  context,
+                ).copyWith(color: AppColors.tomoBlack, letterSpacing: -0.4),
               ),
-            ),
-          ),
-        ),
-      ],
+              SizedBox(height: ResponsiveSpacing.getResponsive(context, 10)),
+              Text(
+                entry.value,
+                style: ResponsiveTypography.getResponsiveBody(context).copyWith(
+                  color: AppColors.tomoBlack,
+                  letterSpacing: 0.5,
+                  height: 1.2,
+                ),
+              ),
+              SizedBox(height: ResponsiveSpacing.getResponsive(context, 35)),
+            ],
+          );
+        }).toList(),
+      ),
     );
   }
 }

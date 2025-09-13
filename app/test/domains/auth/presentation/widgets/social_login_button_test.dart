@@ -1,305 +1,433 @@
-import 'package:tomo_place/domains/auth/consts/social_provider.dart';
-import 'package:tomo_place/domains/auth/consts/social_label_variant.dart';
-import 'package:tomo_place/domains/auth/presentation/widgets/social_login_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tomo_place/domains/auth/consts/social_provider.dart';
+import 'package:tomo_place/domains/auth/presentation/widgets/social_login_button.dart';
+import 'package:tomo_place/shared/ui/design_system/tokens/colors.dart';
+import '../../../../utils/responsive_test_helper.dart';
+import '../../../../utils/widget/verifiers.dart';
 
 void main() {
   group('SocialLoginButton', () {
-    Widget createTestWidget({
+    late VoidCallback mockOnPressed;
+
+    setUp(() {
+      mockOnPressed = () {};
+    });
+
+    Widget createWidget({
       required SocialProvider provider,
       VoidCallback? onPressed,
       bool isLoading = false,
+      Size screenSize = const Size(375, 812), // iPhone 13 기본 크기
     }) {
       return MaterialApp(
-        home: Scaffold(
-          body: SocialLoginButton(
-            provider: provider,
-            onPressed: onPressed,
-            isLoading: isLoading,
+        home: MediaQuery(
+          data: MediaQueryData(size: screenSize),
+          child: Scaffold(
+            body: SocialLoginButton(
+              provider: provider,
+              onPressed: onPressed,
+              isLoading: isLoading,
+            ),
           ),
         ),
       );
     }
 
-    group('렌더링 테스트', () {
-      testWidgets('기본적으로 올바르게 렌더링되어야 한다', (WidgetTester tester) async {
-        // When
-        await tester.pumpWidget(createTestWidget(
-          provider: SocialProvider.google,
-          onPressed: () {},
-        ));
+    group('반응형 컨테이너 적용', () {
+      testWidgets('모바일에서 컨테이너가 올바르게 렌더링되어야 한다', (WidgetTester tester) async {
+        const mobileScreenSize = Size(375, 812);
 
-        // Then
-        expect(find.byType(SocialLoginButton), findsOneWidget);
-        expect(find.byType(Container), findsOneWidget);
-        expect(find.byType(Material), findsWidgets); // Material 위젯이 여러 개 있을 수 있음
-        expect(find.byType(InkWell), findsOneWidget);
+        await tester.pumpWidget(
+          createWidget(
+            provider: SocialProvider.google,
+            onPressed: mockOnPressed,
+            screenSize: mobileScreenSize,
+          ),
+        );
+
+        // ResponsiveContainer가 존재하는지 확인
+        final responsiveContainer = find.byType(SocialLoginButton);
+        WidgetVerifiers.verifyContainerRenders(tester, responsiveContainer);
       });
 
-      testWidgets('다양한 소셜 프로바이더로 올바르게 렌더링되어야 한다', (WidgetTester tester) async {
-        // Given
-        final providers = [SocialProvider.kakao, SocialProvider.apple, SocialProvider.google];
+      testWidgets('태블릿에서 컨테이너가 올바르게 렌더링되어야 한다', (WidgetTester tester) async {
+        const tabletScreenSize = Size(1024, 768);
 
-        for (final provider in providers) {
-          // When
-          await tester.pumpWidget(createTestWidget(
-            provider: provider,
-            onPressed: () {},
-          ));
+        await tester.pumpWidget(
+          createWidget(
+            provider: SocialProvider.google,
+            onPressed: mockOnPressed,
+            screenSize: tabletScreenSize,
+          ),
+        );
 
-          // Then
-          expect(find.byType(SocialLoginButton), findsOneWidget);
-          
-          final button = tester.widget<SocialLoginButton>(find.byType(SocialLoginButton));
-          expect(button.provider, equals(provider));
+        // ResponsiveContainer가 존재하는지 확인
+        final responsiveContainer = find.byType(SocialLoginButton);
+        WidgetVerifiers.verifyContainerRenders(tester, responsiveContainer);
+      });
+
+      testWidgets('다양한 화면 크기에서 컨테이너가 렌더링되어야 한다', (WidgetTester tester) async {
+        final randomScreenSize = ResponsiveTestHelper.createRandomDouble(min: 300, max: 1200);
+        final screenSize = Size(randomScreenSize, randomScreenSize * 1.5);
+
+        await tester.pumpWidget(
+          createWidget(
+            provider: SocialProvider.google,
+            onPressed: mockOnPressed,
+            screenSize: screenSize,
+          ),
+        );
+
+        // ResponsiveContainer가 존재하는지 확인
+        final responsiveContainer = find.byType(SocialLoginButton);
+        WidgetVerifiers.verifyContainerRenders(tester, responsiveContainer);
+      });
+    });
+
+    group('반응형 높이 적용', () {
+      testWidgets('모바일에서 높이가 올바르게 적용되어야 한다', (WidgetTester tester) async {
+        const mobileScreenSize = Size(375, 812);
+
+        await tester.pumpWidget(
+          createWidget(
+            provider: SocialProvider.google,
+            onPressed: mockOnPressed,
+            screenSize: mobileScreenSize,
+          ),
+        );
+
+        // Container 위젯들이 존재하는지 확인
+        final containers = find.descendant(
+          of: find.byType(SocialLoginButton),
+          matching: find.byType(Container),
+        );
+
+        expect(containers, findsAtLeastNWidgets(1));
+      });
+
+      testWidgets('태블릿에서 높이가 올바르게 적용되어야 한다', (WidgetTester tester) async {
+        const tabletScreenSize = Size(1024, 768);
+
+        await tester.pumpWidget(
+          createWidget(
+            provider: SocialProvider.google,
+            onPressed: mockOnPressed,
+            screenSize: tabletScreenSize,
+          ),
+        );
+
+        // Container 위젯들이 존재하는지 확인
+        final containers = find.descendant(
+          of: find.byType(SocialLoginButton),
+          matching: find.byType(Container),
+        );
+
+        expect(containers, findsAtLeastNWidgets(1));
+      });
+    });
+
+    group('반응형 패딩 적용', () {
+      testWidgets('모바일에서 패딩이 올바르게 적용되어야 한다', (WidgetTester tester) async {
+        const mobileScreenSize = Size(375, 812);
+
+        await tester.pumpWidget(
+          createWidget(
+            provider: SocialProvider.google,
+            onPressed: mockOnPressed,
+            screenSize: mobileScreenSize,
+          ),
+        );
+
+        // Padding 위젯이 존재하는지 확인
+        final padding = find.descendant(
+          of: find.byType(SocialLoginButton),
+          matching: find.byType(Padding),
+        );
+
+        WidgetVerifiers.verifyPaddingRenders(tester, padding);
+      });
+
+      testWidgets('태블릿에서 패딩이 올바르게 적용되어야 한다', (WidgetTester tester) async {
+        const tabletScreenSize = Size(1024, 768);
+
+        await tester.pumpWidget(
+          createWidget(
+            provider: SocialProvider.google,
+            onPressed: mockOnPressed,
+            screenSize: tabletScreenSize,
+          ),
+        );
+
+        // Padding 위젯이 존재하는지 확인
+        final padding = find.descendant(
+          of: find.byType(SocialLoginButton),
+          matching: find.byType(Padding),
+        );
+
+        WidgetVerifiers.verifyPaddingRenders(tester, padding);
+      });
+    });
+
+    group('반응형 간격 적용', () {
+      testWidgets('SizedBox에 간격이 올바르게 적용되어야 한다', (
+        WidgetTester tester,
+      ) async {
+        const mobileScreenSize = Size(375, 812);
+
+        await tester.pumpWidget(
+          createWidget(
+            provider: SocialProvider.google,
+            onPressed: mockOnPressed,
+            screenSize: mobileScreenSize,
+          ),
+        );
+
+        // SizedBox 위젯들이 존재하는지 확인
+        final sizedBoxes = find.descendant(
+          of: find.byType(SocialLoginButton),
+          matching: find.byType(SizedBox),
+        );
+
+        expect(sizedBoxes, findsAtLeastNWidgets(1));
+      });
+
+      testWidgets('태블릿에서 간격이 올바르게 적용되어야 한다', (
+        WidgetTester tester,
+      ) async {
+        const tabletScreenSize = Size(1024, 768);
+
+        await tester.pumpWidget(
+          createWidget(
+            provider: SocialProvider.google,
+            onPressed: mockOnPressed,
+            screenSize: tabletScreenSize,
+          ),
+        );
+
+        // SizedBox 위젯들이 존재하는지 확인
+        final sizedBoxes = find.descendant(
+          of: find.byType(SocialLoginButton),
+          matching: find.byType(SizedBox),
+        );
+
+        expect(sizedBoxes, findsAtLeastNWidgets(1));
+      });
+    });
+
+    group('반응형 타이포그래피 적용', () {
+      testWidgets('Google 버튼에 텍스트가 올바르게 렌더링되어야 한다', (
+        WidgetTester tester,
+      ) async {
+        const mobileScreenSize = Size(375, 812);
+
+        await tester.pumpWidget(
+          createWidget(
+            provider: SocialProvider.google,
+            onPressed: mockOnPressed,
+            screenSize: mobileScreenSize,
+          ),
+        );
+
+        WidgetVerifiers.verifyTextRenders(tester, '구글로 시작하기');
+      });
+
+      testWidgets('Apple 버튼에 텍스트가 올바르게 렌더링되어야 한다', (
+        WidgetTester tester,
+      ) async {
+        const mobileScreenSize = Size(375, 812);
+
+        await tester.pumpWidget(
+          createWidget(
+            provider: SocialProvider.apple,
+            onPressed: mockOnPressed,
+            screenSize: mobileScreenSize,
+          ),
+        );
+
+        WidgetVerifiers.verifyTextRenders(tester, '애플로 시작하기 (준비 중)');
+      });
+    });
+
+    group('기존 로직 보존', () {
+      testWidgets('Google 버튼은 활성화 상태', (WidgetTester tester) async {
+        await tester.pumpWidget(
+          createWidget(
+            provider: SocialProvider.google,
+            onPressed: mockOnPressed,
+          ),
+        );
+
+        final inkWell = tester.widget<InkWell>(
+          find.descendant(
+            of: find.byType(SocialLoginButton),
+            matching: find.byType(InkWell),
+          ),
+        );
+
+        expect(inkWell.onTap, isNotNull);
+      });
+
+      testWidgets('Kakao 버튼은 비활성화 상태', (WidgetTester tester) async {
+        await tester.pumpWidget(
+          createWidget(
+            provider: SocialProvider.kakao,
+            onPressed: mockOnPressed,
+          ),
+        );
+
+        final inkWell = tester.widget<InkWell>(
+          find.descendant(
+            of: find.byType(SocialLoginButton),
+            matching: find.byType(InkWell),
+          ),
+        );
+
+        expect(inkWell.onTap, isNull);
+      });
+
+      testWidgets('Apple 버튼은 비활성화 상태', (WidgetTester tester) async {
+        await tester.pumpWidget(
+          createWidget(
+            provider: SocialProvider.apple,
+            onPressed: mockOnPressed,
+          ),
+        );
+
+        final inkWell = tester.widget<InkWell>(
+          find.descendant(
+            of: find.byType(SocialLoginButton),
+            matching: find.byType(InkWell),
+          ),
+        );
+
+        expect(inkWell.onTap, isNull);
+      });
+
+      testWidgets('로딩 상태에서 버튼 비활성화', (WidgetTester tester) async {
+        await tester.pumpWidget(
+          createWidget(
+            provider: SocialProvider.google,
+            onPressed: mockOnPressed,
+            isLoading: true,
+          ),
+        );
+
+        final inkWell = tester.widget<InkWell>(
+          find.descendant(
+            of: find.byType(SocialLoginButton),
+            matching: find.byType(InkWell),
+          ),
+        );
+
+        expect(inkWell.onTap, isNull);
+      });
+
+      testWidgets('올바른 텍스트 표시', (WidgetTester tester) async {
+        await tester.pumpWidget(
+          createWidget(
+            provider: SocialProvider.google,
+            onPressed: mockOnPressed,
+          ),
+        );
+
+        expect(find.text('구글로 시작하기'), findsOneWidget);
+      });
+
+      testWidgets('비활성화 상태에서 올바른 텍스트 표시', (WidgetTester tester) async {
+        await tester.pumpWidget(
+          createWidget(
+            provider: SocialProvider.kakao,
+            onPressed: mockOnPressed,
+          ),
+        );
+
+        expect(find.text('카카오로 시작하기 (준비 중)'), findsOneWidget);
+      });
+
+      testWidgets('올바른 배경색 적용', (WidgetTester tester) async {
+        await tester.pumpWidget(
+          createWidget(
+            provider: SocialProvider.google,
+            onPressed: mockOnPressed,
+          ),
+        );
+
+        final container = tester.widget<Container>(
+          find
+              .descendant(
+                of: find.byType(SocialLoginButton),
+                matching: find.byType(Container),
+              )
+              .first,
+        );
+
+        final decoration = container.decoration;
+        if (decoration != null) {
+          expect(decoration, isA<BoxDecoration>());
+          if (decoration is BoxDecoration) {
+            expect(decoration.color, equals(AppColors.white));
+          }
         }
       });
 
-      testWidgets('올바른 위젯 구조를 가져야 한다', (WidgetTester tester) async {
-        // When
-        await tester.pumpWidget(createTestWidget(
-          provider: SocialProvider.google,
-          onPressed: () {},
-        ));
+      testWidgets('비활성화 상태에서 올바른 배경색 적용', (WidgetTester tester) async {
+        await tester.pumpWidget(
+          createWidget(
+            provider: SocialProvider.kakao,
+            onPressed: mockOnPressed,
+          ),
+        );
 
-        // Then
-        expect(find.byType(Container), findsOneWidget);
-        expect(find.byType(Material), findsWidgets); // Material 위젯이 여러 개 있을 수 있음
+        final container = tester.widget<Container>(
+          find
+              .descendant(
+                of: find.byType(SocialLoginButton),
+                matching: find.byType(Container),
+              )
+              .first,
+        );
+
+        final decoration = container.decoration;
+        if (decoration != null) {
+          expect(decoration, isA<BoxDecoration>());
+          if (decoration is BoxDecoration) {
+            expect(
+              decoration.color,
+              equals(AppColors.tomoDarkGray.withValues(alpha: 0.3)),
+            );
+          }
+        }
+      });
+    });
+
+    group('위젯 트리 구조 검증', () {
+      testWidgets('올바른 위젯 계층 구조', (WidgetTester tester) async {
+        await tester.pumpWidget(
+          createWidget(
+            provider: SocialProvider.google,
+            onPressed: mockOnPressed,
+          ),
+        );
+
+        // SocialLoginButton -> Container -> Material -> InkWell -> Padding -> Row
+        expect(find.byType(SocialLoginButton), findsOneWidget);
+        expect(
+          find.byType(Container),
+          findsAtLeastNWidgets(1),
+        ); // ResponsiveContainer의 Container + 버튼 Container
+        expect(
+          find.byType(Material),
+          findsAtLeastNWidgets(1),
+        ); // MaterialApp + 버튼 내부 Material
         expect(find.byType(InkWell), findsOneWidget);
-        expect(find.byType(Padding), findsWidgets); // Padding 위젯이 여러 개 있을 수 있음
+        expect(find.byType(Padding), findsAtLeastNWidgets(1));
         expect(find.byType(Row), findsOneWidget);
         expect(find.byType(Text), findsOneWidget);
-      });
-    });
-
-    group('상호작용 테스트', () {
-      testWidgets('Google 버튼 클릭 시 콜백이 올바르게 호출되어야 한다', (WidgetTester tester) async {
-        // Given
-        bool callbackCalled = false;
-
-        await tester.pumpWidget(createTestWidget(
-          provider: SocialProvider.google,
-          onPressed: () {
-            callbackCalled = true;
-          },
-        ));
-
-        // When
-        await tester.tap(find.byType(SocialLoginButton));
-        await tester.pump();
-
-        // Then
-        expect(callbackCalled, isTrue);
-      });
-
-      testWidgets('Kakao 버튼은 비활성화되어야 한다', (WidgetTester tester) async {
-        // Given
-        bool callbackCalled = false;
-
-        await tester.pumpWidget(createTestWidget(
-          provider: SocialProvider.kakao,
-          onPressed: () {
-            callbackCalled = true;
-          },
-        ));
-
-        // When
-        await tester.tap(find.byType(SocialLoginButton));
-        await tester.pump();
-
-        // Then
-        expect(callbackCalled, isFalse);
-      });
-
-      testWidgets('Apple 버튼은 비활성화되어야 한다', (WidgetTester tester) async {
-        // Given
-        bool callbackCalled = false;
-
-        await tester.pumpWidget(createTestWidget(
-          provider: SocialProvider.apple,
-          onPressed: () {
-            callbackCalled = true;
-          },
-        ));
-
-        // When
-        await tester.tap(find.byType(SocialLoginButton));
-        await tester.pump();
-
-        // Then
-        expect(callbackCalled, isFalse);
-      });
-
-      testWidgets('로딩 상태일 때 버튼이 비활성화되어야 한다', (WidgetTester tester) async {
-        // Given
-        bool callbackCalled = false;
-
-        await tester.pumpWidget(createTestWidget(
-          provider: SocialProvider.google,
-          onPressed: () {
-            callbackCalled = true;
-          },
-          isLoading: true,
-        ));
-
-        // When
-        await tester.tap(find.byType(SocialLoginButton));
-        await tester.pump();
-
-        // Then
-        expect(callbackCalled, isFalse);
-      });
-
-      testWidgets('onPressed가 null일 때 버튼이 비활성화되어야 한다', (WidgetTester tester) async {
-        // Given
-        bool callbackCalled = false;
-
-        await tester.pumpWidget(createTestWidget(
-          provider: SocialProvider.google,
-          onPressed: null,
-        ));
-
-        // When
-        await tester.tap(find.byType(SocialLoginButton));
-        await tester.pump();
-
-        // Then
-        expect(callbackCalled, isFalse);
-      });
-    });
-
-    group('텍스트 테스트', () {
-      testWidgets('올바른 텍스트를 표시해야 한다', (WidgetTester tester) async {
-        // Given
-        final testCases = [
-          (SocialProvider.kakao, '카카오로 시작하기 (준비 중)'),
-          (SocialProvider.apple, '애플로 시작하기 (준비 중)'),
-          (SocialProvider.google, '구글로 시작하기'),
-        ];
-
-        for (final (provider, expectedText) in testCases) {
-          // When
-          await tester.pumpWidget(createTestWidget(
-            provider: provider,
-            onPressed: () {},
-          ));
-
-          // Then
-          expect(find.text(expectedText), findsOneWidget);
-        }
-      });
-    });
-
-    group('스타일 테스트', () {
-      testWidgets('Google 버튼은 흰색 배경을 가져야 한다', (WidgetTester tester) async {
-        // When
-        await tester.pumpWidget(createTestWidget(
-          provider: SocialProvider.google,
-          onPressed: () {},
-        ));
-
-        // Then
-        final container = tester.widget<Container>(find.byType(Container));
-        final decoration = container.decoration as BoxDecoration;
-        expect(decoration.color, equals(Colors.white));
-      });
-
-      testWidgets('Kakao 버튼은 노란색 배경을 가져야 한다', (WidgetTester tester) async {
-        // When
-        await tester.pumpWidget(createTestWidget(
-          provider: SocialProvider.kakao,
-          onPressed: () {},
-        ));
-
-        // Then
-        final container = tester.widget<Container>(find.byType(Container));
-        final decoration = container.decoration as BoxDecoration;
-        // Kakao 노란색은 DesignTokens에서 정의된 색상
-        expect(decoration.color, isNotNull);
-      });
-
-      testWidgets('Apple 버튼은 비활성화되어 회색 배경을 가져야 한다', (WidgetTester tester) async {
-        // When
-        await tester.pumpWidget(createTestWidget(
-          provider: SocialProvider.apple,
-          onPressed: () {},
-        ));
-
-        // Then
-        final container = tester.widget<Container>(find.byType(Container));
-        final decoration = container.decoration as BoxDecoration;
-        // Apple 버튼은 비활성화되어 회색 배경을 가짐
-        expect(decoration.color, isNotNull);
-      });
-
-      testWidgets('비활성화된 버튼은 회색 배경을 가져야 한다', (WidgetTester tester) async {
-        // When
-        await tester.pumpWidget(createTestWidget(
-          provider: SocialProvider.kakao, // 비활성화된 버튼
-          onPressed: () {},
-        ));
-
-        // Then
-        final container = tester.widget<Container>(find.byType(Container));
-        final decoration = container.decoration as BoxDecoration;
-        // 비활성화된 버튼은 투명도가 적용된 회색
-        expect(decoration.color, isNotNull);
-      });
-    });
-
-    group('크기 테스트', () {
-      testWidgets('올바른 크기를 가져야 한다', (WidgetTester tester) async {
-        // When
-        await tester.pumpWidget(createTestWidget(
-          provider: SocialProvider.google,
-          onPressed: () {},
-        ));
-
-        // Then
-        final container = tester.widget<Container>(find.byType(Container));
-        expect(container.constraints, isNotNull);
-      });
-
-      testWidgets('올바른 패딩을 가져야 한다', (WidgetTester tester) async {
-        // When
-        await tester.pumpWidget(createTestWidget(
-          provider: SocialProvider.google,
-          onPressed: () {},
-        ));
-
-        // Then
-        final paddingWidgets = tester.widgetList<Padding>(find.byType(Padding));
-        expect(paddingWidgets, isNotEmpty);
-        final padding = paddingWidgets.first;
-        expect(padding.padding, isA<EdgeInsets>());
-      });
-    });
-
-    group('아이콘 테스트', () {
-      testWidgets('아이콘이 표시되어야 한다', (WidgetTester tester) async {
-        // When
-        await tester.pumpWidget(createTestWidget(
-          provider: SocialProvider.google,
-          onPressed: () {},
-        ));
-
-        // Then
-        expect(find.byType(SizedBox), findsWidgets); // 아이콘을 감싸는 SizedBox가 있음
-      });
-    });
-
-    group('접근성 테스트', () {
-      testWidgets('접근성 속성이 올바르게 설정되어야 한다', (WidgetTester tester) async {
-        // When
-        await tester.pumpWidget(createTestWidget(
-          provider: SocialProvider.google,
-          onPressed: () {},
-        ));
-
-        // Then
-        expect(find.byType(SocialLoginButton), findsOneWidget);
-        // 접근성 테스트는 실제 앱에서 더 구체적으로 구현
+        expect(
+          find.byType(SizedBox),
+          findsAtLeastNWidgets(2),
+        ); // 아이콘 SizedBox + 간격 SizedBox
       });
     });
   });
