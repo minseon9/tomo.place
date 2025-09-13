@@ -41,6 +41,15 @@ void main() {
         expect(scaffoldInLayout, findsOneWidget);
       });
 
+      testWidgets('생성자가 올바르게 동작해야 한다', (WidgetTester tester) async {
+        // Given & When
+        const page = TermsOfServicePage();
+        await tester.pumpWidget(AppWrappers.wrapWithMaterialApp(page));
+
+        // Then
+        expect(find.byType(TermsOfServicePage), findsOneWidget);
+      });
+
       testWidgets('Scaffold 구조를 가져야 한다', (WidgetTester tester) async {
         // Given & When
         await tester.pumpWidget(createTestWidget());

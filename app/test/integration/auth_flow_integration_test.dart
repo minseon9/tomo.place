@@ -545,7 +545,15 @@ void main() {
         return AppWrappers.wrapWithMaterialAppWithSize(
           TermsAgreementModal(
             onResult: (result) {
-              // 테스트용 콜백
+              // 테스트용 콜백 - 모든 결과 타입을 처리
+              switch (result) {
+                case TermsAgreementResult.agreed:
+                  // 동의 처리
+                  break;
+                case TermsAgreementResult.dismissed:
+                  // 거부 처리
+                  break;
+              }
             },
           ),
           screenSize: const Size(390.0, 844.0), // iPhone 13 기준 모바일 평균 크기

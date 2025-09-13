@@ -105,6 +105,72 @@ void main() {
 
         expect(find.text('애플로 시작하기 (준비 중)'), findsOneWidget);
       });
+
+      testWidgets('Kakao 버튼에 텍스트가 올바르게 렌더링되어야 한다', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          createWidget(
+            provider: SocialProvider.kakao,
+            onPressed: mockOnPressed,
+          ),
+        );
+
+        expect(find.text('카카오로 시작하기 (준비 중)'), findsOneWidget);
+      });
+
+      testWidgets('Kakao 버튼이 disabled 상태에서 올바른 배경색이 적용되어야 한다', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          createWidget(
+            provider: SocialProvider.kakao,
+            onPressed: mockOnPressed,
+          ),
+        );
+
+        // SocialLoginButton 내부의 모든 Container를 찾아서 decoration이 있는 것 찾기
+        final containers = find.descendant(
+          of: find.byType(SocialLoginButton),
+          matching: find.byType(Container),
+        );
+        
+        bool foundDecoration = false;
+        for (int i = 0; i < containers.evaluate().length; i++) {
+          final container = containers.at(i);
+          final containerWidget = tester.widget<Container>(container);
+          final decoration = containerWidget.decoration;
+          
+          if (decoration != null && decoration is BoxDecoration) {
+            // Disabled 상태에서는 투명한 회색이어야 함
+            expect(decoration.color, equals(AppColors.tomoDarkGray.withValues(alpha: 0.3)));
+            foundDecoration = true;
+            break;
+          }
+        }
+        
+        // decoration이 있는 Container가 있어야 함
+        expect(foundDecoration, isTrue);
+      });
+
+      testWidgets('Apple 버튼이 disabled 상태에서 올바른 텍스트 스타일이 적용되어야 한다', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          createWidget(
+            provider: SocialProvider.apple,
+            onPressed: mockOnPressed,
+          ),
+        );
+
+        // Apple 버튼이 disabled 상태에서 텍스트 스타일 확인
+        final text = find.text('애플로 시작하기 (준비 중)');
+        expect(text, findsOneWidget);
+        
+        final textWidget = tester.widget<Text>(text);
+        // Disabled 상태에서는 회색 텍스트여야 함
+        expect(textWidget.style?.color, equals(AppColors.tomoDarkGray.withValues(alpha: 0.5)));
+      });
     });
 
     group('기존 로직 보존', () {

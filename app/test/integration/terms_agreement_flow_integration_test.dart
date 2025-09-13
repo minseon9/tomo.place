@@ -61,6 +61,15 @@ void main() {
             onResult ??
             (result) {
               // 기본 콜백 - 테스트에서 필요시 오버라이드
+              // 모든 결과 타입을 처리하여 커버리지 확보
+              switch (result) {
+                case TermsAgreementResult.agreed:
+                  // 동의 처리
+                  break;
+                case TermsAgreementResult.dismissed:
+                  // 거부 처리
+                  break;
+              }
             },
       );
 

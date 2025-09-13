@@ -144,6 +144,49 @@ void main() {
         expect(find.byType(TermsAgreementModal), findsNothing);
       });
 
+      testWidgets('onDismiss 콜백이 올바르게 동작해야 한다', (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+
+        // Google 버튼을 찾아서 탭
+        final googleButton = find.text('구글로 시작하기');
+        expect(googleButton, findsOneWidget);
+
+        await tester.tap(googleButton);
+        await tester.pumpAndSettle();
+
+        // TermsAgreementModal이 표시되는지 확인
+        expect(find.byType(TermsAgreementModal), findsOneWidget);
+
+        // TermsAgreementModal 내부의 GestureDetector를 직접 찾아서 onTap 호출
+        final gestureDetectors = find.descendant(
+          of: find.byType(TermsAgreementModal),
+          matching: find.byType(GestureDetector),
+        );
+        
+        // 첫 번째 GestureDetector (외부 터치용)를 찾아서 onTap 호출
+        if (gestureDetectors.evaluate().isNotEmpty) {
+          final gestureDetector = tester.widget<GestureDetector>(gestureDetectors.first);
+          gestureDetector.onTap?.call();
+          await tester.pumpAndSettle();
+        }
+
+        // 모달이 닫혔는지 확인
+        expect(find.byType(TermsAgreementModal), findsNothing);
+      });
+
+      testWidgets('SignupPage 생성자가 올바르게 동작해야 한다', (WidgetTester tester) async {
+        // SignupPage 생성자를 직접 테스트
+        const signupPage = SignupPage();
+        await tester.pumpWidget(
+          ProviderScope(
+            child: MaterialApp(home: signupPage),
+          ),
+        );
+
+        // SignupPage가 올바르게 렌더링되는지 확인
+        expect(find.byType(SignupPage), findsOneWidget);
+      });
+
       testWidgets('TermsAgreementModal의 텍스트 요소들이 올바르게 표시되어야 한다', (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
 
