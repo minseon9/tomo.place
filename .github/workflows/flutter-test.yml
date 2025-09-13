@@ -1,20 +1,28 @@
-name: Flutter Tests
+name: Flutter CI/CD with Coverage
 
 on:
-  push:
-    paths:
-      - 'app/**'
-      - '.github/workflows/flutter-test.yml'
+  workflow_run:
+    workflows: ["Flutter Build"]
+    types:
+      - completed
   pull_request:
     paths:
       - 'app/**'
+      - '.github/workflows/flutter-test.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
     defaults:
       run:
         working-directory: app
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,21 +32,40 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Flutter Pub Get
+      - name: Install dependencies
         run: flutter pub get
 
-      - name: Run Tests with Coverage
+      - name: Run tests with coverage
         run: flutter test --coverage
 
-      - name: Convert lcov paths (monorepo)
-        if: always()
+      - name: Install lcov (Linux)
+        run: sudo apt-get install -y lcov
+
+      - name: Generate coverage report
         run: |
-          sed -i '' 's#SF:lib/#SF:app/lib/#g' coverage/lcov.info || true
+          genhtml coverage/lcov.info -o coverage/html
+          
+          COVERAGE=$(lcov --summary coverage/lcov.info | grep -E "lines......:" | grep -oE "[0-9]+\.[0-9]+")
+          echo "Coverage: $COVERAGE%"
+          
+          echo "COVERAGE=$COVERAGE" >> $GITHUB_ENV
 
-      - name: Upload Coverage Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: flutter-coverage
-          path: app/coverage/lcov.info
+      - name: Print detailed coverage (per file)
+        run: |
+          echo "📊 File-by-file coverage detail:"
+          lcov --list coverage/lcov.info
 
-
+      - name: Check coverage threshold
+        run: |
+          THRESHOLD=100.0
+          
+          echo "Current coverage: $COVERAGE%"
+          echo "Required coverage: $THRESHOLD%"
+          
+          if (( $(echo "$COVERAGE >= $THRESHOLD" | bc -l) )); then
+            echo "[Passed✅] Coverage check passed: $COVERAGE% >= $THRESHOLD%"
+          else
+            echo "[Failed❌] Coverage check failed: $COVERAGE% < $THRESHOLD%"
+            echo "Please increase test coverage to at least $THRESHOLD%"
+            exit 1
+          fi
