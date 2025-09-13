@@ -1,8 +1,7 @@
-import 'package:tomo_place/domains/auth/consts/social_provider.dart';
-import 'package:tomo_place/domains/auth/consts/social_label_variant.dart';
-import 'package:tomo_place/domains/auth/presentation/widgets/social_login_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tomo_place/domains/auth/consts/social_provider.dart';
+import 'package:tomo_place/domains/auth/presentation/widgets/social_login_button.dart';
 
 void main() {
   group('SocialLoginButton', () {
@@ -10,7 +9,6 @@ void main() {
       required SocialProvider provider,
       VoidCallback? onPressed,
       bool isLoading = false,
-      SocialLabelVariant labelVariant = SocialLabelVariant.signup,
     }) {
       return MaterialApp(
         home: Scaffold(
@@ -18,7 +16,6 @@ void main() {
             provider: provider,
             onPressed: onPressed,
             isLoading: isLoading,
-            labelVariant: labelVariant,
           ),
         ),
       );
@@ -27,47 +24,56 @@ void main() {
     group('렌더링 테스트', () {
       testWidgets('기본적으로 올바르게 렌더링되어야 한다', (WidgetTester tester) async {
         // When
-        await tester.pumpWidget(createTestWidget(
-          provider: SocialProvider.google,
-          onPressed: () {},
-        ));
+        await tester.pumpWidget(
+          createTestWidget(provider: SocialProvider.google, onPressed: () {}),
+        );
 
         // Then
         expect(find.byType(SocialLoginButton), findsOneWidget);
         expect(find.byType(Container), findsOneWidget);
-        expect(find.byType(Material), findsWidgets); // Material 위젯이 여러 개 있을 수 있음
+        expect(
+          find.byType(Material),
+          findsWidgets,
+        ); // Material 위젯이 여러 개 있을 수 있음
         expect(find.byType(InkWell), findsOneWidget);
       });
 
       testWidgets('다양한 소셜 프로바이더로 올바르게 렌더링되어야 한다', (WidgetTester tester) async {
         // Given
-        final providers = [SocialProvider.kakao, SocialProvider.apple, SocialProvider.google];
+        final providers = [
+          SocialProvider.kakao,
+          SocialProvider.apple,
+          SocialProvider.google,
+        ];
 
         for (final provider in providers) {
           // When
-          await tester.pumpWidget(createTestWidget(
-            provider: provider,
-            onPressed: () {},
-          ));
+          await tester.pumpWidget(
+            createTestWidget(provider: provider, onPressed: () {}),
+          );
 
           // Then
           expect(find.byType(SocialLoginButton), findsOneWidget);
-          
-          final button = tester.widget<SocialLoginButton>(find.byType(SocialLoginButton));
+
+          final button = tester.widget<SocialLoginButton>(
+            find.byType(SocialLoginButton),
+          );
           expect(button.provider, equals(provider));
         }
       });
 
       testWidgets('올바른 위젯 구조를 가져야 한다', (WidgetTester tester) async {
         // When
-        await tester.pumpWidget(createTestWidget(
-          provider: SocialProvider.google,
-          onPressed: () {},
-        ));
+        await tester.pumpWidget(
+          createTestWidget(provider: SocialProvider.google, onPressed: () {}),
+        );
 
         // Then
         expect(find.byType(Container), findsOneWidget);
-        expect(find.byType(Material), findsWidgets); // Material 위젯이 여러 개 있을 수 있음
+        expect(
+          find.byType(Material),
+          findsWidgets,
+        ); // Material 위젯이 여러 개 있을 수 있음
         expect(find.byType(InkWell), findsOneWidget);
         expect(find.byType(Padding), findsWidgets); // Padding 위젯이 여러 개 있을 수 있음
         expect(find.byType(Row), findsOneWidget);
@@ -76,16 +82,20 @@ void main() {
     });
 
     group('상호작용 테스트', () {
-      testWidgets('Google 버튼 클릭 시 콜백이 올바르게 호출되어야 한다', (WidgetTester tester) async {
+      testWidgets('Google 버튼 클릭 시 콜백이 올바르게 호출되어야 한다', (
+        WidgetTester tester,
+      ) async {
         // Given
         bool callbackCalled = false;
 
-        await tester.pumpWidget(createTestWidget(
-          provider: SocialProvider.google,
-          onPressed: () {
-            callbackCalled = true;
-          },
-        ));
+        await tester.pumpWidget(
+          createTestWidget(
+            provider: SocialProvider.google,
+            onPressed: () {
+              callbackCalled = true;
+            },
+          ),
+        );
 
         // When
         await tester.tap(find.byType(SocialLoginButton));
@@ -99,12 +109,14 @@ void main() {
         // Given
         bool callbackCalled = false;
 
-        await tester.pumpWidget(createTestWidget(
-          provider: SocialProvider.kakao,
-          onPressed: () {
-            callbackCalled = true;
-          },
-        ));
+        await tester.pumpWidget(
+          createTestWidget(
+            provider: SocialProvider.kakao,
+            onPressed: () {
+              callbackCalled = true;
+            },
+          ),
+        );
 
         // When
         await tester.tap(find.byType(SocialLoginButton));
@@ -118,12 +130,14 @@ void main() {
         // Given
         bool callbackCalled = false;
 
-        await tester.pumpWidget(createTestWidget(
-          provider: SocialProvider.apple,
-          onPressed: () {
-            callbackCalled = true;
-          },
-        ));
+        await tester.pumpWidget(
+          createTestWidget(
+            provider: SocialProvider.apple,
+            onPressed: () {
+              callbackCalled = true;
+            },
+          ),
+        );
 
         // When
         await tester.tap(find.byType(SocialLoginButton));
@@ -137,13 +151,15 @@ void main() {
         // Given
         bool callbackCalled = false;
 
-        await tester.pumpWidget(createTestWidget(
-          provider: SocialProvider.google,
-          onPressed: () {
-            callbackCalled = true;
-          },
-          isLoading: true,
-        ));
+        await tester.pumpWidget(
+          createTestWidget(
+            provider: SocialProvider.google,
+            onPressed: () {
+              callbackCalled = true;
+            },
+            isLoading: true,
+          ),
+        );
 
         // When
         await tester.tap(find.byType(SocialLoginButton));
@@ -153,14 +169,15 @@ void main() {
         expect(callbackCalled, isFalse);
       });
 
-      testWidgets('onPressed가 null일 때 버튼이 비활성화되어야 한다', (WidgetTester tester) async {
+      testWidgets('onPressed가 null일 때 버튼이 비활성화되어야 한다', (
+        WidgetTester tester,
+      ) async {
         // Given
         bool callbackCalled = false;
 
-        await tester.pumpWidget(createTestWidget(
-          provider: SocialProvider.google,
-          onPressed: null,
-        ));
+        await tester.pumpWidget(
+          createTestWidget(provider: SocialProvider.google, onPressed: null),
+        );
 
         // When
         await tester.tap(find.byType(SocialLoginButton));
@@ -172,7 +189,7 @@ void main() {
     });
 
     group('텍스트 테스트', () {
-      testWidgets('회원가입 모드에서 올바른 텍스트를 표시해야 한다', (WidgetTester tester) async {
+      testWidgets('올바른 텍스트를 표시해야 한다', (WidgetTester tester) async {
         // Given
         final testCases = [
           (SocialProvider.kakao, '카카오로 시작하기 (준비 중)'),
@@ -182,32 +199,9 @@ void main() {
 
         for (final (provider, expectedText) in testCases) {
           // When
-          await tester.pumpWidget(createTestWidget(
-            provider: provider,
-            onPressed: () {},
-            labelVariant: SocialLabelVariant.signup,
-          ));
-
-          // Then
-          expect(find.text(expectedText), findsOneWidget);
-        }
-      });
-
-      testWidgets('로그인 모드에서 올바른 텍스트를 표시해야 한다', (WidgetTester tester) async {
-        // Given
-        final testCases = [
-          (SocialProvider.kakao, '카카오 로그인 (준비 중)'),
-          (SocialProvider.apple, '애플 로그인 (준비 중)'),
-          (SocialProvider.google, '구글 로그인'),
-        ];
-
-        for (final (provider, expectedText) in testCases) {
-          // When
-          await tester.pumpWidget(createTestWidget(
-            provider: provider,
-            onPressed: () {},
-            labelVariant: SocialLabelVariant.login,
-          ));
+          await tester.pumpWidget(
+            createTestWidget(provider: provider, onPressed: () {}),
+          );
 
           // Then
           expect(find.text(expectedText), findsOneWidget);
@@ -218,10 +212,9 @@ void main() {
     group('스타일 테스트', () {
       testWidgets('Google 버튼은 흰색 배경을 가져야 한다', (WidgetTester tester) async {
         // When
-        await tester.pumpWidget(createTestWidget(
-          provider: SocialProvider.google,
-          onPressed: () {},
-        ));
+        await tester.pumpWidget(
+          createTestWidget(provider: SocialProvider.google, onPressed: () {}),
+        );
 
         // Then
         final container = tester.widget<Container>(find.byType(Container));
@@ -231,10 +224,9 @@ void main() {
 
       testWidgets('Kakao 버튼은 노란색 배경을 가져야 한다', (WidgetTester tester) async {
         // When
-        await tester.pumpWidget(createTestWidget(
-          provider: SocialProvider.kakao,
-          onPressed: () {},
-        ));
+        await tester.pumpWidget(
+          createTestWidget(provider: SocialProvider.kakao, onPressed: () {}),
+        );
 
         // Then
         final container = tester.widget<Container>(find.byType(Container));
@@ -243,12 +235,13 @@ void main() {
         expect(decoration.color, isNotNull);
       });
 
-      testWidgets('Apple 버튼은 비활성화되어 회색 배경을 가져야 한다', (WidgetTester tester) async {
+      testWidgets('Apple 버튼은 비활성화되어 회색 배경을 가져야 한다', (
+        WidgetTester tester,
+      ) async {
         // When
-        await tester.pumpWidget(createTestWidget(
-          provider: SocialProvider.apple,
-          onPressed: () {},
-        ));
+        await tester.pumpWidget(
+          createTestWidget(provider: SocialProvider.apple, onPressed: () {}),
+        );
 
         // Then
         final container = tester.widget<Container>(find.byType(Container));
@@ -259,10 +252,12 @@ void main() {
 
       testWidgets('비활성화된 버튼은 회색 배경을 가져야 한다', (WidgetTester tester) async {
         // When
-        await tester.pumpWidget(createTestWidget(
-          provider: SocialProvider.kakao, // 비활성화된 버튼
-          onPressed: () {},
-        ));
+        await tester.pumpWidget(
+          createTestWidget(
+            provider: SocialProvider.kakao, // 비활성화된 버튼
+            onPressed: () {},
+          ),
+        );
 
         // Then
         final container = tester.widget<Container>(find.byType(Container));
@@ -275,10 +270,9 @@ void main() {
     group('크기 테스트', () {
       testWidgets('올바른 크기를 가져야 한다', (WidgetTester tester) async {
         // When
-        await tester.pumpWidget(createTestWidget(
-          provider: SocialProvider.google,
-          onPressed: () {},
-        ));
+        await tester.pumpWidget(
+          createTestWidget(provider: SocialProvider.google, onPressed: () {}),
+        );
 
         // Then
         final container = tester.widget<Container>(find.byType(Container));
@@ -287,10 +281,9 @@ void main() {
 
       testWidgets('올바른 패딩을 가져야 한다', (WidgetTester tester) async {
         // When
-        await tester.pumpWidget(createTestWidget(
-          provider: SocialProvider.google,
-          onPressed: () {},
-        ));
+        await tester.pumpWidget(
+          createTestWidget(provider: SocialProvider.google, onPressed: () {}),
+        );
 
         // Then
         final paddingWidgets = tester.widgetList<Padding>(find.byType(Padding));
@@ -303,10 +296,9 @@ void main() {
     group('아이콘 테스트', () {
       testWidgets('아이콘이 표시되어야 한다', (WidgetTester tester) async {
         // When
-        await tester.pumpWidget(createTestWidget(
-          provider: SocialProvider.google,
-          onPressed: () {},
-        ));
+        await tester.pumpWidget(
+          createTestWidget(provider: SocialProvider.google, onPressed: () {}),
+        );
 
         // Then
         expect(find.byType(SizedBox), findsWidgets); // 아이콘을 감싸는 SizedBox가 있음
@@ -316,10 +308,9 @@ void main() {
     group('접근성 테스트', () {
       testWidgets('접근성 속성이 올바르게 설정되어야 한다', (WidgetTester tester) async {
         // When
-        await tester.pumpWidget(createTestWidget(
-          provider: SocialProvider.google,
-          onPressed: () {},
-        ));
+        await tester.pumpWidget(
+          createTestWidget(provider: SocialProvider.google, onPressed: () {}),
+        );
 
         // Then
         expect(find.byType(SocialLoginButton), findsOneWidget);
