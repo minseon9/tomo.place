@@ -11,6 +11,21 @@ class AppWrappers {
     );
   }
 
+  /// 위젯을 MaterialApp으로 감싸기 (화면 크기 설정 포함)
+  static Widget wrapWithMaterialAppWithSize(Widget widget, {Size? screenSize}) {
+    return MaterialApp(
+      home: Scaffold(body: widget),
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            size: screenSize ?? const Size(390.0, 844.0), // iPhone 13 기준 모바일 평균 크기
+          ),
+          child: child!,
+        );
+      },
+    );
+  }
+
   /// 위젯을 MaterialApp과 Navigator로 감싸기
   static Widget wrapWithMaterialAppAndNavigator(Widget widget) {
     return MaterialApp(

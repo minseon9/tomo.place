@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../shared/ui/design_system/tokens/colors.dart';
-import '../../../../shared/ui/design_system/tokens/sizes.dart';
-import '../../../../shared/ui/design_system/tokens/spacing.dart';
-import '../../../../shared/ui/design_system/tokens/typography.dart';
+import '../../../../shared/ui/responsive/responsive_container.dart';
+import '../../../../shared/ui/responsive/responsive_sizing.dart';
+import '../../../../shared/ui/responsive/responsive_spacing.dart';
+import '../../../../shared/ui/responsive/responsive_typography.dart';
 import '../../consts/social_provider.dart';
 
 class SocialLoginButton extends StatelessWidget {
@@ -23,7 +24,7 @@ class SocialLoginButton extends StatelessWidget {
     switch (provider) {
       case SocialProvider.kakao:
       case SocialProvider.apple:
-        return true; // 아직 지원하지 않음
+        return true;
       case SocialProvider.google:
         return false;
     }
@@ -31,33 +32,44 @@ class SocialLoginButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: AppSizes.buttonWidth,
-      height: AppSizes.buttonHeight,
-      decoration: BoxDecoration(
-        color: _getBackgroundColor(),
-        borderRadius: BorderRadius.circular(AppSizes.buttonRadius),
-        border: Border.all(
-          color: Colors.black.withValues(alpha: 0.5),
-          width: 1,
-        ),
+    return ResponsiveContainer(
+      mobileWidthPercent: 0.75,
+      tabletWidthPercent: 0.7,
+      maxWidth: 400,
+      minWidth: 300,
+      height: ResponsiveSizing.getValueByDevice(
+        context,
+        mobile: 45.0,
+        tablet: 50.0,
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: (isLoading || _isDisabled) ? null : onPressed,
-          borderRadius: BorderRadius.circular(AppSizes.buttonRadius),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSizes.buttonPadding,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildIcon(),
-                const SizedBox(width: AppSpacing.sm),
-                Text(_getText(), style: _getTextStyle()),
-              ],
+      child: Container(
+        decoration: BoxDecoration(
+          color: _getBackgroundColor(),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(
+            color: Colors.black.withValues(alpha: 0.5),
+            width: 1,
+          ),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: (isLoading || _isDisabled) ? null : onPressed,
+            borderRadius: BorderRadius.circular(6),
+            child: Padding(
+              padding: ResponsiveSizing.getResponsivePadding(
+                context,
+                top: 14,
+                bottom: 14,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildIcon(),
+                  SizedBox(width: ResponsiveSpacing.getResponsive(context, 8)),
+                  Text(_getText(), style: _getTextStyle(context)),
+                ],
+              ),
             ),
           ),
         ),
@@ -67,31 +79,31 @@ class SocialLoginButton extends StatelessWidget {
 
   Color _getBackgroundColor() {
     if (_isDisabled) {
-      return DesignTokens.tomoDarkGray.withValues(alpha: 0.3);
+      return AppColors.tomoDarkGray.withValues(alpha: 0.3);
     }
 
     switch (provider) {
       case SocialProvider.kakao:
-        return DesignTokens.kakaoYellow;
+        return AppColors.kakaoYellow;
       case SocialProvider.apple:
       case SocialProvider.google:
-        return DesignTokens.white;
+        return AppColors.white;
     }
   }
 
-  TextStyle _getTextStyle() {
+  TextStyle _getTextStyle(BuildContext context) {
     if (_isDisabled) {
-      return AppTypography.button.copyWith(
-        color: DesignTokens.tomoDarkGray.withValues(alpha: 0.5),
-      );
+      return ResponsiveTypography.getResponsiveButton(
+        context,
+      ).copyWith(color: AppColors.tomoDarkGray.withValues(alpha: 0.5));
     }
 
     switch (provider) {
       case SocialProvider.kakao:
       case SocialProvider.google:
-        return AppTypography.button;
+        return ResponsiveTypography.getResponsiveButton(context);
       case SocialProvider.apple:
-        return AppTypography.body; // 애플은 16px Regular 사용
+        return ResponsiveTypography.getResponsiveBody(context);
     }
   }
 
@@ -118,11 +130,7 @@ class SocialLoginButton extends StatelessWidget {
   }
 
   Widget _buildIcon() {
-    return SizedBox(
-      width: AppSizes.iconSize,
-      height: AppSizes.iconSize,
-      child: _getIconWidget(),
-    );
+    return SizedBox(width: 18, height: 18, child: _getIconWidget());
   }
 
   Widget _getIconWidget() {

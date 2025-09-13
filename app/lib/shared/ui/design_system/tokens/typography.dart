@@ -1,16 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// Figma Typography System에서 추출한 텍스트 스타일
-/// 
-/// 디자인 토큰을 기반으로 한 일관된 타이포그래피 시스템입니다.
 class AppTypography {
-  AppTypography._();
-
-  // 기본 폰트 패밀리 (Figma: Apple SD Gothic Neo)
-  // Android에서는 대체 폰트(예: Pretendard/Noto Sans KR) 사용 예정
   static const String _fontFamily = 'Apple SD Gothic Neo';
 
-  /// Figma 변수와 일치하는 스타일
   static const TextStyle header1 = TextStyle(
     fontFamily: _fontFamily,
     fontSize: 32, // tomo-header1
@@ -23,6 +15,24 @@ class AppTypography {
     fontSize: 24, // tomo-header2
     fontWeight: FontWeight.w600,
     height: 1.0,
+  );
+
+  static const TextStyle head3 = TextStyle(
+    fontFamily: _fontFamily,
+    fontSize: 18,
+    // tomo-head3
+    fontWeight: FontWeight.w600,
+    height: 1.0,
+    letterSpacing: -0.2,
+  );
+
+  static const TextStyle header3 = TextStyle(
+    fontFamily: _fontFamily,
+    fontSize: 20,
+    // tomo-header3
+    fontWeight: FontWeight.w600,
+    height: 1.0,
+    letterSpacing: -0.4,
   );
 
   static const TextStyle body = TextStyle(
