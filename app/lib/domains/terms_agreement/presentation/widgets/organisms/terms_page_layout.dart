@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../shared/ui/design_system/tokens/colors.dart';
-import '../../../../../shared/ui/design_system/tokens/typography.dart';
+import '../../../../../shared/ui/responsive/responsive_sizing.dart';
+import '../../../../../shared/ui/responsive/responsive_typography.dart';
 import '../atoms/terms_page_agree_button.dart';
 import '../molecules/terms_content.dart';
 
@@ -35,20 +36,20 @@ class TermsPageLayout extends StatelessWidget {
             child: SafeArea(
               bottom: false,
               child: Container(
-                padding: const EdgeInsets.only(
-                  top: 10,
-                  left: 23,
-                  bottom: 10,
+                padding: ResponsiveSizing.getResponsivePadding(
+                  context,
+                  left: 10,
+                  top: 23,
                   right: 20,
+                  bottom: 10,
                 ),
                 child: Align(
                   alignment: Alignment.bottomLeft,
                   child: Text(
                     '📌 $title',
-                    style: AppTypography.header2.copyWith(
-                      letterSpacing: 0.5,
-                      height: 1.5,
-                    ),
+                    style: ResponsiveTypography.getResponsiveHeader2(
+                      context,
+                    ).copyWith(letterSpacing: 0.5, height: 1.5),
                   ),
                 ),
               ),
@@ -58,14 +59,24 @@ class TermsPageLayout extends StatelessWidget {
           // 본문
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.only(top: 20, left: 23, right: 23),
+              padding: ResponsiveSizing.getResponsivePadding(
+                context,
+                left: 23,
+                top: 20,
+                right: 23,
+              ),
               child: TermsContent(contentMap: contentMap),
             ),
           ),
 
           // 하단 버튼
           Padding(
-            padding: const EdgeInsets.only(left: 47, right: 47, bottom: 20),
+            padding: ResponsiveSizing.getResponsivePadding(
+              context,
+              left: 47,
+              right: 47,
+              bottom: 20,
+            ),
             child: TermsPageAgreeButton(onPressed: onAgree),
           ),
         ],

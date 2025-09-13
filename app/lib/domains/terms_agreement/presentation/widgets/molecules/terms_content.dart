@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../shared/ui/design_system/tokens/colors.dart';
-import '../../../../../shared/ui/design_system/tokens/typography.dart';
+import '../../../../../shared/ui/responsive/responsive_spacing.dart';
+import '../../../../../shared/ui/responsive/responsive_typography.dart';
 
 class TermsContent extends StatelessWidget {
   const TermsContent({super.key, required this.contentMap});
@@ -19,21 +20,20 @@ class TermsContent extends StatelessWidget {
             children: [
               Text(
                 entry.key,
-                style: AppTypography.header3.copyWith(
-                  color: AppColors.tomoBlack,
-                  letterSpacing: -0.4,
-                ),
+                style: ResponsiveTypography.getResponsiveHeader3(
+                  context,
+                ).copyWith(color: AppColors.tomoBlack, letterSpacing: -0.4),
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: ResponsiveSpacing.getResponsive(context, 10)),
               Text(
                 entry.value,
-                style: AppTypography.body.copyWith(
+                style: ResponsiveTypography.getResponsiveBody(context).copyWith(
                   color: AppColors.tomoBlack,
                   letterSpacing: 0.5,
                   height: 1.2,
                 ),
               ),
-              const SizedBox(height: 35),
+              SizedBox(height: ResponsiveSpacing.getResponsive(context, 35)),
             ],
           );
         }).toList(),

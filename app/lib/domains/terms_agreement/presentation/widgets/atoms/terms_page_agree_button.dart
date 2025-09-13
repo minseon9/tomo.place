@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../shared/ui/design_system/tokens/colors.dart';
 import '../../../../../shared/ui/design_system/tokens/typography.dart';
+import '../../../../../shared/ui/responsive/responsive_sizing.dart';
 
 class TermsPageAgreeButton extends StatelessWidget {
   const TermsPageAgreeButton({super.key, required this.onPressed});
@@ -11,8 +12,17 @@ class TermsPageAgreeButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 300,
-      height: 45,
+      width: ResponsiveSizing.getResponsiveWidth(
+        context,
+        0.75,
+        maxWidth: 350,
+        minWidth: 280,
+      ),
+      height: ResponsiveSizing.getValueByDevice(
+        context,
+        mobile: 45.0,
+        tablet: 50.0,
+      ),
       decoration: BoxDecoration(
         color: AppColors.tomoPrimary300, // #ebd9b8
         borderRadius: BorderRadius.circular(20.0), // rounded-[20px]
