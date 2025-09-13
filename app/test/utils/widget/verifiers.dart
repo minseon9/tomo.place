@@ -320,4 +320,32 @@ class WidgetVerifiers {
       expect(containers, findsWidgets);
     }
   }
+
+  
+  static void verifyContainerRenders(
+    WidgetTester tester,
+    Finder finder,
+  ) {
+    expect(finder, findsAtLeastNWidgets(1));
+    
+    expect(find.descendant(of: finder, matching: find.byType(Container)), findsAtLeastNWidgets(1));
+  }
+
+  
+  static void verifyTextRenders(
+    WidgetTester tester,
+    String text,
+  ) {
+    expect(find.text(text), findsOneWidget);
+  }
+
+  
+  static void verifyPaddingRenders(
+    WidgetTester tester,
+    Finder finder,
+  ) {
+    expect(finder, findsAtLeastNWidgets(1));
+    
+    expect(find.descendant(of: finder, matching: find.byType(Padding)), findsAtLeastNWidgets(1));
+  }
 }

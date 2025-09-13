@@ -35,6 +35,10 @@ class TermsMockFactory {
   static MockCloseButtonCallbacks createCloseButtonCallbacks() {
     return MockCloseButtonCallbacks();
   }
+
+  static MockFunction<T, R> createFunction<T, R>() {
+    return MockFunction<T, R>();
+  }
 }
 
 class MockVoidCallback extends Mock {
@@ -65,4 +69,8 @@ class MockTermsContentCallbacks extends Mock {
 
 class MockCloseButtonCallbacks extends Mock {
   void onPressed();
+}
+
+class MockFunction<T, R> extends Mock {
+  R call(T arg);
 }
