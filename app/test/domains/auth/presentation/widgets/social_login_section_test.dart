@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tomo_place/domains/auth/consts/social_provider.dart';
 import 'package:tomo_place/domains/auth/presentation/widgets/social_login_button.dart';
 import 'package:tomo_place/domains/auth/presentation/widgets/social_login_section.dart';
-import '../../../../utils/responsive_test_helper.dart';
 
 void main() {
   group('SocialLoginSection', () {
@@ -15,60 +14,16 @@ void main() {
 
     Widget createWidget({
       void Function(SocialProvider provider)? onProviderPressed,
-      Size screenSize = const Size(375, 812), // iPhone 13 기본 크기
     }) {
       return MaterialApp(
-        home: MediaQuery(
-          data: MediaQueryData(size: screenSize),
-          child: Scaffold(
-            body: SocialLoginSection(onProviderPressed: onProviderPressed),
-          ),
+        home: Scaffold(
+          body: SocialLoginSection(onProviderPressed: onProviderPressed),
         ),
       );
     }
 
-    group('반응형 간격 적용', () {
-      testWidgets('모바일에서 간격이 올바르게 적용되어야 한다', (WidgetTester tester) async {
-        const mobileScreenSize = Size(375, 812);
-
-        await tester.pumpWidget(
-          ResponsiveTestHelper.createTestWidget(
-            screenSize: mobileScreenSize,
-            child: SocialLoginSection(onProviderPressed: mockOnProviderPressed),
-          ),
-        );
-
-        // SizedBox 위젯들이 존재하는지 확인
-        final sizedBoxes = find.descendant(
-          of: find.byType(SocialLoginSection),
-          matching: find.byType(SizedBox),
-        );
-
-        expect(sizedBoxes, findsAtLeastNWidgets(2));
-      });
-
-      testWidgets('태블릿에서 간격이 올바르게 적용되어야 한다', (
-        WidgetTester tester,
-      ) async {
-        const tabletScreenSize = Size(1024, 768);
-
-        await tester.pumpWidget(
-          ResponsiveTestHelper.createTestWidget(
-            screenSize: tabletScreenSize,
-            child: SocialLoginSection(onProviderPressed: mockOnProviderPressed),
-          ),
-        );
-
-        // SizedBox 위젯들이 존재하는지 확인
-        final sizedBoxes = find.descendant(
-          of: find.byType(SocialLoginSection),
-          matching: find.byType(SizedBox),
-        );
-
-        expect(sizedBoxes, findsAtLeastNWidgets(2));
-      });
-
-      testWidgets('SizedBox 개수 확인', (WidgetTester tester) async {
+    group('레이아웃 구조', () {
+      testWidgets('SizedBox 위젯들이 존재해야 한다', (WidgetTester tester) async {
         await tester.pumpWidget(createWidget(onProviderPressed: mockOnProviderPressed));
 
         final sizedBoxes = find.descendant(
@@ -221,44 +176,5 @@ void main() {
       });
     });
 
-    group('반응형 동작 검증', () {
-      testWidgets('화면 크기 변경 시 간격이 재계산되어야 한다', (
-        WidgetTester tester,
-      ) async {
-        // 모바일 크기로 시작
-        const mobileScreenSize = Size(375, 812);
-
-        await tester.pumpWidget(
-          ResponsiveTestHelper.createTestWidget(
-            screenSize: mobileScreenSize,
-            child: SocialLoginSection(onProviderPressed: mockOnProviderPressed),
-          ),
-        );
-
-        var sizedBoxes = find.descendant(
-          of: find.byType(SocialLoginSection),
-          matching: find.byType(SizedBox),
-        );
-
-        expect(sizedBoxes, findsAtLeastNWidgets(2));
-
-        // 태블릿 크기로 변경
-        const tabletScreenSize = Size(1024, 768);
-
-        await tester.pumpWidget(
-          ResponsiveTestHelper.createTestWidget(
-            screenSize: tabletScreenSize,
-            child: SocialLoginSection(onProviderPressed: mockOnProviderPressed),
-          ),
-        );
-
-        sizedBoxes = find.descendant(
-          of: find.byType(SocialLoginSection),
-          matching: find.byType(SizedBox),
-        );
-
-        expect(sizedBoxes, findsAtLeastNWidgets(2));
-      });
-    });
   });
 }

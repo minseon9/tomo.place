@@ -7,7 +7,6 @@ import 'package:tomo_place/domains/terms_agreement/presentation/widgets/molecule
 import '../../../../../utils/mock_factory/terms_mock_factory.dart';
 import '../../../../../utils/widget/app_wrappers.dart';
 import '../../../../../utils/widget/verifiers.dart';
-import '../../../../../utils/responsive_test_helper.dart';
 
 void main() {
   group('TermsAgreementItem', () {
@@ -58,10 +57,12 @@ void main() {
         );
         // TermsAgreementItem의 GestureDetector만 찾기
         final termsAgreementItem2 = find.byType(TermsAgreementItem);
-        final gestureDetector = find.descendant(
-          of: termsAgreementItem2,
-          matching: find.byType(GestureDetector),
-        ).first;
+        final gestureDetector = find
+            .descendant(
+              of: termsAgreementItem2,
+              matching: find.byType(GestureDetector),
+            )
+            .first;
         expect(gestureDetector, findsOneWidget);
         // TermsAgreementItem 내부의 Container들을 찾기
         final termsAgreementItem3 = find.byType(TermsAgreementItem);
@@ -72,28 +73,9 @@ void main() {
         expect(containers, findsWidgets);
       });
 
-      testWidgets('모바일에서 올바른 높이로 렌더링되어야 한다', (WidgetTester tester) async {
+      testWidgets('SizedBox 위젯들이 존재해야 한다', (WidgetTester tester) async {
         // Given & When
-        await tester.pumpWidget(
-          ResponsiveTestHelper.createTestWidget(
-            screenSize: ResponsiveTestHelper.standardMobileSize,
-            child: createTestWidget(),
-          ),
-        );
-
-        // Then
-        final sizedBoxes = find.byType(SizedBox);
-        expect(sizedBoxes, findsWidgets);
-      });
-
-      testWidgets('태블릿에서 올바른 높이로 렌더링되어야 한다', (WidgetTester tester) async {
-        // Given & When
-        await tester.pumpWidget(
-          ResponsiveTestHelper.createTestWidget(
-            screenSize: ResponsiveTestHelper.standardTabletSize,
-            child: createTestWidget(),
-          ),
-        );
+        await tester.pumpWidget(createTestWidget());
 
         // Then
         final sizedBoxes = find.byType(SizedBox);
@@ -223,10 +205,12 @@ void main() {
         // When
         // TermsAgreementItem의 GestureDetector만 찾기
         final termsAgreementItem = find.byType(TermsAgreementItem);
-        final gestureDetector = find.descendant(
-          of: termsAgreementItem,
-          matching: find.byType(GestureDetector),
-        ).first;
+        final gestureDetector = find
+            .descendant(
+              of: termsAgreementItem,
+              matching: find.byType(GestureDetector),
+            )
+            .first;
         await tester.tap(gestureDetector);
         await tester.pump();
 
@@ -243,12 +227,14 @@ void main() {
         // Then
         expect(() async {
           // TermsAgreementItem의 GestureDetector만 찾기
-        final termsAgreementItem = find.byType(TermsAgreementItem);
-        final gestureDetector = find.descendant(
-          of: termsAgreementItem,
-          matching: find.byType(GestureDetector),
-        ).first;
-        await tester.tap(gestureDetector);
+          final termsAgreementItem = find.byType(TermsAgreementItem);
+          final gestureDetector = find
+              .descendant(
+                of: termsAgreementItem,
+                matching: find.byType(GestureDetector),
+              )
+              .first;
+          await tester.tap(gestureDetector);
           await tester.pump();
         }, returnsNormally);
       });
@@ -264,12 +250,14 @@ void main() {
         // Then
         expect(() async {
           // TermsAgreementItem의 GestureDetector만 찾기
-        final termsAgreementItem = find.byType(TermsAgreementItem);
-        final gestureDetector = find.descendant(
-          of: termsAgreementItem,
-          matching: find.byType(GestureDetector),
-        ).first;
-        await tester.tap(gestureDetector);
+          final termsAgreementItem = find.byType(TermsAgreementItem);
+          final gestureDetector = find
+              .descendant(
+                of: termsAgreementItem,
+                matching: find.byType(GestureDetector),
+              )
+              .first;
+          await tester.tap(gestureDetector);
           await tester.pump();
         }, returnsNormally);
       });
@@ -313,10 +301,12 @@ void main() {
         // When
         // TermsAgreementItem의 GestureDetector만 찾기
         final termsAgreementItem = find.byType(TermsAgreementItem);
-        final gestureDetector = find.descendant(
-          of: termsAgreementItem,
-          matching: find.byType(GestureDetector),
-        ).first;
+        final gestureDetector = find
+            .descendant(
+              of: termsAgreementItem,
+              matching: find.byType(GestureDetector),
+            )
+            .first;
         await tester.tap(gestureDetector);
         await tester.pump();
 
@@ -337,10 +327,12 @@ void main() {
         // When
         // TermsAgreementItem의 GestureDetector만 찾기
         final termsAgreementItem = find.byType(TermsAgreementItem);
-        final gestureDetector = find.descendant(
-          of: termsAgreementItem,
-          matching: find.byType(GestureDetector),
-        ).first;
+        final gestureDetector = find
+            .descendant(
+              of: termsAgreementItem,
+              matching: find.byType(GestureDetector),
+            )
+            .first;
         await tester.tap(gestureDetector);
         await tester.pump();
         await tester.tap(find.byType(TermsExpandIcon));

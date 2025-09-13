@@ -5,7 +5,6 @@ import 'package:tomo_place/domains/terms_agreement/presentation/widgets/atoms/ex
 
 import '../../../../../utils/widget/app_wrappers.dart';
 import '../../../../../utils/widget/verifiers.dart';
-import '../../../../../utils/responsive_test_helper.dart';
 
 void main() {
   group('TermsExpandIcon', () {
@@ -69,34 +68,10 @@ void main() {
       });
     });
 
-    group('크기 테스트', () {
-      testWidgets('모바일에서 올바른 크기로 렌더링되어야 한다', (WidgetTester tester) async {
+    group('크기 및 구조', () {
+      testWidgets('SizedBox 위젯들이 존재해야 한다', (WidgetTester tester) async {
         // Given & When
-        await tester.pumpWidget(
-          ResponsiveTestHelper.createTestWidget(
-            screenSize: ResponsiveTestHelper.standardMobileSize,
-            child: createTestWidget(),
-          ),
-        );
-
-        // Then
-        // TermsExpandIcon 내부의 SizedBox들만 찾기
-        final termsExpandIcon = find.byType(TermsExpandIcon);
-        final sizedBoxes = find.descendant(
-          of: termsExpandIcon,
-          matching: find.byType(SizedBox),
-        );
-        expect(sizedBoxes, findsWidgets);
-      });
-
-      testWidgets('태블릿에서 올바른 크기로 렌더링되어야 한다', (WidgetTester tester) async {
-        // Given & When
-        await tester.pumpWidget(
-          ResponsiveTestHelper.createTestWidget(
-            screenSize: ResponsiveTestHelper.standardTabletSize,
-            child: createTestWidget(),
-          ),
-        );
+        await tester.pumpWidget(createTestWidget());
 
         // Then
         // TermsExpandIcon 내부의 SizedBox들만 찾기

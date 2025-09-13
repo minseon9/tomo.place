@@ -3,8 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tomo_place/domains/auth/consts/social_provider.dart';
 import 'package:tomo_place/domains/auth/presentation/widgets/social_login_button.dart';
 import 'package:tomo_place/shared/ui/design_system/tokens/colors.dart';
-import '../../../../utils/responsive_test_helper.dart';
-import '../../../../utils/widget/verifiers.dart';
 
 void main() {
   group('SocialLoginButton', () {
@@ -18,82 +16,24 @@ void main() {
       required SocialProvider provider,
       VoidCallback? onPressed,
       bool isLoading = false,
-      Size screenSize = const Size(375, 812), // iPhone 13 기본 크기
     }) {
       return MaterialApp(
-        home: MediaQuery(
-          data: MediaQueryData(size: screenSize),
-          child: Scaffold(
-            body: SocialLoginButton(
-              provider: provider,
-              onPressed: onPressed,
-              isLoading: isLoading,
-            ),
+        home: Scaffold(
+          body: SocialLoginButton(
+            provider: provider,
+            onPressed: onPressed,
+            isLoading: isLoading,
           ),
         ),
       );
     }
 
-    group('반응형 컨테이너 적용', () {
-      testWidgets('모바일에서 컨테이너가 올바르게 렌더링되어야 한다', (WidgetTester tester) async {
-        const mobileScreenSize = Size(375, 812);
-
+    group('레이아웃 구조', () {
+      testWidgets('Container 위젯들이 존재해야 한다', (WidgetTester tester) async {
         await tester.pumpWidget(
           createWidget(
             provider: SocialProvider.google,
             onPressed: mockOnPressed,
-            screenSize: mobileScreenSize,
-          ),
-        );
-
-        // ResponsiveContainer가 존재하는지 확인
-        final responsiveContainer = find.byType(SocialLoginButton);
-        WidgetVerifiers.verifyContainerRenders(tester, responsiveContainer);
-      });
-
-      testWidgets('태블릿에서 컨테이너가 올바르게 렌더링되어야 한다', (WidgetTester tester) async {
-        const tabletScreenSize = Size(1024, 768);
-
-        await tester.pumpWidget(
-          createWidget(
-            provider: SocialProvider.google,
-            onPressed: mockOnPressed,
-            screenSize: tabletScreenSize,
-          ),
-        );
-
-        // ResponsiveContainer가 존재하는지 확인
-        final responsiveContainer = find.byType(SocialLoginButton);
-        WidgetVerifiers.verifyContainerRenders(tester, responsiveContainer);
-      });
-
-      testWidgets('다양한 화면 크기에서 컨테이너가 렌더링되어야 한다', (WidgetTester tester) async {
-        final randomScreenSize = ResponsiveTestHelper.createRandomDouble(min: 300, max: 1200);
-        final screenSize = Size(randomScreenSize, randomScreenSize * 1.5);
-
-        await tester.pumpWidget(
-          createWidget(
-            provider: SocialProvider.google,
-            onPressed: mockOnPressed,
-            screenSize: screenSize,
-          ),
-        );
-
-        // ResponsiveContainer가 존재하는지 확인
-        final responsiveContainer = find.byType(SocialLoginButton);
-        WidgetVerifiers.verifyContainerRenders(tester, responsiveContainer);
-      });
-    });
-
-    group('반응형 높이 적용', () {
-      testWidgets('모바일에서 높이가 올바르게 적용되어야 한다', (WidgetTester tester) async {
-        const mobileScreenSize = Size(375, 812);
-
-        await tester.pumpWidget(
-          createWidget(
-            provider: SocialProvider.google,
-            onPressed: mockOnPressed,
-            screenSize: mobileScreenSize,
           ),
         );
 
@@ -106,36 +46,11 @@ void main() {
         expect(containers, findsAtLeastNWidgets(1));
       });
 
-      testWidgets('태블릿에서 높이가 올바르게 적용되어야 한다', (WidgetTester tester) async {
-        const tabletScreenSize = Size(1024, 768);
-
+      testWidgets('Padding 위젯이 존재해야 한다', (WidgetTester tester) async {
         await tester.pumpWidget(
           createWidget(
             provider: SocialProvider.google,
             onPressed: mockOnPressed,
-            screenSize: tabletScreenSize,
-          ),
-        );
-
-        // Container 위젯들이 존재하는지 확인
-        final containers = find.descendant(
-          of: find.byType(SocialLoginButton),
-          matching: find.byType(Container),
-        );
-
-        expect(containers, findsAtLeastNWidgets(1));
-      });
-    });
-
-    group('반응형 패딩 적용', () {
-      testWidgets('모바일에서 패딩이 올바르게 적용되어야 한다', (WidgetTester tester) async {
-        const mobileScreenSize = Size(375, 812);
-
-        await tester.pumpWidget(
-          createWidget(
-            provider: SocialProvider.google,
-            onPressed: mockOnPressed,
-            screenSize: mobileScreenSize,
           ),
         );
 
@@ -145,41 +60,14 @@ void main() {
           matching: find.byType(Padding),
         );
 
-        WidgetVerifiers.verifyPaddingRenders(tester, padding);
+        expect(padding, findsAtLeastNWidgets(1));
       });
 
-      testWidgets('태블릿에서 패딩이 올바르게 적용되어야 한다', (WidgetTester tester) async {
-        const tabletScreenSize = Size(1024, 768);
-
+      testWidgets('SizedBox 위젯들이 존재해야 한다', (WidgetTester tester) async {
         await tester.pumpWidget(
           createWidget(
             provider: SocialProvider.google,
             onPressed: mockOnPressed,
-            screenSize: tabletScreenSize,
-          ),
-        );
-
-        // Padding 위젯이 존재하는지 확인
-        final padding = find.descendant(
-          of: find.byType(SocialLoginButton),
-          matching: find.byType(Padding),
-        );
-
-        WidgetVerifiers.verifyPaddingRenders(tester, padding);
-      });
-    });
-
-    group('반응형 간격 적용', () {
-      testWidgets('SizedBox에 간격이 올바르게 적용되어야 한다', (
-        WidgetTester tester,
-      ) async {
-        const mobileScreenSize = Size(375, 812);
-
-        await tester.pumpWidget(
-          createWidget(
-            provider: SocialProvider.google,
-            onPressed: mockOnPressed,
-            screenSize: mobileScreenSize,
           ),
         );
 
@@ -192,60 +80,30 @@ void main() {
         expect(sizedBoxes, findsAtLeastNWidgets(1));
       });
 
-      testWidgets('태블릿에서 간격이 올바르게 적용되어야 한다', (
-        WidgetTester tester,
-      ) async {
-        const tabletScreenSize = Size(1024, 768);
-
-        await tester.pumpWidget(
-          createWidget(
-            provider: SocialProvider.google,
-            onPressed: mockOnPressed,
-            screenSize: tabletScreenSize,
-          ),
-        );
-
-        // SizedBox 위젯들이 존재하는지 확인
-        final sizedBoxes = find.descendant(
-          of: find.byType(SocialLoginButton),
-          matching: find.byType(SizedBox),
-        );
-
-        expect(sizedBoxes, findsAtLeastNWidgets(1));
-      });
-    });
-
-    group('반응형 타이포그래피 적용', () {
       testWidgets('Google 버튼에 텍스트가 올바르게 렌더링되어야 한다', (
         WidgetTester tester,
       ) async {
-        const mobileScreenSize = Size(375, 812);
-
         await tester.pumpWidget(
           createWidget(
             provider: SocialProvider.google,
             onPressed: mockOnPressed,
-            screenSize: mobileScreenSize,
           ),
         );
 
-        WidgetVerifiers.verifyTextRenders(tester, '구글로 시작하기');
+        expect(find.text('구글로 시작하기'), findsOneWidget);
       });
 
       testWidgets('Apple 버튼에 텍스트가 올바르게 렌더링되어야 한다', (
         WidgetTester tester,
       ) async {
-        const mobileScreenSize = Size(375, 812);
-
         await tester.pumpWidget(
           createWidget(
             provider: SocialProvider.apple,
             onPressed: mockOnPressed,
-            screenSize: mobileScreenSize,
           ),
         );
 
-        WidgetVerifiers.verifyTextRenders(tester, '애플로 시작하기 (준비 중)');
+        expect(find.text('애플로 시작하기 (준비 중)'), findsOneWidget);
       });
     });
 

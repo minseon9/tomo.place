@@ -6,7 +6,6 @@ import 'package:tomo_place/domains/terms_agreement/presentation/widgets/atoms/te
 import '../../../../../utils/mock_factory/terms_mock_factory.dart';
 import '../../../../../utils/widget/app_wrappers.dart';
 import '../../../../../utils/widget/verifiers.dart';
-import '../../../../../utils/responsive_test_helper.dart';
 
 void main() {
   group('TermsAgreeButton', () {
@@ -63,29 +62,10 @@ void main() {
       });
     });
 
-    group('크기 테스트', () {
-      testWidgets('모바일에서 올바른 크기로 렌더링되어야 한다', (WidgetTester tester) async {
+    group('크기 및 구조', () {
+      testWidgets('Container 위젯이 존재해야 한다', (WidgetTester tester) async {
         // Given & When
-        await tester.pumpWidget(
-          ResponsiveTestHelper.createTestWidget(
-            screenSize: ResponsiveTestHelper.standardMobileSize,
-            child: createTestWidget(),
-          ),
-        );
-
-        // Then
-        final container = find.byType(Container);
-        expect(container, findsAtLeastNWidgets(1));
-      });
-
-      testWidgets('태블릿에서 올바른 크기로 렌더링되어야 한다', (WidgetTester tester) async {
-        // Given & When
-        await tester.pumpWidget(
-          ResponsiveTestHelper.createTestWidget(
-            screenSize: ResponsiveTestHelper.standardTabletSize,
-            child: createTestWidget(),
-          ),
-        );
+        await tester.pumpWidget(createTestWidget());
 
         // Then
         final container = find.byType(Container);

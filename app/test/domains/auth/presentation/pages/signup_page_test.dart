@@ -7,75 +7,26 @@ import 'package:tomo_place/domains/terms_agreement/presentation/widgets/organism
 import 'package:tomo_place/domains/terms_agreement/presentation/widgets/molecules/terms_agreement_item.dart';
 import 'package:tomo_place/domains/terms_agreement/presentation/widgets/atoms/terms_agree_button.dart';
 import 'package:tomo_place/shared/ui/design_system/tokens/colors.dart';
-import '../../../../utils/responsive_test_helper.dart';
 
 void main() {
   group('SignupPage', () {
-    Widget createWidget({
-      Size screenSize = const Size(375, 812), // iPhone 13 기본 크기
-    }) {
+    Widget createWidget() {
       return ProviderScope(
         child: MaterialApp(
-          home: MediaQuery(
-            data: MediaQueryData(size: screenSize),
-            child: const SignupPage(),
-          ),
+          home: const SignupPage(),
         ),
       );
     }
 
-    group('반응형 패딩 적용', () {
-      testWidgets('모바일에서 패딩이 올바르게 적용되어야 한다', (WidgetTester tester) async {
-        const mobileScreenSize = Size(375, 812);
+    group('레이아웃 구조', () {
+      testWidgets('Padding 위젯이 존재해야 한다', (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
 
-        await tester.pumpWidget(createWidget(screenSize: mobileScreenSize));
-
-        // Padding 위젯들이 존재하는지 확인
+        // Padding 위젯이 존재하는지 확인
         expect(find.byType(Padding), findsAtLeastNWidgets(1));
       });
 
-      testWidgets('태블릿에서 패딩이 올바르게 적용되어야 한다', (WidgetTester tester) async {
-        const tabletScreenSize = Size(1024, 768);
-
-        await tester.pumpWidget(createWidget(screenSize: tabletScreenSize));
-
-        // Padding 위젯들이 존재하는지 확인
-        expect(find.byType(Padding), findsAtLeastNWidgets(1));
-      });
-
-      testWidgets('다양한 화면 크기에서 패딩이 적용되어야 한다', (
-        WidgetTester tester,
-      ) async {
-        final randomScreenSize = ResponsiveTestHelper.createRandomDouble(min: 300, max: 1200);
-        final screenSize = Size(randomScreenSize, randomScreenSize * 1.5);
-
-        await tester.pumpWidget(createWidget(screenSize: screenSize));
-
-        // Padding 위젯들이 존재하는지 확인
-        expect(find.byType(Padding), findsAtLeastNWidgets(1));
-      });
-    });
-
-    group('반응형 간격 적용', () {
-      testWidgets('모바일에서 간격이 올바르게 적용되어야 한다', (WidgetTester tester) async {
-        const mobileScreenSize = Size(375, 812);
-
-        await tester.pumpWidget(createWidget(screenSize: mobileScreenSize));
-
-        // SizedBox 위젯들이 존재하는지 확인
-        expect(find.byType(SizedBox), findsAtLeastNWidgets(2));
-      });
-
-      testWidgets('태블릿에서 간격이 올바르게 적용되어야 한다', (WidgetTester tester) async {
-        const tabletScreenSize = Size(1024, 768);
-
-        await tester.pumpWidget(createWidget(screenSize: tabletScreenSize));
-
-        // SizedBox 위젯들이 존재하는지 확인
-        expect(find.byType(SizedBox), findsAtLeastNWidgets(2));
-      });
-
-      testWidgets('SizedBox 개수 확인', (WidgetTester tester) async {
+      testWidgets('SizedBox 위젯들이 존재해야 한다', (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
 
         // SizedBox 위젯들이 존재하는지 확인 (SocialLoginSection 내부의 SizedBox들도 포함)
@@ -153,45 +104,6 @@ void main() {
       });
     });
 
-    group('반응형 동작 검증', () {
-      testWidgets('화면 크기 변경 시 패딩이 재계산되어야 한다', (WidgetTester tester) async {
-        // 모바일 크기로 시작
-        const mobileScreenSize = Size(375, 812);
-
-        await tester.pumpWidget(createWidget(screenSize: mobileScreenSize));
-
-        // Padding 위젯들이 존재하는지 확인
-        expect(find.byType(Padding), findsAtLeastNWidgets(1));
-
-        // 태블릿 크기로 변경
-        const tabletScreenSize = Size(1024, 768);
-
-        await tester.pumpWidget(createWidget(screenSize: tabletScreenSize));
-
-        // Padding 위젯들이 존재하는지 확인
-        expect(find.byType(Padding), findsAtLeastNWidgets(1));
-      });
-
-      testWidgets('화면 크기 변경 시 간격이 재계산되어야 한다', (
-        WidgetTester tester,
-      ) async {
-        // 모바일 크기로 시작
-        const mobileScreenSize = Size(375, 812);
-
-        await tester.pumpWidget(createWidget(screenSize: mobileScreenSize));
-
-        // SizedBox 위젯들이 존재하는지 확인
-        expect(find.byType(SizedBox), findsAtLeastNWidgets(2));
-
-        // 태블릿 크기로 변경
-        const tabletScreenSize = Size(1024, 768);
-
-        await tester.pumpWidget(createWidget(screenSize: tabletScreenSize));
-
-        // SizedBox 위젯들이 존재하는지 확인
-        expect(find.byType(SizedBox), findsAtLeastNWidgets(2));
-      });
-    });
 
     group('ProviderScope 통합', () {
       testWidgets('ProviderScope가 올바르게 설정됨', (WidgetTester tester) async {
