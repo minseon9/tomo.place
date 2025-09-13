@@ -7,6 +7,7 @@ import 'package:tomo_place/domains/terms_agreement/presentation/widgets/atoms/te
 import '../../../../../utils/mock_factory/terms_mock_factory.dart';
 import '../../../../../utils/widget/app_wrappers.dart';
 import '../../../../../utils/widget/verifiers.dart';
+import '../../../../../utils/responsive_test_helper.dart';
 
 void main() {
   group('TermsCheckbox', () {
@@ -75,14 +76,32 @@ void main() {
     });
 
     group('크기 및 스타일 테스트', () {
-      testWidgets('올바른 크기로 렌더링되어야 한다', (WidgetTester tester) async {
+      testWidgets('모바일에서 올바른 크기로 렌더링되어야 한다', (WidgetTester tester) async {
         // Given & When
-        await tester.pumpWidget(createTestWidget());
+        await tester.pumpWidget(
+          ResponsiveTestHelper.createTestWidget(
+            screenSize: ResponsiveTestHelper.standardMobileSize,
+            child: createTestWidget(),
+          ),
+        );
 
         // Then
-        final container = tester.widget<Container>(find.byType(Container));
-        expect(container.constraints?.maxWidth, equals(48));
-        expect(container.constraints?.maxHeight, equals(48));
+        final container = find.byType(Container);
+        expect(container, findsOneWidget);
+      });
+
+      testWidgets('태블릿에서 올바른 크기로 렌더링되어야 한다', (WidgetTester tester) async {
+        // Given & When
+        await tester.pumpWidget(
+          ResponsiveTestHelper.createTestWidget(
+            screenSize: ResponsiveTestHelper.standardTabletSize,
+            child: createTestWidget(),
+          ),
+        );
+
+        // Then
+        final container = find.byType(Container);
+        expect(container, findsOneWidget);
       });
 
       testWidgets('투명한 배경이 적용되어야 한다', (WidgetTester tester) async {

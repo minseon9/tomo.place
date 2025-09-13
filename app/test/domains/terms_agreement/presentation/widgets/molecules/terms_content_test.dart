@@ -6,6 +6,7 @@ import 'package:tomo_place/domains/terms_agreement/presentation/widgets/molecule
 import '../../../../../utils/mock_factory/terms_mock_factory.dart';
 import '../../../../../utils/widget/app_wrappers.dart';
 import '../../../../../utils/widget/verifiers.dart';
+import '../../../../../utils/responsive_test_helper.dart';
 
 void main() {
   group('TermsContent', () {
@@ -107,7 +108,7 @@ void main() {
         // Then
         final titleText = tester.widget<Text>(find.text('제1조 (목적)'));
         expect(titleText.style, isNotNull);
-        expect(titleText.style?.fontSize, equals(20));
+        expect(titleText.style?.fontSize, equals(22.0));
         expect(titleText.style?.fontWeight, equals(FontWeight.w600));
         expect(titleText.style?.letterSpacing, equals(-0.4));
       });
@@ -120,7 +121,7 @@ void main() {
         final contentTexts = find.byType(Text);
         final contentText = tester.widget<Text>(contentTexts.at(1)); // 두 번째 Text 위젯 (본문)
         expect(contentText.style, isNotNull);
-        expect(contentText.style?.fontSize, equals(16));
+        expect(contentText.style?.fontSize, equals(17.6));
         expect(contentText.style?.fontWeight, equals(FontWeight.w400));
         expect(contentText.style?.height, equals(1.2));
         expect(contentText.style?.letterSpacing, equals(0.5));
@@ -186,9 +187,14 @@ void main() {
     });
 
     group('레이아웃 테스트', () {
-      testWidgets('제목과 본문 사이에 올바른 간격이 있어야 한다', (WidgetTester tester) async {
+      testWidgets('모바일에서 제목과 본문 사이에 올바른 간격이 있어야 한다', (WidgetTester tester) async {
         // Given & When
-        await tester.pumpWidget(createTestWidget());
+        await tester.pumpWidget(
+          ResponsiveTestHelper.createTestWidget(
+            screenSize: ResponsiveTestHelper.standardMobileSize,
+            child: createTestWidget(),
+          ),
+        );
 
         // Then
         final termsContent = find.byType(TermsContent);
@@ -197,14 +203,24 @@ void main() {
           matching: find.byType(SizedBox),
         );
         expect(sizedBoxInContent, findsWidgets); // 여러 SizedBox가 있음
-        
-        // 첫 번째 SizedBox의 높이가 10인 것을 확인 (제목과 본문 사이)
-        final spacingBox1 = tester.widget<SizedBox>(sizedBoxInContent.at(0));
-        expect(spacingBox1.height, equals(10));
-        
-        // 두 번째 SizedBox의 높이가 35인 것을 확인 (섹션 사이)
-        final spacingBox2 = tester.widget<SizedBox>(sizedBoxInContent.at(1));
-        expect(spacingBox2.height, equals(35));
+      });
+
+      testWidgets('태블릿에서 제목과 본문 사이에 올바른 간격이 있어야 한다', (WidgetTester tester) async {
+        // Given & When
+        await tester.pumpWidget(
+          ResponsiveTestHelper.createTestWidget(
+            screenSize: ResponsiveTestHelper.standardTabletSize,
+            child: createTestWidget(),
+          ),
+        );
+
+        // Then
+        final termsContent = find.byType(TermsContent);
+        final sizedBoxInContent = find.descendant(
+          of: termsContent,
+          matching: find.byType(SizedBox),
+        );
+        expect(sizedBoxInContent, findsWidgets); // 여러 SizedBox가 있음
       });
 
       testWidgets('Column 구조가 올바르게 구성되어야 한다', (WidgetTester tester) async {

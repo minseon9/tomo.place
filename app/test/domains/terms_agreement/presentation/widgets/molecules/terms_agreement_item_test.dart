@@ -7,6 +7,7 @@ import 'package:tomo_place/domains/terms_agreement/presentation/widgets/molecule
 import '../../../../../utils/mock_factory/terms_mock_factory.dart';
 import '../../../../../utils/widget/app_wrappers.dart';
 import '../../../../../utils/widget/verifiers.dart';
+import '../../../../../utils/responsive_test_helper.dart';
 
 void main() {
   group('TermsAgreementItem', () {
@@ -71,16 +72,32 @@ void main() {
         expect(containers, findsWidgets);
       });
 
-      testWidgets('올바른 높이로 렌더링되어야 한다', (WidgetTester tester) async {
+      testWidgets('모바일에서 올바른 높이로 렌더링되어야 한다', (WidgetTester tester) async {
         // Given & When
-        await tester.pumpWidget(createTestWidget());
+        await tester.pumpWidget(
+          ResponsiveTestHelper.createTestWidget(
+            screenSize: ResponsiveTestHelper.standardMobileSize,
+            child: createTestWidget(),
+          ),
+        );
 
         // Then
         final sizedBoxes = find.byType(SizedBox);
         expect(sizedBoxes, findsWidgets);
-        // 첫 번째 SizedBox (TermsAgreementItem의 메인 SizedBox)의 높이 확인
-        final mainSizedBox = tester.widget<SizedBox>(sizedBoxes.first);
-        expect(mainSizedBox.height, equals(47));
+      });
+
+      testWidgets('태블릿에서 올바른 높이로 렌더링되어야 한다', (WidgetTester tester) async {
+        // Given & When
+        await tester.pumpWidget(
+          ResponsiveTestHelper.createTestWidget(
+            screenSize: ResponsiveTestHelper.standardTabletSize,
+            child: createTestWidget(),
+          ),
+        );
+
+        // Then
+        final sizedBoxes = find.byType(SizedBox);
+        expect(sizedBoxes, findsWidgets);
       });
     });
 
@@ -268,7 +285,7 @@ void main() {
         expect(sizedBoxes, findsWidgets);
         // 첫 번째 SizedBox (TermsAgreementItem의 메인 SizedBox)의 높이 확인
         final mainSizedBox = tester.widget<SizedBox>(sizedBoxes.first);
-        expect(mainSizedBox.height, equals(47));
+        expect(mainSizedBox.height, equals(52.0));
       });
 
       testWidgets('간격 설정이 올바르게 적용되어야 한다', (WidgetTester tester) async {

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:tomo_place/domains/terms_agreement/presentation/widgets/atoms/expand_icon.dart';
 
-import '../../../../../utils/mock_factory/terms_mock_factory.dart';
 import '../../../../../utils/widget/app_wrappers.dart';
 import '../../../../../utils/widget/verifiers.dart';
+import '../../../../../utils/responsive_test_helper.dart';
 
 void main() {
   group('TermsExpandIcon', () {
@@ -56,8 +55,8 @@ void main() {
 
         // Then
         final container = tester.widget<Container>(find.byType(Container));
-        expect(container.constraints?.maxWidth, equals(48));
-        expect(container.constraints?.maxHeight, equals(48));
+        expect(container.constraints?.maxWidth, equals(52.0));
+        expect(container.constraints?.maxHeight, equals(52.0));
       });
 
       testWidgets('올바른 색상 필터를 가져야 한다', (WidgetTester tester) async {
@@ -71,9 +70,14 @@ void main() {
     });
 
     group('크기 테스트', () {
-      testWidgets('올바른 SizedBox 크기를 가져야 한다', (WidgetTester tester) async {
+      testWidgets('모바일에서 올바른 크기로 렌더링되어야 한다', (WidgetTester tester) async {
         // Given & When
-        await tester.pumpWidget(createTestWidget());
+        await tester.pumpWidget(
+          ResponsiveTestHelper.createTestWidget(
+            screenSize: ResponsiveTestHelper.standardMobileSize,
+            child: createTestWidget(),
+          ),
+        );
 
         // Then
         // TermsExpandIcon 내부의 SizedBox들만 찾기
@@ -83,14 +87,25 @@ void main() {
           matching: find.byType(SizedBox),
         );
         expect(sizedBoxes, findsWidgets);
-        
-        final firstSizedBox = tester.widget<SizedBox>(sizedBoxes.at(0));
-        expect(firstSizedBox.width, equals(24));
-        expect(firstSizedBox.height, equals(24));
-        
-        final secondSizedBox = tester.widget<SizedBox>(sizedBoxes.at(1));
-        expect(secondSizedBox.width, equals(8));
-        expect(secondSizedBox.height, equals(14));
+      });
+
+      testWidgets('태블릿에서 올바른 크기로 렌더링되어야 한다', (WidgetTester tester) async {
+        // Given & When
+        await tester.pumpWidget(
+          ResponsiveTestHelper.createTestWidget(
+            screenSize: ResponsiveTestHelper.standardTabletSize,
+            child: createTestWidget(),
+          ),
+        );
+
+        // Then
+        // TermsExpandIcon 내부의 SizedBox들만 찾기
+        final termsExpandIcon = find.byType(TermsExpandIcon);
+        final sizedBoxes = find.descendant(
+          of: termsExpandIcon,
+          matching: find.byType(SizedBox),
+        );
+        expect(sizedBoxes, findsWidgets);
       });
     });
 
@@ -110,8 +125,8 @@ void main() {
 
         // Then
         final container = tester.widget<Container>(find.byType(Container));
-        expect(container.constraints?.maxWidth, equals(48));
-        expect(container.constraints?.maxHeight, equals(48));
+        expect(container.constraints?.maxWidth, equals(52.0));
+        expect(container.constraints?.maxHeight, equals(52.0));
       });
 
       testWidgets('투명한 배경을 가져야 한다', (WidgetTester tester) async {

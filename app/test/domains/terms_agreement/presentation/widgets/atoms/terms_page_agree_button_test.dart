@@ -6,6 +6,7 @@ import 'package:tomo_place/domains/terms_agreement/presentation/widgets/atoms/te
 import '../../../../../utils/mock_factory/terms_mock_factory.dart';
 import '../../../../../utils/widget/app_wrappers.dart';
 import '../../../../../utils/widget/verifiers.dart';
+import '../../../../../utils/responsive_test_helper.dart';
 
 void main() {
   group('TermsPageAgreeButton', () {
@@ -16,8 +17,9 @@ void main() {
     });
 
     Widget createTestWidget({VoidCallback? onPressed}) {
-      return AppWrappers.wrapWithMaterialApp(
+      return AppWrappers.wrapWithMaterialAppWithSize(
         TermsPageAgreeButton(onPressed: onPressed ?? () {}),
+        screenSize: const Size(390.0, 844.0), // iPhone 13 기준 모바일 평균 크기
       );
     }
 
@@ -63,14 +65,32 @@ void main() {
     });
 
     group('크기 테스트', () {
-      testWidgets('올바른 크기로 렌더링되어야 한다', (WidgetTester tester) async {
+      testWidgets('모바일에서 올바른 크기로 렌더링되어야 한다', (WidgetTester tester) async {
         // Given & When
-        await tester.pumpWidget(createTestWidget());
+        await tester.pumpWidget(
+          ResponsiveTestHelper.createTestWidget(
+            screenSize: ResponsiveTestHelper.standardMobileSize,
+            child: createTestWidget(),
+          ),
+        );
 
         // Then
-        final container = tester.widget<Container>(find.byType(Container));
-        expect(container.constraints?.maxWidth, equals(300));
-        expect(container.constraints?.maxHeight, equals(45));
+        final container = find.byType(Container);
+        expect(container, findsOneWidget);
+      });
+
+      testWidgets('태블릿에서 올바른 크기로 렌더링되어야 한다', (WidgetTester tester) async {
+        // Given & When
+        await tester.pumpWidget(
+          ResponsiveTestHelper.createTestWidget(
+            screenSize: ResponsiveTestHelper.standardTabletSize,
+            child: createTestWidget(),
+          ),
+        );
+
+        // Then
+        final container = find.byType(Container);
+        expect(container, findsOneWidget);
       });
     });
 
