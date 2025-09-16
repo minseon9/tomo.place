@@ -6,7 +6,7 @@ plugins {
     alias(libs.plugins.kotlin.jpa) apply false
 
     id("place.tomo.gradle.test-convention") apply false
-    id("place.tomo.gradle.liquibase-convention") apply false
+    id("place.tomo.gradle.liquibase-convention")
 }
 
 allprojects {
@@ -42,7 +42,6 @@ subprojects {
     apply(plugin = "io.spring.dependency-management")
 
     apply(plugin = "place.tomo.gradle.test-convention")
-    apply(plugin = "place.tomo.gradle.liquibase-convention")
 
     tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
         enabled = false

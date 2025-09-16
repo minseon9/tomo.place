@@ -9,6 +9,7 @@ repositories {
 }
 
 dependencies {
+    implementation(libs.bundles.build.logic)
     implementation(libs.liquibase.gradle.plugin)
     implementation("org.yaml:snakeyaml:2.2")
 }
