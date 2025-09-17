@@ -6,6 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 abstract class EnvConfigInterface {
   Future<void> initialize();
   String get apiUrl;
+  String get googleClientId;
+  String get googleServerClientId;
+  String get googleRedirectUri;
 }
 
 class EnvConfigImpl implements EnvConfigInterface {
@@ -16,6 +19,15 @@ class EnvConfigImpl implements EnvConfigInterface {
 
   @override
   String get apiUrl => EnvConfig.apiUrl;
+
+  @override
+  String get googleClientId => EnvConfig.googleClientId;
+
+  @override
+  String get googleServerClientId => EnvConfig.googleServerClientId;
+
+  @override
+  String get googleRedirectUri => EnvConfig.googleRedirectUri;
 }
 
 class EnvConfig {

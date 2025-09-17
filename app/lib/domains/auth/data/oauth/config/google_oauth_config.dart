@@ -3,6 +3,10 @@ import 'package:tomo_place/domains/auth/consts/social_provider.dart';
 import '../../../../../shared/config/env_config.dart';
 
 class GoogleOAuthConfig {
+  final EnvConfigInterface _envConfig;
+
+  GoogleOAuthConfig(this._envConfig);
+
   static const String baseUrl = 'https://accounts.google.com';
 
   static const String authEndpoint = '/o/oauth2/v2/auth';
@@ -11,13 +15,13 @@ class GoogleOAuthConfig {
 
   static const List<String> defaultScope = ['email', 'profile'];
 
-  static String get clientId => EnvConfig.googleClientId;
+  String get clientId => _envConfig.googleClientId;
 
-  static String get serverClientId => EnvConfig.googleServerClientId;
+  String get serverClientId => _envConfig.googleServerClientId;
 
-  static String get redirectUri => EnvConfig.googleRedirectUri;
+  String get redirectUri => _envConfig.googleRedirectUri;
 
-  static OAuthProviderConfig get defaultConfig => OAuthProviderConfig(
+  OAuthProviderConfig get defaultConfig => OAuthProviderConfig(
     providerId: SocialProvider.google.code,
     clientId: clientId,
     serverClientId: serverClientId,
