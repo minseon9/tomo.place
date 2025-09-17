@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// 위젯 테스트를 위한 앱 래퍼 유틸리티
 class AppWrappers {
@@ -8,6 +9,15 @@ class AppWrappers {
   static Widget wrapWithMaterialApp(Widget widget) {
     return MaterialApp(
       home: Scaffold(body: widget),
+    );
+  }
+
+  /// 위젯을 MaterialApp과 ProviderScope로 감싸기 (Riverpod 위젯용)
+  static Widget wrapWithMaterialAppAndProviderScope(Widget widget) {
+    return ProviderScope(
+      child: MaterialApp(
+        home: Scaffold(body: widget),
+      ),
     );
   }
 
