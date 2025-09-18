@@ -1,5 +1,6 @@
 package place.tomo.gradle.liquibase
 
+import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalogsExtension
@@ -28,7 +29,7 @@ class LiquibaseConventionPlugin : Plugin<Project> {
             add("liquibaseRuntime", libs.findLibrary("postgresql").get())
             add("liquibaseRuntime", libs.findLibrary("picocli").get())
 
-            val targetModule = project.findProperty("module") as String? ?: "main"
+            val targetModule = project.findProperty("module") as String? ?: throw GradleException("targetModule is required")
             val targetProject = project.rootProject.project(":$targetModule")
             targetProject.plugins.apply("java")
             add(
