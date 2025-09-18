@@ -43,7 +43,7 @@ class UserDomainAdapterTest {
             val entity = UserEntity(id = userId, email = userEmail, username = userName)
             every { userRepository.findByEmailAndDeletedAtIsNull(entity.email) } returns entity
 
-            val dto = adapter.findActiveByEmail(entity.email)
+            val dto = adapter.findActiveByEntityId(entity.email)
 
             assertThat(dto).isEqualTo(
                 UserInfoDTO(
@@ -60,7 +60,7 @@ class UserDomainAdapterTest {
             val nonExistentEmail = faker.internet().emailAddress()
             every { userRepository.findByEmailAndDeletedAtIsNull(nonExistentEmail) } returns null
 
-            val dto = adapter.findActiveByEmail(nonExistentEmail)
+            val dto = adapter.findActiveByEntityId(nonExistentEmail)
 
             assertThat(dto).isNull()
         }

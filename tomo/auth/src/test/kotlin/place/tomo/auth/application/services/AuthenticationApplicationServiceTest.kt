@@ -210,7 +210,7 @@ class AuthenticationApplicationServiceTest {
             val userInfo = createUserInfo(email)
 
             every { jwtValidator.validateRefreshToken(refreshToken) } returns email
-            every { userDomainPort.findActiveByEmail(email) } returns userInfo
+            every { userDomainPort.findActiveByEntityId(email) } returns userInfo
 
             val newAccessToken = issueToken(false)
             val newRefreshToken = issueToken(true)
@@ -245,7 +245,7 @@ class AuthenticationApplicationServiceTest {
             every {
                 jwtValidator.validateRefreshToken(refreshToken)
             } returns userEmail
-            every { userDomainPort.findActiveByEmail(userEmail) } throws NotFoundActiveUserException(userEmail)
+            every { userDomainPort.findActiveByEntityId(userEmail) } throws NotFoundActiveUserException(userEmail)
 
             assertThatThrownBy { service.refreshToken(RefreshTokenRequest(refreshToken)) }
                 .isInstanceOf(NotFoundActiveUserException::class.java)
