@@ -33,8 +33,10 @@ abstract class GenerateMigrationTask : DefaultTask() {
 
     @TaskAction
     fun execute() {
-        require(targetModule != null)
-        require(entityPackage != null)
+        if (targetModule == null) {
+            logger.error("module name을 입력해야합니다.(e.g. generateMigration -pModule=place")
+            return
+        }
 
         val includeObjects = IncludeObjectResolver.getModuleIncludeObjects(project, targetModule!!)
 
@@ -65,7 +67,7 @@ abstract class GenerateMigrationTask : DefaultTask() {
                 }
 
             result.assertNormalExitValue()
-            logger.lifecycle("Liquibase diffChangeLog completed for module: $targetModule")
+            logger.lifecycle("Liquibase diffChangeLog completed for module: $targetModule!")
         } catch (e: Exception) {
             logger.error("Liquibase diffChangeLog 실행 실패 (module=$targetModule): ${e.message}")
             throw GradleException("Liquibase diffChangeLog 실행 실패", e)
