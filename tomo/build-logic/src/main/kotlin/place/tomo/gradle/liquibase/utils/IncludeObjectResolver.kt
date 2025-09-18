@@ -39,7 +39,7 @@ object IncludeObjectResolver {
         project: Project,
         module: String,
     ): Set<String> {
-        val packageToScan = "place.tomo$module.domain.entities"
+        val packageToScan = "place.tomo.$module.domain.entities"
         val classLoader = getClassLoader(project, module)
 
         val reflections =
