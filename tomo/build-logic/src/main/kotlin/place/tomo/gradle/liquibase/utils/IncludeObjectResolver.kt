@@ -2,7 +2,6 @@ package place.tomo.gradle.liquibase.utils
 
 import jakarta.persistence.Entity
 import jakarta.persistence.Table
-import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.reflections.Reflections
 import java.io.File
@@ -70,7 +69,10 @@ object IncludeObjectResolver {
             return tableAnnotation.name
         }
 
-        throw GradleException("No table annotation defined for $loadedClass")
+        // NOTE: Hibernate의 naming strategy(SpringPhysicalNamingStrategy)를 직접 사용하기에 복잡도가 있어, 단순히 snake case로 변환
+        return loadedClass.simpleName
+            .replace(Regex("([a-z])([A-Z])"), "$1_$2")
+            .lowercase()
     }
 
     private fun generateIncludeObjects(tableNames: Set<String>): String = tableNames.joinToString(",") { "table:$it" }
