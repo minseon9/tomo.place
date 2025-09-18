@@ -9,6 +9,7 @@ import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 import org.gradle.process.ExecOperations
 import place.tomo.gradle.liquibase.utils.DbProps
+import place.tomo.gradle.liquibase.utils.IncludeObjectResolver
 import javax.inject.Inject
 
 abstract class GenerateMigrationTask : DefaultTask() {
@@ -16,10 +17,13 @@ abstract class GenerateMigrationTask : DefaultTask() {
     abstract val execOps: ExecOperations
 
     @Input
-    lateinit var entityPackage: String
+    var targetModule: String? = null
 
     @Internal
     lateinit var dbProps: DbProps
+
+    @Input
+    var entityPackage: String? = null
 
     @Input
     lateinit var changelogOutput: String
@@ -29,6 +33,13 @@ abstract class GenerateMigrationTask : DefaultTask() {
 
     @TaskAction
     fun execute() {
+        if (targetModule == null) {
+            logger.error("module name을 입력해야합니다.(e.g. generateMigration -Pmodule=place")
+            return
+        }
+
+        val includeObjects = IncludeObjectResolver.getModuleIncludeObjects(project, targetModule!!)
+
         val referenceUrl =
             "hibernate:spring:$entityPackage" +
                 "?dialect=org.hibernate.dialect.PostgreSQLDialect" +
@@ -47,16 +58,18 @@ abstract class GenerateMigrationTask : DefaultTask() {
                         "--driver=${dbProps.driver}",
                         "--referenceUrl=$referenceUrl",
                         "--changelogFile=$changelogOutput",
+                        "--includeObjects=$includeObjects",
                         "--logLevel=INFO",
                         "--verbose=true",
                         "diffChangeLog",
                     )
                     isIgnoreExitValue = true
                 }
+
             result.assertNormalExitValue()
-            logger.lifecycle("Liquibase diffChangeLog completed for project: ${project.name}")
+            logger.lifecycle("Liquibase diffChangeLog completed for module: $targetModule!")
         } catch (e: Exception) {
-            logger.error("Liquibase diffChangeLog 실행 실패 (project=${project.name}): ${e.message}")
+            logger.error("Liquibase diffChangeLog 실행 실패 (module=$targetModule): ${e.message}")
             throw GradleException("Liquibase diffChangeLog 실행 실패", e)
         }
     }

@@ -1,0 +1,13 @@
+databaseChangeLog:
+- includeAll:
+    path: user/src/main/resources/db/changelog/migrations
+    relativeToChangelogFile: false
+    errorIfMissingOrEmpty: false
+- includeAll:
+    path: auth/src/main/resources/db/changelog/migrations
+    relativeToChangelogFile: false
+    errorIfMissingOrEmpty: false
+- includeAll:
+    path: place/src/main/resources/db/changelog/migrations
+    relativeToChangelogFile: false
+    errorIfMissingOrEmpty: false

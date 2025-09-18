@@ -12,6 +12,9 @@ resilience4j = "2.2.0"
 jjwt = "0.12.5"
 kotlinx-datetime = "0.7.1"
 springdoc-openapi = "2.7.0"
+snakeyaml = "2.2"
+reflections = "0.10.2"
+jakarta-persistence = "3.1.0"
 
 # Additional versions for dependencies without explicit versions
 postgresql = "42.7.3"
@@ -90,10 +93,15 @@ jjwt-jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
 # Netty
 netty-all = { module = "io.netty:netty-all", version.ref = "netty" }
 
-# Liquibase
+# Build Logic
+liquibase-gradle-plugin = { module = "org.liquibase:liquibase-gradle-plugin", version.ref = "liquibase-gradle" }
+snakeyaml = { module = "org.yaml:snakeyaml", version.ref = "snakeyaml" }
+reflections = { module = "org.reflections:reflections", version.ref = "reflections" }
+jakarta-persistence-api = { module = "jakarta.persistence:jakarta.persistence-api", version.ref = "jakarta-persistence" }
+
+## Liquibase Runtime
 liquibase-core = { module = "org.liquibase:liquibase-core", version.ref = "liquibase-core" }
 liquibase-hibernate6 = { module = "org.liquibase.ext:liquibase-hibernate6", version.ref = "liquibase-hibernate" }
-liquibase-gradle-plugin = { module = "org.liquibase:liquibase-gradle-plugin", version.ref = "liquibase-gradle" }
 picocli = { module = "info.picocli:picocli", version.ref = "picocli" }
 
 # Spring
@@ -187,4 +195,12 @@ app-runtime = [
 # API 문서화 번들
 api-docs = [
     "springdoc-openapi-starter-webmvc-ui"
+]
+
+
+build-logic = [
+    "liquibase-gradle-plugin",
+    "snakeyaml",
+    "reflections",
+    "jakarta-persistence-api"
 ]

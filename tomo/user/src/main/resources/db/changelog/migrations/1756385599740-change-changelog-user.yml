@@ -1,9 +1,0 @@
-databaseChangeLog:
-- changeSet:
-    id: 1756385603753-4
-    author: ian (generated)
-    changes:
-    - dropColumn:
-        columnName: password
-        tableName: users
-

@@ -1,3 +1,0 @@
-databaseChangeLog:
-- include:
-    file: migrations/1754875123433-change-changelog-auth.yml

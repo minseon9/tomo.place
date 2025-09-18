@@ -7,7 +7,6 @@ import org.liquibase.gradle.LiquibaseExtension
 import place.tomo.gradle.liquibase.constants.LiquibaseConstants
 import place.tomo.gradle.liquibase.tasks.GenerateMigrationTask
 import place.tomo.gradle.liquibase.tasks.InitMigrationTask
-import place.tomo.gradle.liquibase.tasks.MigrationPathAppender
 import place.tomo.gradle.liquibase.utils.LiquibaseProjectContext
 
 object LiquibaseConfig {
@@ -55,21 +54,8 @@ object LiquibaseConfig {
 
             group = "liquibase"
             description = "Initialize Liquibase migration"
-            this.mainProject = context.pathResolver.isMainProject
-            this.changeLogPath = context.pathResolver.getChangeLogAbsolutePath()
+            this.targetModule = project.findProperty("module") as String?
             this.migrationsPath = context.pathResolver.getMigrationsAbsolutePath()
-        }
-
-        if (!context.pathResolver.isMainProject) {
-            project.tasks.named("initMigration") {
-                doLast {
-                    MigrationPathAppender.append(
-                        context.pathResolver.mainAggregateChangelog,
-                        context.pathResolver.moduleMainChangelog,
-                        project.logger,
-                    )
-                }
-            }
         }
     }
 
@@ -89,18 +75,11 @@ object LiquibaseConfig {
 
             group = "liquibase"
             this.description = "Generate Liquibase migration from Hibernate entities"
-            liquibaseClasspath = project.configurations.getByName("liquibaseRuntime")
-            entityPackage = context.entityPackage
+            this.liquibaseClasspath = project.configurations.getByName("liquibaseRuntime")
+            this.entityPackage = LiquibaseConstants.ENTITY_PACKAGE
+            this.targetModule = project.findProperty("module") as String?
             this.dbProps = context.dbProps
-            changelogOutput = context.pathResolver.getMigrationOutputFileAbsolutePath(migrationFileName)
-
-            doLast {
-                MigrationPathAppender.append(
-                    context.pathResolver.moduleMainChangelog,
-                    context.pathResolver.getMigrationOutputFilePath(migrationFileName),
-                    project.logger,
-                )
-            }
+            this.changelogOutput = context.pathResolver.getMigrationOutputFileAbsolutePath(migrationFileName)
         }
     }
 }

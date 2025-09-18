@@ -1,6 +1,5 @@
 package place.tomo.place.domain.entities
 
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EntityListeners
@@ -13,8 +12,6 @@ import jakarta.persistence.Index
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import org.hibernate.annotations.JdbcTypeCode
-import org.hibernate.annotations.Type
-import org.hibernate.spatial.JTSGeometryJavaType
 import org.hibernate.type.SqlTypes
 import org.locationtech.jts.geom.Point
 import org.springframework.data.annotation.CreatedDate
@@ -56,7 +53,7 @@ class PlaceEntity(
     val type: PlaceType,
     @Column(name = "sub_category")
     val subCategory: String? = null,
-    @Column(name = "external_id", nullable= false)
+    @Column(name = "external_id", nullable = false)
     val externalId: String,
     @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "search_vector", columnDefinition = "tsvector")
