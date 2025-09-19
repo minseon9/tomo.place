@@ -20,30 +20,30 @@ import java.time.LocalDateTime
 @Entity
 @EntityListeners(AuditingEntityListener::class)
 @Table(
-    name = "place_folder_item",
+    name = "place_folder_setting",
     uniqueConstraints = [
-        UniqueConstraint(name = "uq_place_folder_item__folder_id_place_id", columnNames = ["folder_id", "place_id"]),
+        UniqueConstraint(name = "uq_place_folder_setting__user_id_folder_id", columnNames = ["user_id", "folder_id"]),
     ],
     indexes = [
-        Index(name = "idx_place_folder_item__folder_id", columnList = "folder_id"),
-        Index(name = "idx_place_folder_item__place_id", columnList = "place_id"),
-        Index(name = "idx_place_folder_item__created_by_user_id", columnList = "created_by_user_id"),
-        Index(name = "idx_place_folder_item__folder_id_order", columnList = "folder_id, order"),
+        Index(name = "idx_place_folder_setting__user_id_folder_id", columnList = "user_id, folder_id"),
     ],
 )
-class PlaceFolderItemEntity(
+class PlaceFolderSettingEntity(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
+    @Column(name = "user_id", nullable = false)
+    val userId: Long,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "folder_id", nullable = false)
     val folder: PlaceFolderEntity,
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "place_id", nullable = false)
-    val place: PlaceEntity,
-    @Column(name = "created_by_user_id", nullable = false)
-    val createdByUserId: Long,
-    @Column()
-    val order: Int = 0,
+    @Column(nullable = false, length = 20)
+    val name: String,
+    @Column(nullable = false)
+    val iconColor: String,
+    @Column(name = "is_display_stored_place", nullable = false)
+    val isDisplayStoredPlace: Boolean,
+    @Column(name = "is_display_visited_place", nullable = false)
+    val isDisplayVisitedPlace: Boolean,
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
@@ -52,4 +52,23 @@ class PlaceFolderItemEntity(
     var updatedAt: LocalDateTime = LocalDateTime.now(),
     @Column(name = "deleted_at")
     var deletedAt: LocalDateTime? = null,
-)
+) {
+    companion object {
+        fun create(
+            userId: Long,
+            folder: PlaceFolderEntity,
+            name: String,
+            iconColor: String,
+            isDisplayStoredPlace: Boolean,
+            isDisplayVisitedPlace: Boolean,
+        ): PlaceFolderSettingEntity =
+            PlaceFolderSettingEntity(
+                userId = userId,
+                folder = folder,
+                name = name,
+                iconColor = iconColor,
+                isDisplayStoredPlace = isDisplayStoredPlace,
+                isDisplayVisitedPlace = isDisplayVisitedPlace,
+            )
+    }
+}

@@ -26,12 +26,12 @@ import java.util.UUID
 @Table(
     name = "place",
     uniqueConstraints = [
-        UniqueConstraint(columnNames = ["entity_id"]),
+        UniqueConstraint(name = "uq_place__entity_id", columnNames = ["entity_id"]),
     ],
     indexes = [
-        Index(name = "idx_place_location_gist", columnList = "location"),
-        Index(name = "idx_place_type", columnList = "type"),
-        Index(name = "idx_place_search_vector", columnList = "search_vector"),
+        Index(name = "idx_place__location_gist", columnList = "location"),
+        Index(name = "idx_place__type", columnList = "type"),
+        Index(name = "idx_place__search_vector", columnList = "search_vector"),
     ],
 )
 class PlaceEntity(
@@ -55,8 +55,8 @@ class PlaceEntity(
     val subCategory: String? = null,
     @Column(name = "external_id", nullable = false)
     val externalId: String,
-    @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "search_vector", columnDefinition = "tsvector")
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     val searchVector: String? = null,
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)

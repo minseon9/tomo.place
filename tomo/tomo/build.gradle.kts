@@ -4,6 +4,7 @@ dependencies {
     implementation(project(":contract"))
     implementation(project(":auth"))
     implementation(project(":user"))
+    implementation(project(":place"))
 
     // 번들 그룹 활용
     implementation(libs.bundles.app.runtime)
