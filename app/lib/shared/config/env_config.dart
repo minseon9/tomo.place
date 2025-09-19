@@ -28,8 +28,6 @@ class EnvConfig {
 
     await dotenv.load(fileName: 'assets/env/.env.$environment');
 
-    _validateRequiredVariables();
-
     _isInitialized = true;
   }
 
@@ -43,35 +41,14 @@ class EnvConfig {
     }
   }
 
-  /// 필수 환경 변수 검증
-  static void _validateRequiredVariables() {
-    final requiredVars = <String>[
-      'API_URL',
-      _googleClientIdKey,
-      'GOOGLE_SERVER_CLIENT_ID',
-      'GOOGLE_REDIRECT_URI',
-    ];
-
-    final missingVars = <String>[];
-
-    for (final varName in requiredVars) {
-      if (dotenv.env[varName] == null || dotenv.env[varName]!.isEmpty) {
-        missingVars.add(varName);
-      }
-    }
-
-    if (missingVars.isNotEmpty) {
-      throw StateError(
-        'Required environment variables are missing: ${missingVars.join(', ')}\n'
-        'Please check your .env.$environment file.',
-      );
-    }
-  }
 
   static String _require(String key) {
     final value = dotenv.env[key];
     if (value == null || value.isEmpty) {
-      throw StateError('Required environment variable "$key" is not set');
+      throw StateError(
+        'Required environment variable "$key" is not set\n'
+        'Please check your .env.$environment file.',
+      );
     }
     return value;
   }
@@ -113,4 +90,4 @@ class EnvConfig {
       dotenv.env[key] ?? defaultValue;
 }
 
-final envConfigProvider = Provider<EnvConfigInterface>((ref) => EnvConfigImpl());
+final envConfigProvider = StateProvider<EnvConfigInterface?>((ref) => null);

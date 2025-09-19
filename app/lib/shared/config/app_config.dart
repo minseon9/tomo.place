@@ -17,5 +17,5 @@ class AppConfig {
 
 final appConfigProvider = Provider<AppConfig>((ref) {
   final envConfig = ref.watch(envConfigProvider);
-  return AppConfig(envConfig);
+  return AppConfig(envConfig!);
 });
