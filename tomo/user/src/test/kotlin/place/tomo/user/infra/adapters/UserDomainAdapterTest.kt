@@ -10,11 +10,11 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import place.tomo.contract.dtos.UserInfoDTO
-import place.tomo.contract.vo.UserId
 import place.tomo.user.domain.constant.UserStatus
 import place.tomo.user.domain.entities.UserEntity
 import place.tomo.user.domain.services.UserDomainService
 import place.tomo.user.infra.repositories.UserRepository
+import java.util.UUID
 
 @DisplayName("UserDomainAdapter")
 class UserDomainAdapterTest {
@@ -36,18 +36,15 @@ class UserDomainAdapterTest {
         @Test
         @DisplayName("존재하는 이메일로 사용자 조회 시 UserInfoDTO로 변환하여 반환한다")
         fun `find by email when user exists expect user info returned`() {
-            val userId = faker.number().numberBetween(1L, 100L)
-            val userEmail = faker.internet().emailAddress()
-            val userName = faker.name().fullName()
+            val entity = createDummyUserEntity()
+            every { userRepository.findByEntityIdAndDeletedAtIsNull(entity.entityId) } returns entity
 
-            val entity = UserEntity(id = userId, email = userEmail, username = userName)
-            every { userRepository.findByEmailAndDeletedAtIsNull(entity.email) } returns entity
-
-            val dto = adapter.findActiveByEntityId(entity.email)
+            val dto = adapter.findActiveByEntityId(entity.entityId.toString())
 
             assertThat(dto).isEqualTo(
                 UserInfoDTO(
-                    id = userId,
+                    id = entity.id,
+                    entityId = entity.entityId,
                     email = entity.email,
                     name = entity.username,
                 ),
@@ -57,10 +54,10 @@ class UserDomainAdapterTest {
         @Test
         @DisplayName("존재하지 않는 이메일로 사용자 조회 시 null을 반환한다")
         fun `find by email when user not exists expect null returned`() {
-            val nonExistentEmail = faker.internet().emailAddress()
-            every { userRepository.findByEmailAndDeletedAtIsNull(nonExistentEmail) } returns null
+            val nonExistingEntityId = UUID.randomUUID()
+            every { userRepository.findByEntityIdAndDeletedAtIsNull(nonExistingEntityId) } returns null
 
-            val dto = adapter.findActiveByEntityId(nonExistentEmail)
+            val dto = adapter.findActiveByEntityId(nonExistingEntityId.toString())
 
             assertThat(dto).isNull()
         }
@@ -72,33 +69,29 @@ class UserDomainAdapterTest {
         @Test
         @DisplayName("기존 활성화된 사용자가 존재하면 그대로 반환한다")
         fun `get or create active user when user exists expect existing returned`() {
-            val userId = faker.number().numberBetween(1L, 100L)
-            val userEmail = faker.internet().emailAddress()
-            val userName = faker.name().fullName()
+            val existing = createDummyUserEntity()
+            every { userDomainService.getOrCreateActiveUser(existing.email, existing.username) } returns existing
 
-            val existing = UserEntity(id = userId, email = userEmail, username = userName)
-            every { userDomainService.getOrCreateActiveUser(userEmail, userName) } returns existing
+            val result = adapter.getOrCreateActiveUser(existing.email, existing.username)
 
-            val result = adapter.getOrCreateActiveUser(userEmail, userName)
-
-            assertThat(result).isEqualTo(UserInfoDTO(id = userId, email = userEmail, name = userName))
-            verify { userDomainService.getOrCreateActiveUser(userEmail, userName) }
+            assertThat(
+                result,
+            ).isEqualTo(UserInfoDTO(id = existing.id, entityId = existing.entityId, email = existing.email, name = existing.username))
+            verify { userDomainService.getOrCreateActiveUser(existing.email, existing.username) }
         }
 
         @Test
         @DisplayName("기존 사용자가 없으면 새로 생성하고 UserInfoDTO로 반환한다")
         fun `get or create active user when user not exists expect created and returned`() {
-            val userEmail = faker.internet().emailAddress()
-            val userName = faker.name().fullName()
-            val userId = faker.number().numberBetween(1L, 100L)
+            val created = createDummyUserEntity()
+            every { userDomainService.getOrCreateActiveUser(created.email, created.username) } returns created
 
-            val created = UserEntity(id = userId, email = userEmail, username = userName)
-            every { userDomainService.getOrCreateActiveUser(userEmail, userName) } returns created
+            val result = adapter.getOrCreateActiveUser(created.email, created.username)
 
-            val result = adapter.getOrCreateActiveUser(userEmail, userName)
-
-            assertThat(result).isEqualTo(UserInfoDTO(id = userId, email = userEmail, name = userName))
-            verify { userDomainService.getOrCreateActiveUser(userEmail, userName) }
+            assertThat(
+                result,
+            ).isEqualTo(UserInfoDTO(id = created.id, entityId = created.entityId, email = created.email, name = created.username))
+            verify { userDomainService.getOrCreateActiveUser(created.email, created.username) }
         }
     }
 
@@ -111,24 +104,28 @@ class UserDomainAdapterTest {
             val nonExistentUserId = faker.number().numberBetween(1000L, 9999L)
             every { userRepository.findById(nonExistentUserId) } returns java.util.Optional.empty()
 
-            adapter.softDelete(UserId(nonExistentUserId))
+            adapter.softDelete(nonExistentUserId)
         }
 
         @Test
         @DisplayName("존재하는 사용자 소프트 삭제 시 상태를 DEACTIVATED로 변경하고 저장한다")
         fun `soft delete when user exists expect deactivated and saved`() {
-            val userId = faker.number().numberBetween(1L, 100L)
-            val userEmail = faker.internet().emailAddress()
-            val userName = faker.name().fullName()
-
-            val entity = UserEntity(id = userId, email = userEmail, username = userName)
-            every { userRepository.findById(userId) } returns java.util.Optional.of(entity)
+            val entity = createDummyUserEntity()
+            every { userRepository.findById(entity.id) } returns java.util.Optional.of(entity)
             every { userRepository.save(any<UserEntity>()) } returnsArgument 0
 
-            adapter.softDelete(UserId(userId))
+            adapter.softDelete(entity.id)
 
             assertThat(entity.status).isEqualTo(UserStatus.DEACTIVATED)
             verify { userRepository.save(entity) }
         }
     }
+
+    private fun createDummyUserEntity(): UserEntity =
+        UserEntity(
+            id = faker.number().numberBetween(1L, 100L),
+            entityId = UUID.randomUUID(),
+            email = faker.internet().emailAddress(),
+            username = faker.name().fullName(),
+        )
 }

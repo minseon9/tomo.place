@@ -27,6 +27,7 @@ import place.tomo.contract.constant.OIDCProviderType
 import place.tomo.contract.dtos.UserInfoDTO
 import place.tomo.contract.ports.UserDomainPort
 import java.time.Instant
+import java.util.UUID
 
 @DisplayName("AuthenticationApplicationService")
 class AuthenticationApplicationServiceTest {
@@ -72,8 +73,8 @@ class AuthenticationApplicationServiceTest {
 
             val accessToken = issueToken(false)
             val refreshToken = issueToken(true)
-            every { jwtProvider.issueAccessToken(email) } returns accessToken
-            every { jwtProvider.issueRefreshToken(email) } returns refreshToken
+            every { jwtProvider.issueAccessToken(userInfo.entityId.toString()) } returns accessToken
+            every { jwtProvider.issueRefreshToken(userInfo.entityId.toString()) } returns refreshToken
 
             service.signUp(
                 OIDCSignUpRequest(oidcInfo.provider, authorizationCode = faker.internet().password()),
@@ -98,8 +99,8 @@ class AuthenticationApplicationServiceTest {
 
             val accessToken = issueToken(false)
             val refreshToken = issueToken(true)
-            every { jwtProvider.issueAccessToken(email) } returns accessToken
-            every { jwtProvider.issueRefreshToken(email) } returns refreshToken
+            every { jwtProvider.issueAccessToken(userInfo.entityId.toString()) } returns accessToken
+            every { jwtProvider.issueRefreshToken(userInfo.entityId.toString()) } returns refreshToken
 
             val response =
                 service.signUp(
@@ -130,8 +131,8 @@ class AuthenticationApplicationServiceTest {
 
             val accessToken = issueToken(false)
             val refreshToken = issueToken(true)
-            every { jwtProvider.issueAccessToken(email) } returns accessToken
-            every { jwtProvider.issueRefreshToken(email) } returns refreshToken
+            every { jwtProvider.issueAccessToken(userInfo.entityId.toString()) } returns accessToken
+            every { jwtProvider.issueRefreshToken(userInfo.entityId.toString()) } returns refreshToken
 
             service.signUp(OIDCSignUpRequest(oidcInfo.provider, authorizationCode = faker.internet().password()))
 
@@ -255,7 +256,7 @@ class AuthenticationApplicationServiceTest {
     private fun createUserInfo(
         email: String = faker.internet().emailAddress(),
         name: String = faker.name().username(),
-    ): UserInfoDTO = UserInfoDTO(faker.number().numberBetween(1L, 1000L), email, name)
+    ): UserInfoDTO = UserInfoDTO(faker.number().numberBetween(1L, 1000L), UUID.randomUUID(), email, name)
 
     private fun createOidcUserInfo(
         email: String = faker.internet().emailAddress(),
