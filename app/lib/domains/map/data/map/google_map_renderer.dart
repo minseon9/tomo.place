@@ -9,10 +9,7 @@ class GoogleMapRenderer implements MapRenderer {
     required LatLng initialPosition,
     required double zoom,
     required Function(MapController) onMapCreated,
-    bool myLocationEnabled = true,
-    bool myLocationButtonEnabled = false,
-    bool zoomControlsEnabled = false,
-    bool mapToolbarEnabled = false,
+    MapRendererOptions? options,
   }) {
     return GoogleMap(
       onMapCreated: (controller) {
@@ -22,10 +19,10 @@ class GoogleMapRenderer implements MapRenderer {
         target: initialPosition,
         zoom: zoom,
       ),
-      myLocationEnabled: myLocationEnabled,
-      myLocationButtonEnabled: myLocationButtonEnabled,
-      zoomControlsEnabled: zoomControlsEnabled,
-      mapToolbarEnabled: mapToolbarEnabled,
+      myLocationEnabled: options?.myLocationEnabled ?? true,
+      myLocationButtonEnabled: options?.myLocationButtonEnabled ?? false,
+      zoomControlsEnabled: options?.zoomControlsEnabled ?? false,
+      mapToolbarEnabled: options?.mapToolbarEnabled ?? false,
     );
   }
 }
