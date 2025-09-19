@@ -36,7 +36,7 @@ class PlaceFolderSettingEntity(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "folder_id", nullable = false)
     val folder: PlaceFolderEntity,
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)
     val name: String,
     @Column(nullable = false)
     val iconColor: String,
