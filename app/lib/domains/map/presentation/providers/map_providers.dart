@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/repositories/location_repository.dart';
 import '../../core/services/map_controller_service.dart';
 import '../../core/usecases/get_current_location_usecase.dart';
+import '../../core/usecases/get_search_categories_usecase.dart';
 import '../../core/usecases/move_to_location_usecase.dart';
 import '../../data/repositories/location_repository_impl.dart';
 import '../../data/services/google_location_service.dart';
@@ -32,6 +33,11 @@ final getCurrentLocationUseCaseProvider = Provider<GetCurrentLocationUseCase>((r
 
 final moveToLocationUseCaseProvider = Provider<MoveToLocationUseCase>((ref) {
   return MoveToLocationUseCase(ref.read(mapControllerServiceProvider));
+});
+
+// Search Categories UseCase Provider
+final getSearchCategoriesUseCaseProvider = Provider<GetSearchCategoriesUseCase>((ref) {
+  return const GetSearchCategoriesUseCase();
 });
 
 // Map Renderer Provider
