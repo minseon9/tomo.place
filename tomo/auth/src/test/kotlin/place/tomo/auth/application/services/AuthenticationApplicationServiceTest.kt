@@ -207,16 +207,16 @@ class AuthenticationApplicationServiceTest {
         @DisplayName("유효한 refresh token으로 요청 시 새로운 토큰을 반환한다")
         fun `refresh token when valid expect new tokens returned`() {
             val refreshToken = faker.internet().password()
-            val email = faker.internet().emailAddress()
-            val userInfo = createUserInfo(email)
+            val entityId = UUID.randomUUID()
+            val userInfo = createUserInfo(entityId = entityId)
 
-            every { jwtValidator.validateRefreshToken(refreshToken) } returns email
-            every { userDomainPort.findActiveByEntityId(email) } returns userInfo
+            every { jwtValidator.validateRefreshToken(refreshToken) } returns entityId.toString()
+            every { userDomainPort.findActiveByEntityId(entityId.toString()) } returns userInfo
 
             val newAccessToken = issueToken(false)
             val newRefreshToken = issueToken(true)
-            every { jwtProvider.issueAccessToken(email) } returns newAccessToken
-            every { jwtProvider.issueRefreshToken(email) } returns newRefreshToken
+            every { jwtProvider.issueAccessToken(userInfo.entityId.toString()) } returns newAccessToken
+            every { jwtProvider.issueRefreshToken(userInfo.entityId.toString()) } returns newRefreshToken
 
             val result = service.refreshToken(RefreshTokenRequest(refreshToken))
 
@@ -256,7 +256,8 @@ class AuthenticationApplicationServiceTest {
     private fun createUserInfo(
         email: String = faker.internet().emailAddress(),
         name: String = faker.name().username(),
-    ): UserInfoDTO = UserInfoDTO(faker.number().numberBetween(1L, 1000L), UUID.randomUUID(), email, name)
+        entityId: UUID = UUID.randomUUID(),
+    ): UserInfoDTO = UserInfoDTO(faker.number().numberBetween(1L, 1000L), entityId, email, name)
 
     private fun createOidcUserInfo(
         email: String = faker.internet().emailAddress(),
