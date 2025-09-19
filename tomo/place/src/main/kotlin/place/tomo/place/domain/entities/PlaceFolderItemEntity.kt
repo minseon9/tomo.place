@@ -2,6 +2,7 @@ package place.tomo.place.domain.entities
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.EntityListeners
 import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
@@ -13,19 +14,21 @@ import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
+import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.LocalDateTime
 
 @Entity
+@EntityListeners(AuditingEntityListener::class)
 @Table(
     name = "place_folder_item",
-    indexes = [
-        Index(name = "idx_folder_item_folder", columnList = "folder_id"),
-        Index(name = "idx_folder_item_place", columnList = "place_id"),
-        Index(name = "idx_folder_item_user", columnList = "created_by_user_id"),
-        Index(name = "idx_folder_item_order", columnList = "folder_id, order"),
-    ],
     uniqueConstraints = [
-        UniqueConstraint(columnNames = ["folder_id", "place_id"]),
+        UniqueConstraint(name = "uq_place_folder_item__folder_id_place_id", columnNames = ["folder_id", "place_id"]),
+    ],
+    indexes = [
+        Index(name = "idx_place_folder_item__folder_id", columnList = "folder_id"),
+        Index(name = "idx_place_folder_item__place_id", columnList = "place_id"),
+        Index(name = "idx_place_folder_item__created_by_user_id", columnList = "created_by_user_id"),
+        Index(name = "idx_place_folder_item__folder_id_order", columnList = "folder_id, order"),
     ],
 )
 class PlaceFolderItemEntity(
