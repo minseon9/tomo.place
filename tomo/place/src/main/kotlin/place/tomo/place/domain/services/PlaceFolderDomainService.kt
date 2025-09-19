@@ -12,10 +12,22 @@ class PlaceFolderDomainService(
 ) {
     @Transactional
     fun createPlaceFolder(command: CreatePlaceFolderCommand): PlaceFolderEntity {
-        val folder = PlaceFolderEntity.create(command.name, command.userId, command.visibility)
+        val placeFolder =
+            PlaceFolderEntity.create(
+                name = command.name,
+                userId = command.ownerId,
+                visibility = command.visibility,
+                tags = command.tags,
+            )
 
-        repository.save(folder)
+        placeFolder.addUserSetting(
+            userId = command.settingUserId,
+            name = command.settingName,
+            iconColor = command.iconColor,
+            isDisplayStoredPlace = command.isDisplayStoredPlace,
+            isDisplayVisitedPlace = command.isDisplayVisitedPlace,
+        )
 
-        return folder
+        return repository.save(placeFolder)
     }
 }

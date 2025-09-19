@@ -1,14 +1,17 @@
 package place.tomo.place.domain.entities
 
+import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EntityListeners
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
+import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Index
+import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
@@ -49,6 +52,13 @@ class PlaceFolderEntity(
     var updatedAt: LocalDateTime = LocalDateTime.now(),
     @Column(name = "deleted_at")
     var deletedAt: LocalDateTime? = null,
+    @OneToMany(
+        mappedBy = "folder",
+        cascade = [CascadeType.ALL],
+        fetch = FetchType.LAZY,
+        orphanRemoval = true,
+    )
+    val settings: MutableList<PlaceFolderSettingEntity> = mutableListOf(),
 ) {
     companion object {
         fun create(
@@ -63,5 +73,26 @@ class PlaceFolderEntity(
                 visibility = visibility,
                 tags = tags,
             )
+    }
+
+    fun addUserSetting(
+        userId: Long,
+        name: String,
+        iconColor: String,
+        isDisplayStoredPlace: Boolean,
+        isDisplayVisitedPlace: Boolean,
+    ): PlaceFolderSettingEntity {
+        val setting =
+            PlaceFolderSettingEntity.create(
+                userId = userId,
+                folder = this,
+                name = name,
+                iconColor = iconColor,
+                isDisplayStoredPlace = isDisplayStoredPlace,
+                isDisplayVisitedPlace = isDisplayVisitedPlace,
+            )
+
+        settings.add(setting)
+        return setting
     }
 }
