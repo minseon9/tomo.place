@@ -1,6 +1,8 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tomo_place/domains/auth/core/usecases/signup_with_social_usecase.dart';
 import 'package:tomo_place/domains/auth/core/entities/auth_token.dart';
 import 'package:tomo_place/domains/auth/consts/social_provider.dart';
+import 'package:tomo_place/shared/config/env_config.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:faker/faker.dart';
@@ -8,10 +10,15 @@ import 'package:clock/clock.dart';
 
 import '../../../../utils/mock_factory/auth_mock_factory.dart';
 
+// Mock EnvConfigInterface
+class MockEnvConfigInterface extends Mock implements EnvConfigInterface {}
+
 void main() {
   group('SignupWithSocialUseCase', () {
     late MockAuthRepository mockAuthRepository;
     late MockAuthTokenRepository mockAuthTokenRepository;
+    late MockEnvConfigInterface mockEnvConfig;
+    late ProviderContainer container;
     late SignupWithSocialUseCase useCase;
 
     setUpAll(() {
@@ -27,7 +34,23 @@ void main() {
     setUp(() {
       mockAuthRepository = AuthMockFactory.createAuthRepository();
       mockAuthTokenRepository = AuthMockFactory.createAuthTokenRepository();
-      useCase = SignupWithSocialUseCase(mockAuthRepository, mockAuthTokenRepository);
+      
+      mockEnvConfig = MockEnvConfigInterface();
+      when(() => mockEnvConfig.googleClientId).thenReturn('test_client_id');
+      when(() => mockEnvConfig.googleServerClientId).thenReturn('test_server_client_id');
+      when(() => mockEnvConfig.googleRedirectUri).thenReturn('https://test.com/callback');
+      
+      container = ProviderContainer(
+        overrides: [
+          envConfigProvider.overrideWith((ref) => mockEnvConfig),
+        ],
+      );
+      
+      useCase = SignupWithSocialUseCase(mockAuthRepository, mockAuthTokenRepository, container);
+    });
+
+    tearDown(() {
+      container.dispose();
     });
 
     group('UseCase 인스턴스 테스트', () {
@@ -45,9 +68,7 @@ void main() {
     });
 
     group('실패 케이스', () {
-      test('지원하지 않는 OAuth Provider로 실패해야 한다', () async {
-        // Given - Apple 프로바이더는 등록되지 않음
-
+      test('지원하지 않는 Apple OAuth Provider로 실패해야 한다', () async {
         // When & Then
         expect(
           () => useCase.execute(SocialProvider.apple),
@@ -55,9 +76,7 @@ void main() {
         );
       });
 
-      test('Kakao 프로바이더로 실패해야 한다 (미구현)', () async {
-        // Given - Kakao 프로바이더는 등록되지 않음
-
+      test('지원하지 않는 Kakao OAuth Provider로 실패해야 한다', () async {
         // When & Then
         expect(
           () => useCase.execute(SocialProvider.kakao),

@@ -1,4 +1,4 @@
-import 'package:tomo_place/domains/auth/data/oauth/oauth_provider.dart';
+import 'package:tomo_place/domains/auth/data/oauth/oauth_service.dart';
 import 'package:tomo_place/domains/auth/data/oauth/oauth_result.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -7,7 +7,7 @@ void main() {
     group('추상 클래스', () {
       test('OAuthProvider는 추상 클래스여야 한다', () {
         // Given & When & Then
-        expect(OAuthProvider, isA<Type>());
+        expect(OAuthService, isA<Type>());
         // 추상 클래스이므로 직접 인스턴스화할 수 없음 - 실제 구현체를 통해 테스트
       });
 
@@ -154,7 +154,7 @@ void main() {
 }
 
 // 테스트용 구현 클래스
-class TestOAuthProvider implements OAuthProvider {
+class TestOAuthProvider implements OAuthService<String> {
   @override
   String get providerId => 'test_provider';
 
@@ -163,6 +163,9 @@ class TestOAuthProvider implements OAuthProvider {
 
   @override
   bool get isSupported => true;
+  
+  @override
+  String get config => 'test_config';
 
   @override
   Future<OAuthResult> signIn() async {
@@ -186,7 +189,7 @@ class TestOAuthProvider implements OAuthProvider {
 }
 
 // 에러를 발생시키는 테스트용 구현 클래스
-class ErrorThrowingOAuthProvider implements OAuthProvider {
+class ErrorThrowingOAuthProvider implements OAuthService<String> {
   @override
   String get providerId => 'error_provider';
 
@@ -195,6 +198,9 @@ class ErrorThrowingOAuthProvider implements OAuthProvider {
 
   @override
   bool get isSupported => true;
+  
+  @override
+  String get config => 'error_config';
 
   @override
   Future<OAuthResult> signIn() async {
