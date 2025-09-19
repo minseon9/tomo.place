@@ -9,6 +9,7 @@ import '../../core/usecases/move_to_location_usecase.dart';
 import '../../core/services/map_controller_service.dart';
 import '../../data/map/map_renderer.dart';
 import '../models/map_state.dart';
+import '../providers/map_providers.dart';
 
 class MapNotifier extends StateNotifier<MapState> {
   MapNotifier(this._ref) : super(const MapInitial());

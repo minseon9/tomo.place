@@ -34,8 +34,20 @@ class MapControllerServiceImpl implements MapControllerService {
 /// Map Controller가 준비되지 않은 예외
 class MapControllerNotReadyException implements ExceptionInterface {
   @override
+  String get title => 'Map Controller Not Ready';
+  
+  @override
   String get message => 'Map controller is not ready';
   
   @override
   String get userMessage => '지도가 아직 준비되지 않았습니다. 잠시 후 다시 시도해주세요.';
+  
+  @override
+  String? get errorCode => 'MAP_CONTROLLER_NOT_READY';
+  
+  @override
+  String get errorType => 'MapError';
+  
+  @override
+  String? get suggestedAction => 'Please wait for the map to load completely';
 }

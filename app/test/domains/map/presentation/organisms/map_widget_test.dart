@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:tomo_place/domains/map/presentation/widgets/organisms/map_widget.dart';
-import 'package:tomo_place/domains/map/presentation/controllers/map_notifier.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:tomo_place/domains/map/core/entities/map_state.dart';
-import 'package:tomo_place/domains/map/presentation/providers/map_providers.dart';
+import 'package:tomo_place/domains/map/presentation/controllers/map_notifier.dart';
+import 'package:tomo_place/domains/map/presentation/widgets/organisms/map_widget.dart';
 
-import '../../../../../utils/widget/app_wrappers.dart';
-import '../../../../../utils/widget/verifiers.dart';
-import '../../../../../utils/state_notifier/map_notifier_mock.dart';
-import '../../../../../utils/mock_factory/map_mock_factory.dart';
+import '../../../../utils/mock_factory/map_mock_factory.dart';
+import '../../../../utils/state_notifier/map_notifier_mock.dart';
+import '../../../../utils/widget/app_wrappers.dart';
+import '../../../../utils/widget/verifiers.dart';
 
 void main() {
   group('MapWidget', () {

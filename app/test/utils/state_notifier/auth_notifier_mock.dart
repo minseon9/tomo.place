@@ -46,3 +46,4 @@ class AuthNotifierMockFactory {
     return BaseStateNotifierMockFactory.createOverrides(provider, createAuthNotifier());
   }
 }
+

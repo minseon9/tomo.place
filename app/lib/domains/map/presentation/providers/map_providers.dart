@@ -7,10 +7,12 @@ import '../../core/usecases/get_search_categories_usecase.dart';
 import '../../core/usecases/move_to_location_usecase.dart';
 import '../../data/repositories/location_repository_impl.dart';
 import '../../data/services/google_location_service.dart';
+import '../../data/services/location_service.dart';
 import '../../data/services/map_controller_service_impl.dart';
 import '../../data/map/map_renderer.dart';
 import '../../data/map/google_map_renderer.dart';
 import '../controllers/map_notifier.dart';
+import '../models/map_state.dart';
 
 // Service Providers
 final locationServiceProvider = Provider<LocationService>((ref) {

@@ -49,3 +49,4 @@ class ExceptionNotifierMockFactory {
     return BaseStateNotifierMockFactory.createOverrides(provider, createExceptionNotifier());
   }
 }
+

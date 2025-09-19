@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tomo_place/domains/map/data/map/map_renderer_provider.dart';
+import '../mock_factory/map_mock_factory.dart';
 
 /// 위젯 테스트를 위한 앱 래퍼 유틸리티
 class AppWrappers {
@@ -15,6 +17,10 @@ class AppWrappers {
   /// 위젯을 MaterialApp과 ProviderScope로 감싸기 (Riverpod 위젯용)
   static Widget wrapWithMaterialAppAndProviderScope(Widget widget) {
     return ProviderScope(
+      overrides: [
+        // Mock MapRenderer 사용
+        ...MapMockFactory.createMapRendererOverrides(),
+      ],
       child: MaterialApp(
         home: Scaffold(body: widget),
       ),
