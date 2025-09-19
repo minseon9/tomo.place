@@ -22,7 +22,7 @@ import java.time.LocalDateTime
 @Table(
     name = "social_account",
     uniqueConstraints = [
-        UniqueConstraint(columnNames = ["provider", "social_id"]),
+        UniqueConstraint(name = "uq_social_account__provider_social_id", columnNames = ["provider", "social_id"]),
     ],
 )
 @SQLDelete(sql = "UPDATE social_account SET is_active = false WHERE id = ?")

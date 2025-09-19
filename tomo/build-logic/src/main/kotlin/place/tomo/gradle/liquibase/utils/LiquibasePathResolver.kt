@@ -24,7 +24,7 @@ class LiquibasePathResolver(
         description: String,
     ): String {
         val module = project.findProperty("module") as String? ?: "main"
-        return "$timestamp-$description-changelog-$module.yml"
+        return "$timestamp-$description-changelog-$module.sql"
     }
 
     fun getSearchPaths(): String = project.rootProject.projectDir.absolutePath
