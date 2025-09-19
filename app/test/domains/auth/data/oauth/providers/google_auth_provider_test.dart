@@ -1,18 +1,32 @@
-import 'package:tomo_place/domains/auth/data/oauth/oauth_provider.dart';
-import 'package:tomo_place/domains/auth/data/oauth/providers/google_auth_provider.dart';
+import 'package:tomo_place/domains/auth/data/oauth/oauth_service.dart';
+import 'package:tomo_place/domains/auth/data/oauth/providers/google_auth_service.dart';
+import 'package:tomo_place/domains/auth/data/oauth/config/google_oauth_config.dart';
+import 'package:tomo_place/shared/config/env_config.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+
+// Mock EnvConfigInterface
+class MockEnvConfigInterface extends Mock implements EnvConfigInterface {}
 
 void main() {
   group('GoogleAuthProvider', () {
     late GoogleAuthProvider provider;
+    late MockEnvConfigInterface mockEnvConfig;
+    late GoogleOAuthConfig mockConfig;
 
     setUp(() {
-      provider = GoogleAuthProvider();
+      mockEnvConfig = MockEnvConfigInterface();
+      when(() => mockEnvConfig.googleClientId).thenReturn('test_client_id');
+      when(() => mockEnvConfig.googleServerClientId).thenReturn('test_server_client_id');
+      when(() => mockEnvConfig.googleRedirectUri).thenReturn('https://test.com/callback');
+      
+      mockConfig = GoogleOAuthConfig(mockEnvConfig);
+      provider = GoogleAuthProvider(mockConfig);
     });
 
     group('기본 속성', () {
-      test('providerId는 google이어야 한다', () {
-        expect(provider.providerId, equals('google'));
+      test('providerId는 GOOGLE이어야 한다', () {
+        expect(provider.providerId, equals('GOOGLE'));
       });
 
       test('displayName은 Google이어야 한다', () {
@@ -27,7 +41,7 @@ void main() {
 
     group('인터페이스 구현', () {
       test('OAuthProvider 인터페이스를 구현해야 한다', () {
-        expect(provider, isA<OAuthProvider>());
+        expect(provider, isA<OAuthService>());
       });
 
       test('모든 필수 메서드가 구현되어야 한다', () {

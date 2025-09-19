@@ -1,20 +1,20 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../consts/social_provider.dart';
-import '../../data/oauth/oauth_provider_registry.dart';
+import '../../data/oauth/oauth_service_factory.dart';
 import '../entities/auth_token.dart';
 import '../exceptions/oauth_exception.dart';
 import '../repositories/auth_repository.dart';
 import '../repositories/auth_token_repository.dart';
 
 class SignupWithSocialUseCase {
-  SignupWithSocialUseCase(this._repository, this._tokenRepository);
+  SignupWithSocialUseCase(this._repository, this._tokenRepository, this._container);
 
   final AuthRepository _repository;
   final AuthTokenRepository _tokenRepository;
+  final ProviderContainer _container;
 
   Future<AuthToken?> execute(SocialProvider provider) async {
-    OAuthProviderRegistry.initialize();
-
-    final oauthProvider = OAuthProviderRegistry.createProvider(provider.code);
+    final oauthProvider = OAuthServiceFactory.createProvider(provider, _container);
 
     final oauthResult = await oauthProvider.signIn();
     if (oauthResult.cancelled) {

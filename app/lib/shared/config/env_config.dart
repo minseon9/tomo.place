@@ -6,6 +6,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 abstract class EnvConfigInterface {
   Future<void> initialize();
   String get apiUrl;
+  String get googleClientId;
+  String get googleServerClientId;
+  String get googleRedirectUri;
+  String get appleClientId;
+  String get appleTeamId;
+  String get appleKeyId;
+  String get appleRedirectUri;
+  String get kakaoClientId;
+  String get kakaoJavascriptKey;
+  String get kakaoRedirectUri;
 }
 
 class EnvConfigImpl implements EnvConfigInterface {
@@ -16,6 +26,36 @@ class EnvConfigImpl implements EnvConfigInterface {
 
   @override
   String get apiUrl => EnvConfig.apiUrl;
+
+  @override
+  String get googleClientId => EnvConfig.googleClientId;
+
+  @override
+  String get googleServerClientId => EnvConfig.googleServerClientId;
+
+  @override
+  String get googleRedirectUri => EnvConfig.googleRedirectUri;
+
+  @override
+  String get appleClientId => EnvConfig.appleClientId;
+
+  @override
+  String get appleTeamId => EnvConfig.appleTeamId;
+
+  @override
+  String get appleKeyId => EnvConfig.appleKeyId;
+
+  @override
+  String get appleRedirectUri => EnvConfig.appleRedirectUri;
+
+  @override
+  String get kakaoClientId => EnvConfig.kakaoClientId;
+
+  @override
+  String get kakaoJavascriptKey => EnvConfig.kakaoJavascriptKey;
+
+  @override
+  String get kakaoRedirectUri => EnvConfig.kakaoRedirectUri;
 }
 
 class EnvConfig {

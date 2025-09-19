@@ -1,33 +1,35 @@
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:tomo_place/domains/auth/consts/social_provider.dart';
 
 import '../../../core/exceptions/oauth_exception.dart';
-import '../config/oauth_config.dart';
-import '../oauth_provider.dart';
+import '../config/google_oauth_config.dart';
+import '../oauth_service.dart';
 import '../oauth_result.dart';
 
-class GoogleAuthProvider implements OAuthProvider {
+class GoogleAuthService implements OAuthService<GoogleOAuthConfig> {
+  final GoogleOAuthConfig _config;
+  
+  GoogleAuthService(this._config);
+  
+  @override
+  GoogleOAuthConfig get config => _config;
+  
   static bool _isInitialized = false;
 
-  static Future<void> _ensureInitialized() async {
+  static Future<void> _ensureInitialized(GoogleOAuthConfig config) async {
     if (_isInitialized) return;
 
-    // Auth 도메인의 OAuth 설정을 사용
-    final googleConfig = OAuthConfig.getProviderConfig('GOOGLE');
-    if (googleConfig == null) {
-      throw ArgumentError('Google OAuth 설정을 찾을 수 없습니다.');
-    }
-
     await GoogleSignIn.instance.initialize(
-      clientId: googleConfig.clientId,
-      serverClientId: googleConfig.serverClientId,
+      clientId: config.clientId,
+      serverClientId: config.serverClientId,
     );
 
     _isInitialized = true;
   }
 
   @override
-  String get providerId => 'google';
-
+  String get providerId => SocialProvider.google.code;
+  
   @override
   String get displayName => 'Google';
 
@@ -38,11 +40,9 @@ class GoogleAuthProvider implements OAuthProvider {
   @override
   Future<OAuthResult> signIn() async {
     try {
-      await _ensureInitialized();
+      await _ensureInitialized(_config);
 
-      final googleConfig = OAuthConfig.getProviderConfig('GOOGLE');
-      final scopes = googleConfig?.scope ?? ['email', 'profile'];
-
+      final scopes = _config.scope;
       final GoogleSignInServerAuthorization? serverAuth = await GoogleSignIn
           .instance
           .authorizationClient
@@ -73,8 +73,7 @@ class GoogleAuthProvider implements OAuthProvider {
   @override
   Future<void> signOut() async {
     try {
-      await _ensureInitialized();
-
+      await _ensureInitialized(_config);
       await GoogleSignIn.instance.signOut();
     } catch (error) {
       throw OAuthException.signOutFailed(
@@ -86,7 +85,7 @@ class GoogleAuthProvider implements OAuthProvider {
 
   @override
   Future<void> initialize() async {
-    await _ensureInitialized();
+    await _ensureInitialized(_config);
   }
 
   @override

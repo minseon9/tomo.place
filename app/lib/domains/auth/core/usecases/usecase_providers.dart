@@ -10,6 +10,7 @@ final signupWithSocialUseCaseProvider = Provider<SignupWithSocialUseCase>(
   (ref) => SignupWithSocialUseCase(
     ref.read(authRepositoryProvider),
     ref.read(authTokenRepositoryProvider),
+    ref.container,
   ),
 );
 

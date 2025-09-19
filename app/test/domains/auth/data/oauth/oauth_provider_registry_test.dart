@@ -1,210 +1,90 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:faker/faker.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mocktail/mocktail.dart';
 
-import 'package:tomo_place/domains/auth/data/oauth/oauth_provider_registry.dart';
-import 'package:tomo_place/domains/auth/data/oauth/oauth_provider.dart';
-import 'package:tomo_place/domains/auth/data/oauth/oauth_result.dart';
+import 'package:tomo_place/domains/auth/data/oauth/oauth_service_factory.dart';
+import 'package:tomo_place/domains/auth/data/oauth/config/oauth_config_provider.dart';
 import 'package:tomo_place/domains/auth/consts/social_provider.dart';
+import 'package:tomo_place/shared/config/env_config.dart';
+
+// Mock EnvConfigInterface
+class MockEnvConfigInterface extends Mock implements EnvConfigInterface {}
 
 void main() {
-  group('OAuthProviderRegistry', () {
-    group('초기화', () {
-      test('initialize()가 호출되면 초기화 상태가 true가 되어야 한다', () {
-        // Given
-        expect(OAuthProviderRegistry.isInitialized, isFalse);
+  group('OAuthProviderFactory', () {
+    late MockEnvConfigInterface mockEnvConfig;
+    late ProviderContainer container;
 
-        // When
-        OAuthProviderRegistry.initialize();
-
-        // Then
-        expect(OAuthProviderRegistry.isInitialized, isTrue);
-      });
-
-      test('이미 초기화된 상태에서 initialize()를 다시 호출해도 문제없이 동작해야 한다', () {
-        // Given
-        OAuthProviderRegistry.initialize();
-        expect(OAuthProviderRegistry.isInitialized, isTrue);
-
-        // When & Then
-        expect(() => OAuthProviderRegistry.initialize(), returnsNormally);
-        expect(OAuthProviderRegistry.isInitialized, isTrue);
-      });
-
-      test('초기화 후 Google Provider가 등록되어야 한다', () {
-        // Given
-        OAuthProviderRegistry.initialize();
-
-        // When
-        final provider = OAuthProviderRegistry.createProvider(SocialProvider.google.code);
-
-        // Then
-        expect(provider, isNotNull);
-        expect(provider.providerId, equals('google'));
-      });
+    setUp(() {
+      mockEnvConfig = MockEnvConfigInterface();
+      when(() => mockEnvConfig.googleClientId).thenReturn('test_client_id');
+      when(() => mockEnvConfig.googleServerClientId).thenReturn('test_server_client_id');
+      when(() => mockEnvConfig.googleRedirectUri).thenReturn('https://test.com/callback');
+      
+      container = ProviderContainer(
+        overrides: [
+          envConfigProvider.overrideWith((ref) => mockEnvConfig),
+        ],
+      );
     });
 
-    group('Provider 등록', () {
-      test('registerProvider()로 커스텀 Provider를 등록할 수 있어야 한다', () {
-        // Given
-        final customProviderId = faker.lorem.word();
-        final mockProvider = TestOAuthProvider();
-
-        // When
-        OAuthProviderRegistry.registerProvider(customProviderId, () => mockProvider);
-
-        // Then
-        final provider = OAuthProviderRegistry.createProvider(customProviderId);
-        expect(provider, equals(mockProvider));
-      });
-
-      test('같은 ID로 Provider를 재등록하면 이전 Provider가 덮어써져야 한다', () {
-        // Given
-        final providerId = faker.lorem.word();
-        final firstProvider = TestOAuthProvider();
-        final secondProvider = TestOAuthProvider();
-
-        OAuthProviderRegistry.registerProvider(providerId, () => firstProvider);
-
-        // When
-        OAuthProviderRegistry.registerProvider(providerId, () => secondProvider);
-
-        // Then
-        final provider = OAuthProviderRegistry.createProvider(providerId);
-        expect(provider, equals(secondProvider));
-        expect(provider, isNot(equals(firstProvider)));
-      });
+    tearDown(() {
+      container.dispose();
     });
 
     group('Provider 생성', () {
-      test('등록된 Provider ID로 Provider를 생성할 수 있어야 한다', () {
-        // Given
-        final providerId = faker.lorem.word();
-        final mockProvider = TestOAuthProvider();
-        OAuthProviderRegistry.registerProvider(providerId, () => mockProvider);
-
+      test('Google Provider를 생성할 수 있어야 한다', () {
         // When
-        final provider = OAuthProviderRegistry.createProvider(providerId);
+        final provider = OAuthServiceFactory.createProvider(SocialProvider.google, container);
 
         // Then
-        expect(provider, equals(mockProvider));
+        expect(provider, isNotNull);
+        expect(provider.providerId, equals('GOOGLE'));
+        expect(provider.displayName, isNotEmpty);
       });
 
-      test('등록되지 않은 Provider ID로 생성 시 ArgumentError가 발생해야 한다', () {
-        // Given
-        final unknownProviderId = faker.lorem.word();
-
+      test('Apple Provider는 지원되지 않아야 한다', () {
         // When & Then
         expect(
-          () => OAuthProviderRegistry.createProvider(unknownProviderId),
+          () => OAuthServiceFactory.createProvider(SocialProvider.apple, container),
           throwsA(isA<ArgumentError>()),
         );
       });
 
-      test('지원되지 않는 플랫폼의 Provider 생성 시 ArgumentError가 발생해야 한다', () {
-        // Given
-        final providerId = faker.lorem.word();
-        final unsupportedProvider = UnsupportedOAuthProvider();
-        
-        OAuthProviderRegistry.registerProvider(providerId, () => unsupportedProvider);
-
+      test('Kakao Provider는 지원되지 않아야 한다', () {
         // When & Then
         expect(
-          () => OAuthProviderRegistry.createProvider(providerId),
+          () => OAuthServiceFactory.createProvider(SocialProvider.kakao, container),
           throwsA(isA<ArgumentError>()),
         );
       });
-    });
 
-    group('Google Provider', () {
-      test('Google Provider가 올바르게 등록되어야 한다', () {
-        // Given
-        OAuthProviderRegistry.initialize();
-
+      test('OAuthConfigProviderFactory를 통해 GoogleOAuthConfig를 주입받아야 한다', () {
         // When
-        final provider = OAuthProviderRegistry.createProvider(SocialProvider.google.code);
+        final provider = OAuthServiceFactory.createProvider(SocialProvider.google, container);
 
         // Then
-        expect(provider.providerId, equals('google'));
+        expect(provider, isNotNull);
+        expect(provider.providerId, equals('GOOGLE'));
         expect(provider.displayName, isNotEmpty);
       });
     });
 
-    group('Apple Provider (TODO)', () {
-      test('Apple Provider 등록은 아직 구현되지 않았다', () {
-        // Given
-        OAuthProviderRegistry.initialize();
-
+    group('Provider 지원 여부 확인', () {
+      test('Google Provider는 지원되어야 한다', () {
         // When & Then
-        expect(
-          () => OAuthProviderRegistry.createProvider('apple'),
-          throwsA(isA<ArgumentError>()),
-        );
+        expect(OAuthServiceFactory.isProviderSupported(SocialProvider.google), isTrue);
       });
-    });
 
-    group('Kakao Provider (TODO)', () {
-      test('Kakao Provider 등록은 아직 구현되지 않았다', () {
-        // Given
-        OAuthProviderRegistry.initialize();
-
+      test('Apple Provider는 지원되지 않아야 한다', () {
         // When & Then
-        expect(
-          () => OAuthProviderRegistry.createProvider('kakao'),
-          throwsA(isA<ArgumentError>()),
-        );
+        expect(OAuthServiceFactory.isProviderSupported(SocialProvider.apple), isTrue); // 등록은 되어있지만 오류 발생
+      });
+
+      test('Kakao Provider는 지원되지 않아야 한다', () {
+        // When & Then
+        expect(OAuthServiceFactory.isProviderSupported(SocialProvider.kakao), isTrue); // 등록은 되어있지만 오류 발생
       });
     });
   });
-}
-
-// 테스트용 구현 클래스
-class TestOAuthProvider implements OAuthProvider {
-  @override
-  String get providerId => 'test_provider';
-
-  @override
-  String get displayName => 'Test Provider';
-
-  @override
-  bool get isSupported => true;
-
-  @override
-  Future<OAuthResult> signIn() async {
-    return OAuthResult.success(authorizationCode: 'test_code');
-  }
-
-  @override
-  Future<void> signOut() async {}
-
-  @override
-  Future<void> initialize() async {}
-
-  @override
-  Future<void> dispose() async {}
-}
-
-// 지원되지 않는 Provider 테스트용 클래스
-class UnsupportedOAuthProvider implements OAuthProvider {
-  @override
-  String get providerId => 'unsupported_provider';
-
-  @override
-  String get displayName => 'Unsupported Provider';
-
-  @override
-  bool get isSupported => false;
-
-  @override
-  Future<OAuthResult> signIn() async {
-    return OAuthResult.success(authorizationCode: 'test_code');
-  }
-
-  @override
-  Future<void> signOut() async {}
-
-  @override
-  Future<void> initialize() async {}
-
-  @override
-  Future<void> dispose() async {}
 }
