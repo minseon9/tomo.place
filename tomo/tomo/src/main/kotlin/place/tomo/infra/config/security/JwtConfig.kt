@@ -23,13 +23,13 @@ import place.tomo.auth.domain.exception.InvalidJwtSecretException
 import place.tomo.common.exception.NotFoundActiveUserException
 import place.tomo.contract.dtos.AuthorizedUserDTO
 import place.tomo.contract.ports.UserDomainPort
-import java.util.UUID
 import javax.crypto.spec.SecretKeySpec
 
 @Configuration
 class JwtConfig(
     private val properties: JwtPropertiesDTO,
     @Value("\${security.jwt.secret}") private val jwtSecret: String,
+    private val userDomainPort: UserDomainPort,
 ) {
     companion object {
         const val SECRET_MIN_LENGTH = 32
@@ -56,7 +56,7 @@ class JwtConfig(
     }
 
     @Bean
-    fun jwtAuthenticationConverter(userDomainPort: UserDomainPort): Converter<Jwt, out AbstractAuthenticationToken> =
+    fun jwtAuthenticationConverter(): Converter<Jwt, out UsernamePasswordAuthenticationToken> =
         Converter { jwt ->
             val user =
                 userDomainPort.findActiveByEntityId(jwt.subject)
