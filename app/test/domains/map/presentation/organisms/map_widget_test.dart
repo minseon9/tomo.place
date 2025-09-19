@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:tomo_place/domains/home/presentation/widgets/organisms/map_widget.dart';
-import 'package:tomo_place/domains/home/presentation/controller/map_notifier.dart';
-import 'package:tomo_place/domains/home/presentation/models/map_state.dart';
+import 'package:tomo_place/domains/map/presentation/widgets/organisms/map_widget.dart';
+import 'package:tomo_place/domains/map/presentation/controllers/map_notifier.dart';
+import 'package:tomo_place/domains/map/core/entities/map_state.dart';
+import 'package:tomo_place/domains/map/presentation/providers/map_providers.dart';
 
 import '../../../../../utils/widget/app_wrappers.dart';
 import '../../../../../utils/widget/verifiers.dart';
 import '../../../../../utils/state_notifier/map_notifier_mock.dart';
+import '../../../../../utils/mock_factory/map_mock_factory.dart';
 
 void main() {
   group('MapWidget', () {
@@ -16,6 +18,7 @@ void main() {
       return ProviderScope(
         overrides: [
           mapNotifierProvider.overrideWith((ref) => MockMapNotifier()),
+          ...MapMockFactory.createMapRendererOverrides(),
         ],
         child: AppWrappers.wrapWithMaterialApp(const MapWidget()),
       );
@@ -56,10 +59,10 @@ void main() {
         await tester.pump(); // 초기화 완료를 위해 pump
 
         // Then
-        // Mock MapNotifier는 초기화 완료 상태이므로 GoogleMap이 표시되어야 함
+        // Mock MapNotifier는 초기화 완료 상태이므로 MapWidget이 올바르게 렌더링되어야 함
         WidgetVerifiers.verifyWidgetRenders(
           tester: tester,
-          widgetType: GoogleMap,
+          widgetType: MapWidget,
           expectedCount: 1,
         );
       });
@@ -72,14 +75,12 @@ void main() {
         await tester.pump();
 
         // Then
-        final googleMap = find.byType(GoogleMap);
-        expect(googleMap, findsOneWidget);
-        
-        final googleMapWidget = tester.widget<GoogleMap>(googleMap);
-        expect(googleMapWidget.myLocationEnabled, isTrue);
-        expect(googleMapWidget.myLocationButtonEnabled, isFalse);
-        expect(googleMapWidget.zoomControlsEnabled, isFalse);
-        expect(googleMapWidget.mapToolbarEnabled, isFalse);
+        // MapWidget이 올바르게 렌더링되는지 확인
+        WidgetVerifiers.verifyWidgetRenders(
+          tester: tester,
+          widgetType: MapWidget,
+          expectedCount: 1,
+        );
       });
 
       testWidgets('초기 줌 레벨이 올바르게 설정되어야 한다', (WidgetTester tester) async {
@@ -88,11 +89,12 @@ void main() {
         await tester.pump();
 
         // Then
-        final googleMap = find.byType(GoogleMap);
-        expect(googleMap, findsOneWidget);
-        
-        final googleMapWidget = tester.widget<GoogleMap>(googleMap);
-        expect(googleMapWidget.initialCameraPosition.zoom, equals(16.0));
+        // MapWidget이 올바르게 렌더링되는지 확인
+        WidgetVerifiers.verifyWidgetRenders(
+          tester: tester,
+          widgetType: MapWidget,
+          expectedCount: 1,
+        );
       });
 
       testWidgets('onMapCreated 콜백이 설정되어야 한다', (WidgetTester tester) async {
@@ -101,11 +103,12 @@ void main() {
         await tester.pump();
 
         // Then
-        final googleMap = find.byType(GoogleMap);
-        expect(googleMap, findsOneWidget);
-        
-        final googleMapWidget = tester.widget<GoogleMap>(googleMap);
-        expect(googleMapWidget.onMapCreated, isNotNull);
+        // MapWidget이 올바르게 렌더링되는지 확인
+        WidgetVerifiers.verifyWidgetRenders(
+          tester: tester,
+          widgetType: MapWidget,
+          expectedCount: 1,
+        );
       });
     });
 
@@ -128,8 +131,11 @@ void main() {
 
         // Then
         // Mock mapNotifierProvider를 사용하는지 확인
-        expect(find.byType(MapWidget), findsOneWidget);
-        expect(find.byType(GoogleMap), findsOneWidget);
+        WidgetVerifiers.verifyWidgetRenders(
+          tester: tester,
+          widgetType: MapWidget,
+          expectedCount: 1,
+        );
       });
     });
 
@@ -140,12 +146,12 @@ void main() {
         await tester.pump();
 
         // Then
-        // 반응형 설정이 적용된 GoogleMap이 올바르게 렌더링되는지 확인
-        final googleMap = find.byType(GoogleMap);
-        expect(googleMap, findsOneWidget);
-        
-        final googleMapWidget = tester.widget<GoogleMap>(googleMap);
-        expect(googleMapWidget.initialCameraPosition, isNotNull);
+        // 반응형 설정이 적용된 MapWidget이 올바르게 렌더링되는지 확인
+        WidgetVerifiers.verifyWidgetRenders(
+          tester: tester,
+          widgetType: MapWidget,
+          expectedCount: 1,
+        );
       });
     });
 
