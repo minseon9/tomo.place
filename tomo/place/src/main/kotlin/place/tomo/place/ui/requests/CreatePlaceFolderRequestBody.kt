@@ -2,15 +2,15 @@ package place.tomo.place.ui.requests
 
 import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.Pattern
 
 data class CreatePlaceFolderRequestBody(
-    // folder 자체에 설정
-    @field:NotBlank(message = "Refresh token is required")
+    @field:Pattern(regexp = "^(PRIVATE|PUBLIC)$")
     val visibility: String,
-    // 사용자 별로 설정
-    @field:NotBlank(message = "Refresh token is required")
-    @field:Max(value = 20, message = "Refresh token is required")
+    @field:NotBlank()
+    @field:Max(value = 20)
     val name: String,
+    @field:Pattern(regexp = "^#[0-9a-fA-F]{6}$")
     val iconColor: String,
     val isDisplayStoredPlace: Boolean,
     val isDisplayVisitedPlace: Boolean,
