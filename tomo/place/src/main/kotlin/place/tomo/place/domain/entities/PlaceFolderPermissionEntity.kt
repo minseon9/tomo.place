@@ -1,17 +1,18 @@
 package place.tomo.place.domain.entities
 
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EntityListeners
+import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Index
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import org.hibernate.annotations.JdbcTypeCode
-import org.hibernate.annotations.Type
 import org.hibernate.type.SqlTypes
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
@@ -23,14 +24,14 @@ import java.time.LocalDateTime
 @EntityListeners(AuditingEntityListener::class)
 @Table(
     name = "place_folder_permission",
-    indexes = [
-        Index(name = "idx_permission_user_folder", columnList = "user_id, place_folder_id"),
-        Index(name = "idx_permission_folder", columnList = "place_folder_id"),
-        Index(name = "idx_permission_user", columnList = "user_id"),
-        Index(name = "idx_permission_type", columnList = "permissions"),
-    ],
     uniqueConstraints = [
-        UniqueConstraint(columnNames = ["user_id", "place_folder_id"]),
+        UniqueConstraint(name = "uq_place_folder_permission__user_id_place_folder_id", columnNames = ["user_id", "folder_id"]),
+    ],
+    indexes = [
+        Index(name = "idx_place_folder_permission__user_id__folder_id", columnList = "user_id, folder_id"),
+        Index(name = "idx_place_folder_permission__folder_id", columnList = "folder_id"),
+        Index(name = "idx_place_folder_permission__user_id", columnList = "user_id"),
+        Index(name = "idx_place_folder_permission__type", columnList = "permissions"),
     ],
 )
 class PlaceFolderPermissionEntity(
@@ -38,8 +39,9 @@ class PlaceFolderPermissionEntity(
     val id: Long = 0,
     @Column(name = "user_id", nullable = false)
     val userId: Long,
-    @Column(name = "place_folder_id", nullable = false)
-    val placeFolderId: Long,
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "folder_id", nullable = false)
+    val folder: PlaceFolderEntity,
     @Column(name = "granted_by", nullable = false)
     val grantedBy: Long,
     @Column(columnDefinition = "jsonb", nullable = false)
