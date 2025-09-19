@@ -1,6 +1,7 @@
 package place.tomo.user.infra.adapters
 
 import org.springframework.stereotype.Component
+import place.tomo.common.exception.NotFoundActiveUserException
 import place.tomo.contract.dtos.UserInfoDTO
 import place.tomo.contract.ports.UserDomainPort
 import place.tomo.user.domain.services.UserDomainService
@@ -14,7 +15,9 @@ class UserDomainAdapter(
 ) : UserDomainPort {
     override fun findActiveByEntityId(entityId: String): UserInfoDTO? {
         val user = userRepository.findByEntityIdAndDeletedAtIsNull(UUID.fromString(entityId)) ?: return null
-        require(user.isActivated())
+        if (!user.isActivated()) {
+            throw NotFoundActiveUserException(user.email)
+        }
 
         return UserInfoDTO(
             id = user.id,
