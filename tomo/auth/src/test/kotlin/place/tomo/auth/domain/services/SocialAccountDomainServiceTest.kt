@@ -18,6 +18,7 @@ import place.tomo.auth.domain.exception.SocialAccountNotFoundException
 import place.tomo.auth.infra.repositories.SocialAccountRepository
 import place.tomo.contract.constant.OIDCProviderType
 import place.tomo.contract.dtos.UserInfoDTO
+import java.util.UUID
 
 @DisplayName("SocialAccountDomainService")
 class SocialAccountDomainServiceTest {
@@ -173,7 +174,7 @@ class SocialAccountDomainServiceTest {
     }
 
     private fun createLinkSocialAccountCommand(email: String): LinkSocialAccountCommand {
-        val userInfo = UserInfoDTO(1, email, faker.name().username())
+        val userInfo = UserInfoDTO(1, UUID.randomUUID(), email, faker.name().username())
 
         return LinkSocialAccountCommand(
             userInfo,

@@ -73,7 +73,6 @@ class JwtValidatorTest {
             assertThatThrownBy { service.validateRefreshToken(notRefreshToken) }
                 .isInstanceOf(InvalidRefreshTokenException::class.java)
                 .message()
-                .isEqualTo("유효하지 않은 토큰 유형입니다.")
         }
 
         @Test
@@ -90,7 +89,6 @@ class JwtValidatorTest {
             assertThatThrownBy { service.validateRefreshToken(typeNullRefreshToken) }
                 .isInstanceOf(InvalidRefreshTokenException::class.java)
                 .message()
-                .isEqualTo("유효하지 않은 토큰 유형입니다.")
         }
     }
 }

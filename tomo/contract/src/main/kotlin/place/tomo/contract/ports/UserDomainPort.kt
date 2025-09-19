@@ -1,15 +1,14 @@
 package place.tomo.contract.ports
 
 import place.tomo.contract.dtos.UserInfoDTO
-import place.tomo.contract.vo.UserId
 
 interface UserDomainPort {
-    fun findActiveByEmail(email: String): UserInfoDTO?
+    fun findActiveByEntityId(entityId: String): UserInfoDTO?
 
     fun getOrCreateActiveUser(
         email: String,
         name: String?,
     ): UserInfoDTO
 
-    fun softDelete(userId: UserId)
+    fun softDelete(userId: Long)
 }
