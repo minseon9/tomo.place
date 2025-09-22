@@ -24,11 +24,9 @@ import java.util.UUID
 @Entity
 @Table(
     name = "users",
-    indexes = [
-        Index(name = "idx_entity_id", columnList = "entity_id"),
-    ],
     uniqueConstraints = [
         UniqueConstraint(name = "uq_user__email", columnNames = ["email"]),
+        UniqueConstraint(name = "uq_user__entity_id", columnNames = ["entity_id"]),
     ],
 )
 @EntityListeners(AuditingEntityListener::class)
