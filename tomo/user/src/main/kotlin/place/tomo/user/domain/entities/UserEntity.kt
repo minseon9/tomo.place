@@ -8,7 +8,9 @@ import jakarta.persistence.Enumerated
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.Index
 import jakarta.persistence.Table
+import jakarta.persistence.UniqueConstraint
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
@@ -17,13 +19,24 @@ import place.tomo.user.domain.constant.UserStatus
 import place.tomo.user.domain.exception.InvalidEmailException
 import place.tomo.user.domain.exception.InvalidUsernameException
 import java.time.LocalDateTime
+import java.util.UUID
 
 @Entity
-@Table(name = "users")
+@Table(
+    name = "users",
+    indexes = [
+        Index(name = "idx_entity_id", columnList = "entity_id"),
+    ],
+    uniqueConstraints = [
+        UniqueConstraint(name = "uq_user__email", columnNames = ["email"]),
+    ],
+)
 @EntityListeners(AuditingEntityListener::class)
 class UserEntity(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
+    @Column(name = "entity_id", nullable = false)
+    val entityId: UUID = UUID.randomUUID(),
     @Column(unique = true, nullable = false)
     val email: String,
     @Column(nullable = false)
@@ -58,6 +71,11 @@ class UserEntity(
                 username = username,
             )
         }
+    }
+
+    fun deactivate() {
+        status = UserStatus.DEACTIVATED
+        deletedAt = LocalDateTime.now()
     }
 
     fun isActivated(): Boolean = status == UserStatus.ACTIVATED

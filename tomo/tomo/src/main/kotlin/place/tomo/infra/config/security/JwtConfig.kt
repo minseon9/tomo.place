@@ -4,6 +4,9 @@ import com.nimbusds.jose.jwk.source.ImmutableSecret
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.convert.converter.Converter
+import org.springframework.security.authentication.AbstractAuthenticationToken
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator
 import org.springframework.security.oauth2.core.OAuth2Error
 import org.springframework.security.oauth2.core.OAuth2TokenValidator
@@ -17,12 +20,16 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder
 import place.tomo.auth.domain.dtos.JwtPropertiesDTO
 import place.tomo.auth.domain.exception.InvalidJwtSecretException
+import place.tomo.common.exception.NotFoundActiveUserException
+import place.tomo.contract.dtos.AuthorizedUserDTO
+import place.tomo.contract.ports.UserDomainPort
 import javax.crypto.spec.SecretKeySpec
 
 @Configuration
 class JwtConfig(
     private val properties: JwtPropertiesDTO,
     @Value("\${security.jwt.secret}") private val jwtSecret: String,
+    private val userDomainPort: UserDomainPort,
 ) {
     companion object {
         const val SECRET_MIN_LENGTH = 32
@@ -47,6 +54,23 @@ class JwtConfig(
 
         return decoder
     }
+
+    @Bean
+    fun jwtAuthenticationConverter(): Converter<Jwt, out UsernamePasswordAuthenticationToken> =
+        Converter { jwt ->
+            val user =
+                userDomainPort.findActiveByEntityId(jwt.subject)
+                    ?: throw NotFoundActiveUserException(jwt.subject)
+
+            val authorizedUser =
+                AuthorizedUserDTO(
+                    id = user.id,
+                    entityId = jwt.subject,
+                    email = user.email,
+                )
+
+            UsernamePasswordAuthenticationToken(authorizedUser, "n/a", emptyList())
+        }
 
     private fun createDecoderValidator(): DelegatingOAuth2TokenValidator<Jwt> {
         val withIssuer: OAuth2TokenValidator<Jwt> =

@@ -38,12 +38,12 @@ class AuthenticationApplicationService(
             ),
         )
 
-        return issueToken(oidcUserInfo.email)
+        return issueToken(userInfo.entityId.toString())
     }
 
     fun refreshToken(request: RefreshTokenRequest): IssueTokenResponse {
         val subject = jwtValidator.validateRefreshToken(request.refreshToken)
-        userDomainPort.findActiveByEmail(subject) ?: throw NotFoundActiveUserException(subject)
+        userDomainPort.findActiveByEntityId(subject) ?: throw NotFoundActiveUserException(subject)
 
         return issueToken(subject)
     }

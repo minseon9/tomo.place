@@ -27,6 +27,7 @@ import place.tomo.contract.constant.OIDCProviderType
 import place.tomo.contract.dtos.UserInfoDTO
 import place.tomo.contract.ports.UserDomainPort
 import java.time.Instant
+import java.util.UUID
 
 @DisplayName("AuthenticationApplicationService")
 class AuthenticationApplicationServiceTest {
@@ -72,8 +73,8 @@ class AuthenticationApplicationServiceTest {
 
             val accessToken = issueToken(false)
             val refreshToken = issueToken(true)
-            every { jwtProvider.issueAccessToken(email) } returns accessToken
-            every { jwtProvider.issueRefreshToken(email) } returns refreshToken
+            every { jwtProvider.issueAccessToken(userInfo.entityId.toString()) } returns accessToken
+            every { jwtProvider.issueRefreshToken(userInfo.entityId.toString()) } returns refreshToken
 
             service.signUp(
                 OIDCSignUpRequest(oidcInfo.provider, authorizationCode = faker.internet().password()),
@@ -98,8 +99,8 @@ class AuthenticationApplicationServiceTest {
 
             val accessToken = issueToken(false)
             val refreshToken = issueToken(true)
-            every { jwtProvider.issueAccessToken(email) } returns accessToken
-            every { jwtProvider.issueRefreshToken(email) } returns refreshToken
+            every { jwtProvider.issueAccessToken(userInfo.entityId.toString()) } returns accessToken
+            every { jwtProvider.issueRefreshToken(userInfo.entityId.toString()) } returns refreshToken
 
             val response =
                 service.signUp(
@@ -130,8 +131,8 @@ class AuthenticationApplicationServiceTest {
 
             val accessToken = issueToken(false)
             val refreshToken = issueToken(true)
-            every { jwtProvider.issueAccessToken(email) } returns accessToken
-            every { jwtProvider.issueRefreshToken(email) } returns refreshToken
+            every { jwtProvider.issueAccessToken(userInfo.entityId.toString()) } returns accessToken
+            every { jwtProvider.issueRefreshToken(userInfo.entityId.toString()) } returns refreshToken
 
             service.signUp(OIDCSignUpRequest(oidcInfo.provider, authorizationCode = faker.internet().password()))
 
@@ -206,16 +207,16 @@ class AuthenticationApplicationServiceTest {
         @DisplayName("유효한 refresh token으로 요청 시 새로운 토큰을 반환한다")
         fun `refresh token when valid expect new tokens returned`() {
             val refreshToken = faker.internet().password()
-            val email = faker.internet().emailAddress()
-            val userInfo = createUserInfo(email)
+            val entityId = UUID.randomUUID()
+            val userInfo = createUserInfo(entityId = entityId)
 
-            every { jwtValidator.validateRefreshToken(refreshToken) } returns email
-            every { userDomainPort.findActiveByEmail(email) } returns userInfo
+            every { jwtValidator.validateRefreshToken(refreshToken) } returns entityId.toString()
+            every { userDomainPort.findActiveByEntityId(entityId.toString()) } returns userInfo
 
             val newAccessToken = issueToken(false)
             val newRefreshToken = issueToken(true)
-            every { jwtProvider.issueAccessToken(email) } returns newAccessToken
-            every { jwtProvider.issueRefreshToken(email) } returns newRefreshToken
+            every { jwtProvider.issueAccessToken(userInfo.entityId.toString()) } returns newAccessToken
+            every { jwtProvider.issueRefreshToken(userInfo.entityId.toString()) } returns newRefreshToken
 
             val result = service.refreshToken(RefreshTokenRequest(refreshToken))
 
@@ -245,7 +246,7 @@ class AuthenticationApplicationServiceTest {
             every {
                 jwtValidator.validateRefreshToken(refreshToken)
             } returns userEmail
-            every { userDomainPort.findActiveByEmail(userEmail) } throws NotFoundActiveUserException(userEmail)
+            every { userDomainPort.findActiveByEntityId(userEmail) } throws NotFoundActiveUserException(userEmail)
 
             assertThatThrownBy { service.refreshToken(RefreshTokenRequest(refreshToken)) }
                 .isInstanceOf(NotFoundActiveUserException::class.java)
@@ -255,7 +256,8 @@ class AuthenticationApplicationServiceTest {
     private fun createUserInfo(
         email: String = faker.internet().emailAddress(),
         name: String = faker.name().username(),
-    ): UserInfoDTO = UserInfoDTO(faker.number().numberBetween(1L, 1000L), email, name)
+        entityId: UUID = UUID.randomUUID(),
+    ): UserInfoDTO = UserInfoDTO(faker.number().numberBetween(1L, 1000L), entityId, email, name)
 
     private fun createOidcUserInfo(
         email: String = faker.internet().emailAddress(),
