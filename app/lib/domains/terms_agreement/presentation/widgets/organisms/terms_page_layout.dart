@@ -36,7 +36,7 @@ class TermsPageLayout extends StatelessWidget {
             child: SafeArea(
               bottom: false,
               child: Container(
-                padding: ResponsiveSizing.getResponsivePadding(
+                padding: ResponsiveSizing.getResponsiveEdge(
                   context,
                   left: 10,
                   top: 23,
@@ -59,7 +59,7 @@ class TermsPageLayout extends StatelessWidget {
           // 본문
           Expanded(
             child: Padding(
-              padding: ResponsiveSizing.getResponsivePadding(
+              padding: ResponsiveSizing.getResponsiveEdge(
                 context,
                 left: 23,
                 top: 20,
@@ -71,7 +71,7 @@ class TermsPageLayout extends StatelessWidget {
 
           // 하단 버튼
           Padding(
-            padding: ResponsiveSizing.getResponsivePadding(
+            padding: ResponsiveSizing.getResponsiveEdge(
               context,
               left: 47,
               right: 47,

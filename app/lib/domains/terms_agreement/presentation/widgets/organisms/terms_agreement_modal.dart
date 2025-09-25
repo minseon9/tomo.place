@@ -81,7 +81,7 @@ class TermsAgreementModal extends StatelessWidget {
                   // 모달 내용
                   Expanded(
                     child: Padding(
-                      padding: ResponsiveSizing.getResponsivePadding(
+                      padding: ResponsiveSizing.getResponsiveEdge(
                         context,
                         left: 29,
                         top: 21,

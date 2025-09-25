@@ -42,7 +42,6 @@ class TermsAgreeButton extends StatelessWidget {
                 style: ResponsiveTypography.getResponsiveButton(context)
                     .copyWith(
                       color: const Color.fromRGBO(0, 0, 0, 0.85),
-
                       letterSpacing: -0.28,
                     ),
               ),

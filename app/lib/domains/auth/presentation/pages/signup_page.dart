@@ -35,7 +35,7 @@ class _SignupPageContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: ResponsiveSizing.getResponsivePadding(
+      padding: ResponsiveSizing.getResponsiveEdge(
         context,
         left: 24,
         top: 24,

@@ -11,7 +11,7 @@ class ResponsiveSizing {
     DeviceType.tablet: 1.2,
   };
 
-  static EdgeInsets getResponsivePadding(
+  static EdgeInsets getResponsiveEdge(
     BuildContext context, {
     double left = 0,
     double top = 0,
@@ -30,6 +30,23 @@ class ResponsiveSizing {
       bottom * padding,
     );
   }
+
+  static EdgeInsets getResponsiveSymmetricEdge(
+      BuildContext context, {
+        double vertical = 0,
+        double horizontal = 0,
+      }) {
+    final deviceType = ResponsiveConfig.getDeviceType(
+      MediaQuery.sizeOf(context).width,
+    );
+
+    final padding = _paddingMultipliers[deviceType]!;
+    return EdgeInsets.symmetric(
+      vertical: vertical * padding,
+      horizontal: horizontal * padding,
+    );
+  }
+
 
   static double getResponsiveHeight(
     BuildContext context,

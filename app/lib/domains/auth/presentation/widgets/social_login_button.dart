@@ -57,7 +57,7 @@ class SocialLoginButton extends StatelessWidget {
             onTap: (isLoading || _isDisabled) ? null : onPressed,
             borderRadius: BorderRadius.circular(6),
             child: Padding(
-              padding: ResponsiveSizing.getResponsivePadding(
+              padding: ResponsiveSizing.getResponsiveEdge(
                 context,
                 top: 14,
                 bottom: 14,
