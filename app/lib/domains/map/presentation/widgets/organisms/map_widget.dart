@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/entities/map_marker.dart';
+import '../../controllers/map_view_notifier.dart';
 import 'google/google_map_widget.dart';
 
 class MapRenderOptions {
@@ -22,6 +24,9 @@ abstract class MapWidget extends ConsumerWidget{
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final mapViewState = ref.watch(mapViewControllerProvider);
+    final markers = mapViewState.markers;
+
     return renderMap(
       ref: ref,
       zoom: 16,
@@ -31,6 +36,7 @@ abstract class MapWidget extends ConsumerWidget{
         zoomControlsEnabled: false,
         mapToolbarEnabled: false,
       ),
+      markers: markers,
     );
   }
 
@@ -38,6 +44,7 @@ abstract class MapWidget extends ConsumerWidget{
     required WidgetRef ref,
     required double zoom,
     MapRenderOptions? options,
+    Set<MapMarker>? markers,
   });
 }
 
