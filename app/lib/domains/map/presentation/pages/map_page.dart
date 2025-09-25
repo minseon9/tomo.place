@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/ui/responsive/responsive_sizing.dart';
+import '../../core/usecases/move_to_current_location_usecase.dart';
 import '../controllers/location_permission_handler.dart';
 import '../controllers/location_permission_notifier.dart';
+import '../controllers/map_view_notifier.dart';
 import '../models/location_permission_state.dart';
 import '../widgets/atoms/my_location_button.dart';
 import '../widgets/molecules/map_search_bar.dart';
@@ -37,7 +39,11 @@ class _MapPageState extends ConsumerState<MapPage> {
           (previous, next) {
         switch (next) {
           case LocationPermissionLoading():
+            break;
           case LocationPermissionGranted():
+            ref.read(moveToCurrentLocationUseCaseProvider).execute().then((_) {
+              ref.read(mapViewControllerProvider.notifier).startFollowing();
+            });
             break;
           default:
             if (!_didRunInitialFlow) {

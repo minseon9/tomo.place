@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../../../core/repositories/map_control_repository.dart';
+import '../../../controllers/map_view_notifier.dart';
 import '../map_widget.dart';
 
 class GoogleMapWidget extends MapWidget {
@@ -24,6 +25,9 @@ class GoogleMapWidget extends MapWidget {
       onMapCreated: (controller) async {
         final repository = ref.read(mapControlRepositoryProvider);
         repository.setController(controller);
+      },
+      onCameraMoveStarted: () {
+        ref.read(mapViewControllerProvider.notifier).stopFollowing();
       },
       myLocationEnabled: options?.myLocationEnabled ?? true,
       myLocationButtonEnabled: options?.myLocationButtonEnabled ?? false,

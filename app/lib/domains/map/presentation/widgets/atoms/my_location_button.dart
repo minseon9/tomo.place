@@ -4,12 +4,21 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tomo_place/shared/ui/design_system/tokens/colors.dart';
 
 import '../../../../../shared/ui/responsive/responsive_sizing.dart';
+import '../../../core/usecases/move_to_current_location_usecase.dart';
+import '../../controllers/location_permission_handler.dart';
+import '../../controllers/location_permission_notifier.dart';
+import '../../controllers/map_view_notifier.dart';
 
 class MyLocationButton extends ConsumerWidget {
   const MyLocationButton({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final permissionState = ref.watch(locationPermissionNotifierProvider);
+    final permissionHandler = ref.read(locationPermissionHandlerProvider);
+    final moveToCurrentLocation = ref.watch(moveToCurrentLocationUseCaseProvider);
+    final hasPermission = permissionState.hasLocationPermission;
+
     final buttonSize = ResponsiveSizing.getValueByDevice(
       context,
       mobile: 36.0,
@@ -38,18 +47,24 @@ class MyLocationButton extends ConsumerWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(buttonSize / 2),
-          onTap: () => {
-            // FIXME: onTap callback 구현
-          },
+          onTap: hasPermission ? () async {
+            try {
+              // follow 모드 시작
+              ref.read(mapViewControllerProvider.notifier).startFollowing();
+              await moveToCurrentLocation.execute();
+            } catch (_) {
+              // ignore
+            }
+          } : () => permissionHandler.handleOnAction(context, permissionState),
           child: Center(
-            child: _getMyLocationIcon(context),
+            child: _getMyLocationIcon(context, hasPermission),
           ),
         ),
       ),
     );
   }
 
-  SvgPicture _getMyLocationIcon(BuildContext context) {
+  SvgPicture _getMyLocationIcon(BuildContext context, bool hasPermission) {
     final iconSize = ResponsiveSizing.getValueByDevice(
       context,
       mobile: 20.0,
@@ -60,7 +75,7 @@ class MyLocationButton extends ConsumerWidget {
       'assets/icons/location_button_icon.svg',
       width: iconSize,
       height: iconSize,
-      colorFilter: ColorFilter.mode(const Color(0xFF6393F2), BlendMode.srcIn), // 모든 도형 색을 red로
+      colorFilter: ColorFilter.mode(hasPermission ? const Color(0xFF6393F2) : const Color(0xB3D32F2F), BlendMode.srcIn),
     );
   }
 }
