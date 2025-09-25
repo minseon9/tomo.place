@@ -7,6 +7,7 @@ import '../shared/application/navigation/navigation_actions.dart';
 import '../shared/application/navigation/navigation_key.dart';
 import '../shared/exception_handler/exception_notifier.dart';
 import '../shared/exception_handler/models/exception_interface.dart';
+import '../shared/ui/components/toast_widget.dart';
 import '../shared/ui/design_system/tokens/colors.dart';
 import 'pages/splash_page.dart';
 import 'router/app_router.dart';
@@ -37,9 +38,7 @@ class TomoPlaceApp extends ConsumerWidget {
       if (next != null) {
         final ctx = navigatorKey.currentContext;
         if (ctx != null) {
-          ScaffoldMessenger.of(
-            ctx,
-          ).showSnackBar(SnackBar(content: Text(next.userMessage)));
+          AppToast.show(ctx, next.userMessage);
         }
         ref.read(exceptionNotifierProvider.notifier).clear();
       }
