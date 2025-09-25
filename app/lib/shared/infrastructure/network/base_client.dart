@@ -9,7 +9,7 @@ abstract class BaseClient {
   BaseClient(List<Interceptor> interceptors, {String? baseUrl})
     : _dio = Dio(
         BaseOptions(
-          baseUrl: baseUrl ?? 'https://api.example.com',
+          baseUrl: baseUrl ?? 'http://127.0.0.1:8080',
           connectTimeout: const Duration(seconds: 10),
           receiveTimeout: const Duration(seconds: 10),
           headers: {
