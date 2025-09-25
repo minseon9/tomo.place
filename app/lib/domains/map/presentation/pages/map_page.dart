@@ -9,8 +9,10 @@ import '../controllers/map_view_notifier.dart';
 import '../models/location_permission_state.dart';
 import '../widgets/atoms/my_location_button.dart';
 import '../widgets/molecules/map_search_bar.dart';
+import '../widgets/organisms/current_location_marker_widget.dart';
 import '../widgets/organisms/map_widget.dart';
 
+// 남은 것  currentLocationMarkerWidgetProvider
 class MapPage extends ConsumerStatefulWidget {
   const MapPage({super.key});
 
@@ -33,6 +35,7 @@ class _MapPageState extends ConsumerState<MapPage> {
   Widget build(BuildContext context) {
     final permissionHandler = ref.read(locationPermissionHandlerProvider);
     final mapWidget = ref.read(mapWidgetProvider);
+    final currentLocationMarkerWidget = ref.read(currentLocationMarkerWidgetProvider);
 
     ref.listen<LocationPermissionState>(
       locationPermissionNotifierProvider,
@@ -60,6 +63,7 @@ class _MapPageState extends ConsumerState<MapPage> {
     return Stack(
       children: [
         mapWidget,
+        currentLocationMarkerWidget,
         SafeArea(
           child: Padding(
             padding: ResponsiveSizing.getResponsiveEdge(context, top: 16),
