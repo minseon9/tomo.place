@@ -6,6 +6,14 @@ import '../models/map_view_state.dart';
 class MapViewController extends StateNotifier<MapViewState> {
   MapViewController() : super(MapViewState.initial);
 
+  void setCurrentLocationMarker(MapMarker marker) {
+    state = state.copyWith(markers: {marker});
+  }
+
+  void clearMarkers() {
+    state = state.copyWith(markers: <MapMarker>{});
+  }
+
   void startFollowing() {
     if (!state.isFollowing) {
       state = state.copyWith(isFollowing: true);
@@ -20,6 +28,6 @@ class MapViewController extends StateNotifier<MapViewState> {
 }
 
 final mapViewControllerProvider =
-    StateNotifierProvider<MapViewController, MapViewState>((ref) {
+StateNotifierProvider<MapViewController, MapViewState>((ref) {
   return MapViewController();
 });
