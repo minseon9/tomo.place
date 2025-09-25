@@ -23,10 +23,12 @@ class AppColors {
     'primary_300': Color(0xFFEBD9B8), // tomo-primary300
     'background': Color(0xFFF2E5CC), // tomo-primary200
     'border': Color(0xFFE0E0E0),
+    'white': Color(0xFFE6E6E6), // tomo-black
     'text_primary': Color(0xFF212121), // tomo-black
     'text_secondary': Color(0xFF8C8C8C), // tomo-darkgray
     'error': Color(0xFFEB3030), // Error-500
     'success': Color(0xFF219621), // Success-500
+    'blue_primary': Color(0xFF0080FF), // 파란색 링크/버튼
   };
 
   static const Map<String, Color> neutralColors = {
@@ -48,6 +50,8 @@ class AppColors {
 
   static Color get tomoPrimary300 => appColors['primary_300']!;
 
+  static Color get tomoWhite => appColors['white']!;
+
   static Color get tomoBlack => appColors['text_primary']!;
 
   static Color get tomoDarkGray => appColors['text_secondary']!;
@@ -61,4 +65,6 @@ class AppColors {
   static Color get error => appColors['error']!;
 
   static Color get success => appColors['success']!;
+
+  static Color get bluePrimary => appColors['blue_primary']!;
 }
