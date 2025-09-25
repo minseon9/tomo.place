@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/ui/responsive/responsive_sizing.dart';
+import '../controllers/location_permission_handler.dart';
+import '../controllers/location_permission_notifier.dart';
+import '../models/location_permission_state.dart';
 import '../widgets/atoms/my_location_button.dart';
 import '../widgets/molecules/map_search_bar.dart';
 import '../widgets/organisms/map_widget.dart';
@@ -14,9 +17,39 @@ class MapPage extends ConsumerStatefulWidget {
 }
 
 class _MapPageState extends ConsumerState<MapPage> {
+  bool _didRunInitialFlow = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(locationPermissionNotifierProvider.notifier).checkPermission();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final permissionHandler = ref.read(locationPermissionHandlerProvider);
     final mapWidget = ref.read(mapWidgetProvider);
+
+    ref.listen<LocationPermissionState>(
+      locationPermissionNotifierProvider,
+          (previous, next) {
+        switch (next) {
+          case LocationPermissionLoading():
+          case LocationPermissionGranted():
+            break;
+          default:
+            if (!_didRunInitialFlow) {
+              _didRunInitialFlow = true;
+              permissionHandler.handleOnAppStart(context, next);
+            } else {
+              permissionHandler.handleOnResume(context, next);
+            }
+            break;
+        }
+      },
+    );
 
     return Stack(
       children: [
