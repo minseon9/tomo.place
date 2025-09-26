@@ -42,8 +42,8 @@ class PlaceFolderEntity(
     @Enumerated(EnumType.STRING)
     val visibility: PlaceFolderVisibilityType = PlaceFolderVisibilityType.PRIVATE,
     @Column(name = "tags", columnDefinition = "text[]")
-    @JdbcTypeCode(SqlTypes.ARRAY)
-    val tags: Array<String>? = null,
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    val tags: List<String>? = null,
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
@@ -65,7 +65,7 @@ class PlaceFolderEntity(
             name: String,
             userId: Long,
             visibility: PlaceFolderVisibilityType = PlaceFolderVisibilityType.PRIVATE,
-            tags: Array<String>? = null,
+            tags: List<String>? = null,
         ): PlaceFolderEntity =
             PlaceFolderEntity(
                 defaultName = name,

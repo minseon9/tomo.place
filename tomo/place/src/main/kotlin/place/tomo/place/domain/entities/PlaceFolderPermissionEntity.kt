@@ -1,5 +1,6 @@
 package place.tomo.place.domain.entities
 
+import com.vladmihalcea.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EntityListeners
@@ -12,8 +13,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
-import org.hibernate.annotations.JdbcTypeCode
-import org.hibernate.type.SqlTypes
+import org.hibernate.annotations.Type
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
@@ -44,8 +44,8 @@ class PlaceFolderPermissionEntity(
     val folder: PlaceFolderEntity,
     @Column(name = "granted_by", nullable = false)
     val grantedBy: Long,
+    @Type(JsonType::class)
     @Column(columnDefinition = "jsonb", nullable = false)
-    @JdbcTypeCode(SqlTypes.JSON)
     val permissions: PlacePermission,
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
