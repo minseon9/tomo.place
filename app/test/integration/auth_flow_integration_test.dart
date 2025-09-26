@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:tomo_place/app/app.dart';
 import 'package:tomo_place/domains/auth/consts/social_provider.dart';
 import 'package:tomo_place/domains/auth/presentation/controllers/auth_notifier.dart';
@@ -562,12 +563,7 @@ void main() {
         WidgetTester tester,
       ) async {
         // Given
-        when(
-          () => mockAuthTokenRepository.getCurrentToken(),
-        ).thenAnswer((_) async => null);
-        when(
-          () => mockRefreshUseCase.execute(),
-        ).thenAnswer((_) async => AuthenticationResult.unauthenticated());
+        TestAuthUtil.stubUnauthenticated(mocks);
 
         // When
         await tester.pumpWidget(createTestApp());

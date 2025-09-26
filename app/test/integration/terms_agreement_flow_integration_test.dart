@@ -39,7 +39,7 @@ void main() {
                 break;
             }
           },
-          screenSize: screenSize,
+          screenSize: screenSize ?? const Size(390.0, 844.0),
         );
       }
 
@@ -52,7 +52,7 @@ void main() {
               break;
           }
         },
-        screenSize: screenSize,
+        screenSize: screenSize ?? const Size(390.0, 844.0),
       );
     }
 
@@ -146,7 +146,7 @@ void main() {
     group('약관 항목 상호작용 플로우', () {
       testWidgets('약관 라우트가 올바르게 정의되어야 한다', (WidgetTester tester) async {
         // Given & When & Then
-        verifyTermsRoutesDefined();
+        TestTermsUtil.verifyTermsRoutesDefined();
       });
 
       testWidgets('모든 약관 텍스트가 표시되어야 한다', (WidgetTester tester) async {
@@ -154,7 +154,7 @@ void main() {
         await tester.pumpWidget(createModalTestWidget());
 
         // When & Then
-        verifyAllTermsTextsDisplay();
+        TestTermsUtil.verifyAllTermsTextsDisplay();
       });
     });
 
