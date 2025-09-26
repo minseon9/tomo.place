@@ -12,8 +12,6 @@ import '../utils/test_wrappers_util.dart';
 
 void main() {
   group('Terms Agreement Flow Integration Tests', () {
-    
-
     Widget createModalTestWidget({
       void Function(TermsAgreementResult)? onResult,
       Size? screenSize,

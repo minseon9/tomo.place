@@ -1,36 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:tomo_place/domains/terms_agreement/presentation/pages/location_terms_page.dart';
 import 'package:tomo_place/domains/terms_agreement/presentation/pages/privacy_policy_page.dart';
 import 'package:tomo_place/domains/terms_agreement/presentation/pages/terms_of_service_page.dart';
 import 'package:tomo_place/domains/terms_agreement/presentation/widgets/organisms/terms_agreement_modal.dart';
 import 'package:tomo_place/shared/application/routes/routes.dart';
 
-class MockVoidCallback extends Mock {
-  void call();
-}
-
-class MockNavigatorObserver extends Mock implements NavigatorObserver {}
-
-class TestNavigatorObserver extends NavigatorObserver {
-  final List<String> pushedRoutes = [];
-
-  @override
-  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    pushedRoutes.add(route.settings.name ?? '');
-    super.didPush(route, route);
-  }
-}
-
-class FakeRoute extends Fake implements Route<dynamic> {}
-
 class TestTermsUtil {
-  TestTermsUtil._();
-
-  static MockVoidCallback createVoidCallback() => MockVoidCallback();
-  static MockNavigatorObserver createNavigatorObserver() => MockNavigatorObserver();
-
   static Widget buildModal({
     required void Function(TermsAgreementResult) onResult,
     Size screenSize = const Size(390.0, 844.0),
