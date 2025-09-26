@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tomo_place/shared/ui/components/toast_widget.dart';
 import 'package:tomo_place/shared/ui/design_system/tokens/colors.dart';
-import '../../../utils/test_verifiers_util.dart';
+import '../../../utils/verifiers/test_render_verifier.dart';
 import '../../../utils/test_wrappers_util.dart';
-import '../../../utils/verifiers/style_verifiers.dart';
+import '../../../utils/verifiers/test_style_verifier.dart';
 
 void main() {
   group('AppToast', () {

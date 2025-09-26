@@ -7,7 +7,7 @@ import 'package:tomo_place/domains/terms_agreement/presentation/pages/terms_of_s
 import 'package:tomo_place/domains/terms_agreement/presentation/widgets/organisms/terms_agreement_modal.dart';
 
 import '../utils/domains/test_terms_util.dart';
-import '../utils/test_verifiers_util.dart';
+import '../utils/verifiers/test_render_verifier.dart';
 import '../utils/test_wrappers_util.dart';
 
 void main() {

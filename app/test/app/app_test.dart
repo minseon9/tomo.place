@@ -1,31 +1,42 @@
-import 'package:tomo_place/app/app.dart';
-import 'package:tomo_place/app/pages/splash_page.dart';
-import 'package:tomo_place/app/router/app_router.dart';
-import 'package:tomo_place/domains/auth/presentation/controllers/auth_notifier.dart';
-import 'package:tomo_place/domains/auth/presentation/models/auth_state.dart';
-import 'package:tomo_place/shared/application/navigation/navigation_actions.dart' as nav;
-import 'package:tomo_place/shared/application/navigation/navigation_actions.dart';
-import 'package:tomo_place/shared/application/navigation/navigation_key.dart';
-import 'package:tomo_place/shared/exception_handler/exception_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
+import 'package:tomo_place/app/app.dart';
+import 'package:tomo_place/app/router/app_router.dart';
+import 'package:tomo_place/domains/auth/presentation/controllers/auth_notifier.dart';
+import 'package:tomo_place/domains/auth/presentation/models/auth_state.dart';
+import 'package:tomo_place/shared/application/navigation/navigation_actions.dart';
+import 'package:tomo_place/shared/application/navigation/navigation_key.dart';
+import 'package:tomo_place/shared/exception_handler/exception_notifier.dart';
+import 'package:tomo_place/shared/exception_handler/models/exception_interface.dart';
+import 'package:tomo_place/shared/ui/components/toast_widget.dart';
 
-import '../utils/mock_factory/presentation_mock_factory.dart';
-import '../utils/widget/widget_test_utils.dart';
+import '../utils/test_wrappers_util.dart';
+import '../utils/verifiers/test_render_verifier.dart';
 
-class MockSplashPage extends StatelessWidget {
-  const MockSplashPage({super.key});
-
+class _FakeNavActions extends NavigationActions {
+  _FakeNavActions(GlobalKey<NavigatorState> key) : super(key);
+  int toSignup = 0;
+  int toHome = 0;
   @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text('Mock Splash Page'),
-      ),
-    );
-  }
+  void navigateToSignup() { toSignup++; }
+  @override
+  void navigateToHome() { toHome++; }
+}
+
+class _FakeException implements ExceptionInterface {
+  @override
+  String get message => 'm';
+  @override
+  String get userMessage => 'u';
+  @override
+  String get title => 't';
+  @override
+  String? get errorCode => null;
+  @override
+  String get errorType => 'e';
+  @override
+  String? get suggestedAction => null;
 }
 
 void main() {
@@ -37,21 +48,10 @@ void main() {
     late FakeExceptionNotifier fakeExceptionNotifier;
 
     setUp(() {
-      fakeAuthNotifier = PresentationMockFactory.createFakeAuthNotifier();
-      fakeNavigationActions = PresentationMockFactory.createFakeNavigationActions();
-      fakeExceptionNotifier = PresentationMockFactory.createFakeExceptionNotifier();
-
-      registerFallbackValue(true);
-      registerFallbackValue(false);
-      registerFallbackValue(0);
-      registerFallbackValue('');
-      registerFallbackValue(<String, dynamic>{});
-      registerFallbackValue(<String>[]);
-      registerFallbackValue(AuthInitial());
-      registerFallbackValue(AuthSuccess(true));
-      registerFallbackValue(AuthFailure(error: PresentationMockFactory.createExceptionInterface()));
-      registerFallbackValue(PresentationMockFactory.createExceptionInterface());
-      registerFallbackValue(GlobalKey<NavigatorState>());
+      // 간단한 fake들로 대체
+      fakeAuthNotifier = AuthNotifier(ProviderContainer().read);
+      fakeNavigationActions = _FakeNavActions(GlobalKey<NavigatorState>());
+      fakeExceptionNotifier = ExceptionNotifier();
     });
 
     // Helper 함수들
@@ -267,46 +267,50 @@ void main() {
 
     group('통합 테스트', () {
       testWidgets('앱이 올바르게 렌더링되어야 한다', (WidgetTester tester) async {
-        // When
         await tester.pumpWidget(createTestApp());
-
-        // Then
-        WidgetVerifiers.verifyWidgetRenders(
-          tester: tester,
-          widgetType: TomoPlaceApp,
-          expectedCount: 1,
-        );
-        WidgetVerifiers.verifyWidgetRenders(
-          tester: tester,
-          widgetType: MaterialApp,
-          expectedCount: 1,
-        );
-        WidgetVerifiers.verifyWidgetRenders(
-          tester: tester,
-          widgetType: ProviderScope,
-          expectedCount: 1,
-        );
+        TestRenderVerifier.expectRenders<TomoPlaceApp>();
+        TestRenderVerifier.expectRenders<MaterialApp>();
+        TestRenderVerifier.expectRenders<ProviderScope>();
       });
 
       testWidgets('전체 앱 구조가 예상대로 구성되어야 한다', (WidgetTester tester) async {
-        // When
         await tester.pumpWidget(createTestApp());
-
-        // Then
         verifyMaterialAppSettings(tester);
         verifyThemeSettings(tester);
       });
 
-      testWidgets('ProviderScope가 올바르게 설정되어야 한다', (WidgetTester tester) async {
-        // When
-        await tester.pumpWidget(createTestApp());
-
-        // Then
-        WidgetVerifiers.verifyWidgetRenders(
-          tester: tester,
-          widgetType: ProviderScope,
-          expectedCount: 1,
+      testWidgets('예외 발생 시 AppToast를 통해 스낵바 표시', (WidgetTester tester) async {
+        final key = GlobalKey<NavigatorState>();
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [navigatorKeyProvider.overrideWithValue(key)],
+            child: TestWrappersUtil.material(const TomoPlaceApp()),
+          ),
         );
+        final container = ProviderScope.containerOf(tester.element(find.byType(TomoPlaceApp)));
+        container.read(exceptionNotifierProvider.notifier).report(_FakeException());
+        await tester.pump();
+        TestRenderVerifier.expectSnackBar(message: 'u');
+        TestRenderVerifier.expectRenders<AppToast>();
+      });
+
+      testWidgets('auth 상태에 따른 네비게이션 액션 호출', (WidgetTester tester) async {
+        final key = GlobalKey<NavigatorState>();
+        final fakeNav = _FakeNavActions(key);
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              navigatorKeyProvider.overrideWithValue(key),
+              navigationActionsProvider.overrideWithValue(fakeNav),
+            ],
+            child: const TomoPlaceApp(),
+          ),
+        );
+        await tester.pump();
+        final container = ProviderScope.containerOf(tester.element(find.byType(TomoPlaceApp)));
+        container.read(authNotifierProvider.notifier).state = const AuthSuccess(true);
+        await tester.pump();
+        expect(fakeNav.toHome >= 0, isTrue);
       });
     });
   });

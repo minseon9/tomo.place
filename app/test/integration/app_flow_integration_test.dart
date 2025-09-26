@@ -9,7 +9,7 @@ import 'package:tomo_place/shared/application/navigation/navigation_key.dart';
 import 'package:tomo_place/shared/exception_handler/exception_notifier.dart';
 
 import '../utils/domains/test_auth_util.dart';
-import '../utils/test_verifiers_util.dart';
+import '../utils/verifiers/test_render_verifier.dart';
 
 void main() {
   group('App Flow Integration Test', () {

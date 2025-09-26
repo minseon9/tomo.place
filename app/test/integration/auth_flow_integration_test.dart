@@ -12,7 +12,7 @@ import 'package:tomo_place/shared/exception_handler/models/exception_interface.d
 
 import '../utils/domains/test_auth_util.dart';
 import '../utils/domains/test_terms_util.dart';
-import '../utils/test_verifiers_util.dart';
+import '../utils/verifiers/test_render_verifier.dart';
 
 void main() {
   group('Auth Flow Integration Test', () {
@@ -612,7 +612,7 @@ void main() {
 
         // Then
         // 약관 동의 모달이 안정적으로 렌더링되어야 함
-        TestVerifiersUtil.expectRenders<TermsAgreementModal>();
+        TestRenderVerifier.expectRenders<TermsAgreementModal>();
       });
 
       testWidgets('Mock 콜백이 통합 테스트에서 올바르게 동작해야 한다', (
