@@ -4,6 +4,7 @@ import 'package:tomo_place/shared/ui/components/toast_widget.dart';
 import 'package:tomo_place/shared/ui/design_system/tokens/colors.dart';
 import '../../../utils/test_verifiers_util.dart';
 import '../../../utils/test_wrappers_util.dart';
+import '../../../utils/verifiers/style_verifiers.dart';
 
 void main() {
   group('AppToast', () {
@@ -14,6 +15,15 @@ void main() {
 
       TestVerifiersUtil.expectText('hello');
       TestVerifiersUtil.expectTextStyle(tester, 'hello', color: AppColors.tomoWhite);
+
+      final containerFinder = find.byType(Container);
+      expect(containerFinder, findsOneWidget);
+      StyleVerifiers.expectContainerDecoration(
+        tester,
+        containerFinder,
+        color: AppColors.tomoBlack.withAlpha(128),
+        borderRadius: 5,
+      );
     });
 
     testWidgets('show가 SnackBar를 올바르게 표시한다', (tester) async {
