@@ -20,9 +20,16 @@ void main() {
     });
 
     Widget createTestApp({List<Override> overrides = const []}) {
+      final providerOverrides = TestAuthUtil.providerOverrides(mocks);
       return ProviderScope(
         overrides: [
-          ...TestAuthUtil.providerOverrides(mocks),
+          providerOverrides.authRepo,
+          providerOverrides.tokenRepo,
+          providerOverrides.baseClient,
+          providerOverrides.signup,
+          providerOverrides.logout,
+          providerOverrides.refresh,
+          providerOverrides.checkAuth,
           ...overrides,
         ],
         child: const TomoPlaceApp(),

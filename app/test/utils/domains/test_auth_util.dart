@@ -167,13 +167,21 @@ class TestAuthUtil {
     when(() => m.logout.execute()).thenThrow(exception);
   }
 
-  static List<Override> providerOverrides(AuthMocks m) => [
-    authRepositoryProvider.overrideWith((_) => m.authRepo),
-    authTokenRepositoryProvider.overrideWith((_) => m.tokenRepo),
-    authClientProvider.overrideWith((_) => m.baseClient),
-    signupWithSocialUseCaseProvider.overrideWith((_) => m.signup),
-    logoutUseCaseProvider.overrideWith((_) => m.logout),
-    refreshTokenUseCaseProvider.overrideWith((_) => m.refresh),
-    checkAuthStatusUseCaseProvider.overrideWith((_) => m.checkAuth),
-  ];
+  static ({
+    Override authRepo,
+    Override tokenRepo,
+    Override baseClient,
+    Override signup,
+    Override logout,
+    Override refresh,
+    Override checkAuth,
+  }) providerOverrides(AuthMocks m) => (
+    authRepo: authRepositoryProvider.overrideWith((_) => m.authRepo),
+    tokenRepo: authTokenRepositoryProvider.overrideWith((_) => m.tokenRepo),
+    baseClient: authClientProvider.overrideWith((_) => m.baseClient),
+    signup: signupWithSocialUseCaseProvider.overrideWith((_) => m.signup),
+    logout: logoutUseCaseProvider.overrideWith((_) => m.logout),
+    refresh: refreshTokenUseCaseProvider.overrideWith((_) => m.refresh),
+    checkAuth: checkAuthStatusUseCaseProvider.overrideWith((_) => m.checkAuth),
+  );
 }
