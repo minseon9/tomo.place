@@ -13,8 +13,7 @@ void main() {
       );
 
       TestVerifiersUtil.expectText('hello');
-      final text = tester.widget<Text>(find.text('hello'));
-      expect((text.style?.color), AppColors.tomoWhite);
+      TestVerifiersUtil.expectTextStyle(tester, 'hello', color: AppColors.tomoWhite);
     });
 
     testWidgets('show가 SnackBar를 올바르게 표시한다', (tester) async {

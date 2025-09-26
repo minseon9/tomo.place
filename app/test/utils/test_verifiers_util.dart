@@ -13,6 +13,24 @@ class TestVerifiersUtil {
     expect(find.text(text), findsNWidgets(count));
   }
 
+  static void expectTextStyle(
+    WidgetTester tester,
+    String text, {
+    Color? color,
+    double? fontSize,
+    FontWeight? fontWeight,
+    TextAlign? align,
+  }) {
+    final finder = find.text(text);
+    expect(finder, findsAtLeastNWidgets(1));
+    final actual = tester.widget<Text>(finder);
+    final style = actual.style;
+    if (color != null) expect(style?.color, equals(color));
+    if (fontSize != null) expect(style?.fontSize, equals(fontSize));
+    if (fontWeight != null) expect(style?.fontWeight, equals(fontWeight));
+    if (align != null) expect(actual.textAlign, equals(align));
+  }
+
   static void expectSnackBar({String? message}) {
     expect(find.byType(SnackBar), findsWidgets);
     if (message != null) {
