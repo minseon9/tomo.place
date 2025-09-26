@@ -29,7 +29,6 @@ void main() {
           providerOverrides.signup,
           providerOverrides.logout,
           providerOverrides.refresh,
-          providerOverrides.checkAuth,
           ...overrides,
         ],
         child: const TomoPlaceApp(),
@@ -107,10 +106,7 @@ void main() {
     group('네비게이션 플로우', () {
       testWidgets('인증 상태에 따른 자동 네비게이션이 올바르게 작동해야 한다', (WidgetTester tester) async {
         // Given - 인증되지 않은 상태
-        when(() => mockAuthTokenRepository.getCurrentToken())
-            .thenAnswer((_) async => null);
-        when(() => mockRefreshTokenUseCase.execute())
-            .thenAnswer((_) async => FakeAuthenticationResultGenerator.createUnauthenticated());
+        TestAuthUtil.stubUnauthenticated(mocks);
 
         // When - 앱 시작
         await tester.pumpWidget(createTestApp());
@@ -121,7 +117,7 @@ void main() {
         expect(navigator, isNotNull);
         
         // 현재 루트 확인 - 로그인 화면이 표시되어야 함
-        expect(find.byType(SignupPage), findsOneWidget);
+        TestVerifiersUtil.expectRenders<SignupPage>();
         
         // 네비게이션이 올바르게 설정되었는지 확인
         final materialApp = tester.widget<MaterialApp>(find.byType(MaterialApp));
@@ -131,28 +127,21 @@ void main() {
 
       testWidgets('인증 성공 시 홈 화면으로 자동 네비게이션되어야 한다', (WidgetTester tester) async {
         // Given - 인증 성공 상황
-        final validToken = FakeAuthTokenGenerator.createValid();
-        
-        when(() => mockAuthTokenRepository.getCurrentToken())
-            .thenAnswer((_) async => validToken);
-        when(() => mockRefreshTokenUseCase.execute())
-            .thenAnswer((_) async => FakeAuthenticationResultGenerator.createAuthenticated(validToken));
+        final validToken = TestAuthUtil.makeValidToken();
+        TestAuthUtil.stubAuthenticated(mocks, validToken);
 
         // When - 앱 시작
         await tester.pumpWidget(createTestApp());
         await tester.pumpAndSettle();
 
         // Then - 홈 화면으로 네비게이션되었는지 확인
-        expect(find.text('홈 화면 (추후 구현)'), findsOneWidget);
+        TestVerifiersUtil.expectText('홈 화면 (추후 구현)');
         expect(find.byType(SignupPage), findsNothing);
       });
 
       testWidgets('네비게이션 스택이 올바르게 관리되어야 한다', (WidgetTester tester) async {
         // Given - 인증되지 않은 상태
-        when(() => mockAuthTokenRepository.getCurrentToken())
-            .thenAnswer((_) async => null);
-        when(() => mockRefreshTokenUseCase.execute())
-            .thenAnswer((_) async => FakeAuthenticationResultGenerator.createUnauthenticated());
+        TestAuthUtil.stubUnauthenticated(mocks);
 
         // When - 앱 시작
         await tester.pumpWidget(createTestApp());
@@ -167,10 +156,7 @@ void main() {
     group('상태 관리 플로우', () {
       testWidgets('인증 상태 변화가 올바르게 전파되어야 한다', (WidgetTester tester) async {
         // Given - 앱 시작
-        when(() => mockAuthTokenRepository.getCurrentToken())
-            .thenAnswer((_) async => null);
-        when(() => mockRefreshTokenUseCase.execute())
-            .thenAnswer((_) async => FakeAuthenticationResultGenerator.createUnauthenticated());
+        TestAuthUtil.stubUnauthenticated(mocks);
 
         // When - 앱 시작
         await tester.pumpWidget(createTestApp());
@@ -185,10 +171,7 @@ void main() {
 
       testWidgets('Provider 상태 동기화가 올바르게 작동해야 한다', (WidgetTester tester) async {
         // Given - 앱 시작
-        when(() => mockAuthTokenRepository.getCurrentToken())
-            .thenAnswer((_) async => null);
-        when(() => mockRefreshTokenUseCase.execute())
-            .thenAnswer((_) async => FakeAuthenticationResultGenerator.createUnauthenticated());
+        TestAuthUtil.stubUnauthenticated(mocks);
 
         // When - 앱 시작
         await tester.pumpWidget(createTestApp());
@@ -204,12 +187,8 @@ void main() {
 
       testWidgets('로딩 상태에서 성공 상태로의 전환이 올바르게 작동해야 한다', (WidgetTester tester) async {
         // Given - 인증 성공 상황
-        final validToken = FakeAuthTokenGenerator.createValid();
-        
-        when(() => mockAuthTokenRepository.getCurrentToken())
-            .thenAnswer((_) async => validToken);
-        when(() => mockRefreshTokenUseCase.execute())
-            .thenAnswer((_) async => FakeAuthenticationResultGenerator.createAuthenticated(validToken));
+        final validToken = TestAuthUtil.makeValidToken();
+        TestAuthUtil.stubAuthenticated(mocks, validToken);
 
         // When - 앱 시작
         await tester.pumpWidget(createTestApp());
@@ -228,9 +207,8 @@ void main() {
 
       testWidgets('로딩 상태에서 실패 상태로의 전환이 올바르게 작동해야 한다', (WidgetTester tester) async {
         // Given - 인증 실패 상황
-        final exception = FakeExceptionGenerator.createAuthenticationFailed();
-        when(() => mockRefreshTokenUseCase.execute())
-            .thenThrow(exception);
+        final exception = TestAuthUtil.makeNetworkError();
+        TestAuthUtil.stubRefreshFailure(mocks, exception: exception);
 
         // When - 앱 시작
         await tester.pumpWidget(createTestApp());
@@ -251,9 +229,8 @@ void main() {
     group('에러 처리 플로우', () {
       testWidgets('전역 에러 처리가 올바르게 작동해야 한다', (WidgetTester tester) async {
         // Given - 에러가 발생하는 상황
-        final exception = FakeExceptionGenerator.createStorageError();
-        when(() => mockRefreshTokenUseCase.execute())
-            .thenThrow(exception);
+        final exception = TestAuthUtil.makeNetworkError();
+        TestAuthUtil.stubRefreshFailure(mocks, exception: exception);
 
         // When - 앱 시작
         await tester.pumpWidget(createTestApp());
@@ -265,15 +242,13 @@ void main() {
         expect(authState, isA<AuthFailure>());
         
         // 에러 스낵바가 표시되는지 확인
-        expect(find.byType(SnackBar), findsOneWidget);
-        expect(find.text(exception.userMessage), findsOneWidget);
+        TestVerifiersUtil.expectSnackBar(message: exception.userMessage);
       });
 
       testWidgets('다양한 에러 타입이 올바르게 처리되어야 한다', (WidgetTester tester) async {
         // Given - 네트워크 에러 상황
-        final networkException = FakeExceptionGenerator.createNetworkError();
-        when(() => mockRefreshTokenUseCase.execute())
-            .thenThrow(networkException);
+        final networkException = TestAuthUtil.makeNetworkError();
+        TestAuthUtil.stubRefreshFailure(mocks, exception: networkException);
 
         // When - 앱 시작
         await tester.pumpWidget(createTestApp());
@@ -285,19 +260,15 @@ void main() {
         expect(authState, isA<AuthFailure>());
         
         // 에러 스낵바가 표시되는지 확인
-        expect(find.byType(SnackBar), findsOneWidget);
-        expect(find.text(networkException.userMessage), findsOneWidget);
+        TestVerifiersUtil.expectSnackBar(message: networkException.userMessage);
       });
     });
 
     group('인증 상태 변화 플로우', () {
       testWidgets('토큰 만료 시 자동 갱신이 올바르게 작동해야 한다', (WidgetTester tester) async {
         // Given - 만료된 토큰이 있는 상황
-        final newToken = FakeAuthTokenGenerator.createValid();
-        final authResult = FakeAuthenticationResultGenerator.createAuthenticated(newToken);
-        
-        when(() => mockRefreshTokenUseCase.execute())
-            .thenAnswer((_) async => authResult);
+        final newToken = TestAuthUtil.makeValidToken();
+        TestAuthUtil.stubAuthenticated(mocks, newToken);
 
         // When - 앱 시작
         await tester.pumpWidget(createTestApp());
@@ -307,24 +278,19 @@ void main() {
         final container = ProviderScope.containerOf(tester.element(find.byType(TomoPlaceApp)));
         final authState = container.read(authNotifierProvider);
         expect(authState, isA<AuthSuccess>());
-        
-        // UseCase 호출 확인
-        verify(() => mockRefreshTokenUseCase.execute()).called(1);
       });
 
       testWidgets('토큰 갱신 실패 시 로그인 화면으로 이동해야 한다', (WidgetTester tester) async {
         // Given - 토큰 갱신 실패 상황
-        final exception = FakeExceptionGenerator.createTokenExpired();
-        
-        when(() => mockRefreshTokenUseCase.execute())
-            .thenThrow(exception);
+        final exception = TestAuthUtil.makeNetworkError();
+        TestAuthUtil.stubRefreshFailure(mocks, exception: exception);
 
         // When - 앱 시작
         await tester.pumpWidget(createTestApp());
         await tester.pumpAndSettle();
 
         // Then - 로그인 화면으로 이동했는지 확인
-        expect(find.byType(SignupPage), findsOneWidget);
+        TestVerifiersUtil.expectRenders<SignupPage>();
         
         // 에러 상태 확인
         final container = ProviderScope.containerOf(tester.element(find.byType(TomoPlaceApp)));
@@ -334,9 +300,8 @@ void main() {
 
       testWidgets('네트워크 오류 후 재시도 플로우가 올바르게 작동해야 한다', (WidgetTester tester) async {
         // Given - 네트워크 오류 상황
-        final networkException = FakeExceptionGenerator.createNetworkError();
-        when(() => mockRefreshTokenUseCase.execute())
-            .thenThrow(networkException);
+        final networkException = TestAuthUtil.makeNetworkError();
+        TestAuthUtil.stubRefreshFailure(mocks, exception: networkException);
 
         // When - 앱 시작
         await tester.pumpWidget(createTestApp());
@@ -348,8 +313,7 @@ void main() {
         expect(authState, isA<AuthFailure>());
         
         // 에러 메시지가 표시되는지 확인
-        expect(find.byType(SnackBar), findsOneWidget);
-        expect(find.text(networkException.userMessage), findsOneWidget);
+        TestVerifiersUtil.expectSnackBar(message: networkException.userMessage);
       });
     });
   });

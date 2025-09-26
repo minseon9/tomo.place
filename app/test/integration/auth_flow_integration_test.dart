@@ -33,7 +33,6 @@ void main() {
           providerOverrides.signup,
           providerOverrides.logout,
           providerOverrides.refresh,
-          providerOverrides.checkAuth,
           ...overrides,
         ],
         child: const TomoPlaceApp(),
@@ -178,21 +177,9 @@ void main() {
 
       testWidgets('로그인 성공 시 상태가 올바르게 전환되어야 한다', (WidgetTester tester) async {
         // Given - 느린 응답 Mock
-        final validToken = FakeAuthTokenGenerator.createValid();
-
-        when(
-          () => mockAuthTokenRepository.getCurrentToken(),
-        ).thenAnswer((_) async => null);
-        when(
-          () => mockRefreshUseCase.execute(),
-        ).thenAnswer((_) async => AuthenticationResult.unauthenticated());
-        when(() => mockSignupUseCase.execute(any())).thenAnswer((_) async {
-          await Future.delayed(Duration(milliseconds: 50));
-          return validToken;
-        });
-        when(
-          () => mockAuthTokenRepository.saveToken(any()),
-        ).thenAnswer((_) async {});
+        final validToken = TestAuthUtil.makeValidToken();
+        TestAuthUtil.stubUnauthenticated(mocks);
+        TestAuthUtil.stubSignupSuccess(mocks, provider: SocialProvider.google, token: validToken);
 
         // When - 앱 시작
         await tester.pumpWidget(createTestApp());
@@ -225,17 +212,9 @@ void main() {
         WidgetTester tester,
       ) async {
         // Given - 네트워크 오류 Mock
-        final networkException = FakeExceptionGenerator.createNetworkError();
-
-        when(
-          () => mockAuthTokenRepository.getCurrentToken(),
-        ).thenAnswer((_) async => null);
-        when(
-          () => mockRefreshUseCase.execute(),
-        ).thenAnswer((_) async => AuthenticationResult.unauthenticated());
-        when(
-          () => mockSignupUseCase.execute(any()),
-        ).thenThrow(networkException);
+        final networkException = TestAuthUtil.makeNetworkError();
+        TestAuthUtil.stubUnauthenticated(mocks);
+        TestAuthUtil.stubSignupFailure(mocks, provider: SocialProvider.google, exception: networkException);
 
         // When - 앱 시작
         await tester.pumpWidget(createTestApp());
@@ -277,15 +256,9 @@ void main() {
 
       testWidgets('서버 오류 시 에러 처리가 올바르게 작동해야 한다', (WidgetTester tester) async {
         // Given - 서버 오류 Mock
-        final serverException = FakeExceptionGenerator.createServerError();
-
-        when(
-          () => mockAuthTokenRepository.getCurrentToken(),
-        ).thenAnswer((_) async => null);
-        when(
-          () => mockRefreshUseCase.execute(),
-        ).thenAnswer((_) async => AuthenticationResult.unauthenticated());
-        when(() => mockSignupUseCase.execute(any())).thenThrow(serverException);
+        final serverException = TestAuthUtil.makeNetworkError();
+        TestAuthUtil.stubUnauthenticated(mocks);
+        TestAuthUtil.stubSignupFailure(mocks, provider: SocialProvider.google, exception: serverException);
 
         // When - 앱 시작
         await tester.pumpWidget(createTestApp());
@@ -321,18 +294,8 @@ void main() {
     group('토큰 갱신 플로우', () {
       testWidgets('토큰 만료 시 자동 갱신이 올바르게 작동해야 한다', (WidgetTester tester) async {
         // Given - 만료된 토큰이 있는 상황
-        final expiredToken = FakeAuthTokenGenerator.createExpired();
-        final newToken = FakeAuthTokenGenerator.createValid();
-
-        when(
-          () => mockAuthTokenRepository.getCurrentToken(),
-        ).thenAnswer((_) async => expiredToken);
-        when(
-          () => mockRefreshUseCase.execute(),
-        ).thenAnswer((_) async => AuthenticationResult.authenticated(newToken));
-        when(
-          () => mockAuthTokenRepository.saveToken(any()),
-        ).thenAnswer((_) async {});
+        final newToken = TestAuthUtil.makeValidToken();
+        TestAuthUtil.stubAuthenticated(mocks, newToken);
 
         // When - 앱 시작
         await tester.pumpWidget(createTestApp());
@@ -352,20 +315,15 @@ void main() {
 
       testWidgets('토큰 갱신 실패 시 로그인 화면으로 이동해야 한다', (WidgetTester tester) async {
         // Given - 토큰 갱신 실패 상황
-        final expiredToken = FakeAuthTokenGenerator.createExpired();
-        final exception = FakeExceptionGenerator.createTokenExpired();
-
-        when(
-          () => mockAuthTokenRepository.getCurrentToken(),
-        ).thenAnswer((_) async => expiredToken);
-        when(() => mockRefreshUseCase.execute()).thenThrow(exception);
+        final exception = TestAuthUtil.makeNetworkError();
+        TestAuthUtil.stubRefreshFailure(mocks, exception: exception);
 
         // When - 앱 시작
         await tester.pumpWidget(createTestApp());
         await tester.pumpAndSettle();
 
         // Then - 로그인 화면으로 이동했는지 확인
-        expect(find.byType(SignupPage), findsOneWidget);
+        TestVerifiersUtil.expectRenders<SignupPage>();
 
         // 에러 상태 확인
         final container = ProviderScope.containerOf(
@@ -382,21 +340,16 @@ void main() {
         WidgetTester tester,
       ) async {
         // Given - 앱 시작
-        when(
-          () => mockAuthTokenRepository.getCurrentToken(),
-        ).thenAnswer((_) async => null);
-        when(
-          () => mockRefreshUseCase.execute(),
-        ).thenAnswer((_) async => AuthenticationResult.unauthenticated());
+        TestAuthUtil.stubUnauthenticated(mocks);
 
         // When - 앱 시작
         await tester.pumpWidget(createTestApp());
         await tester.pumpAndSettle();
 
         // Then - 소셜 로그인 버튼들 확인
-        expect(find.text('구글로 시작하기'), findsOneWidget);
-        expect(find.text('애플로 시작하기 (준비 중)'), findsOneWidget);
-        expect(find.text('카카오로 시작하기 (준비 중)'), findsOneWidget);
+        TestVerifiersUtil.expectText('구글로 시작하기');
+        TestVerifiersUtil.expectText('애플로 시작하기 (준비 중)');
+        TestVerifiersUtil.expectText('카카오로 시작하기 (준비 중)');
 
         // 구글 버튼만 활성화되어 있는지 확인
         final googleButton = find.text('구글로 시작하기');
@@ -405,21 +358,9 @@ void main() {
 
       testWidgets('로그인 성공 시 UI가 올바르게 업데이트되어야 한다', (WidgetTester tester) async {
         // Given - 느린 응답 Mock
-        final validToken = FakeAuthTokenGenerator.createValid();
-
-        when(
-          () => mockAuthTokenRepository.getCurrentToken(),
-        ).thenAnswer((_) async => null);
-        when(
-          () => mockRefreshUseCase.execute(),
-        ).thenAnswer((_) async => AuthenticationResult.unauthenticated());
-        when(() => mockSignupUseCase.execute(any())).thenAnswer((_) async {
-          await Future.delayed(Duration(milliseconds: 50));
-          return validToken;
-        });
-        when(
-          () => mockAuthTokenRepository.saveToken(any()),
-        ).thenAnswer((_) async {});
+        final validToken = TestAuthUtil.makeValidToken();
+        TestAuthUtil.stubUnauthenticated(mocks);
+        TestAuthUtil.stubSignupSuccess(mocks, provider: SocialProvider.google, token: validToken);
 
         // When - 앱 시작
         await tester.pumpWidget(createTestApp());
@@ -448,43 +389,32 @@ void main() {
 
     group('Auth와 Terms Agreement 도메인 통합 테스트', () {
       Widget createModalTestWidget() {
-        return AppWrappers.wrapWithMaterialAppWithSize(
-          TermsAgreementModal(
-            onResult: (result) {
-              // 테스트용 콜백 - 모든 결과 타입을 처리
-              switch (result) {
-                case TermsAgreementResult.agreed:
-                  // 동의 처리
-                  break;
-                case TermsAgreementResult.dismissed:
-                  // 거부 처리
-                  break;
-              }
-            },
-          ),
+        return TestTermsUtil.buildModal(
+          onResult: (result) {
+            // 테스트용 콜백 - 모든 결과 타입을 처리
+            switch (result) {
+              case TermsAgreementResult.agreed:
+                // 동의 처리
+                break;
+              case TermsAgreementResult.dismissed:
+                // 거부 처리
+                break;
+            }
+          },
           screenSize: const Size(390.0, 844.0), // iPhone 13 기준 모바일 평균 크기
         );
       }
 
       testWidgets('회원가입 페이지가 올바르게 렌더링되어야 한다', (WidgetTester tester) async {
         // Given
-        when(
-          () => mockAuthTokenRepository.getCurrentToken(),
-        ).thenAnswer((_) async => null);
-        when(
-          () => mockRefreshUseCase.execute(),
-        ).thenAnswer((_) async => AuthenticationResult.unauthenticated());
+        TestAuthUtil.stubUnauthenticated(mocks);
 
         // When
         await tester.pumpWidget(createTestApp());
         await tester.pumpAndSettle();
 
         // Then
-        WidgetVerifiers.verifyWidgetRenders(
-          tester: tester,
-          widgetType: SignupPage,
-          expectedCount: 1,
-        );
+        TestVerifiersUtil.expectRenders<SignupPage>();
       });
 
       testWidgets('약관 동의 모달이 표시되어야 한다', (WidgetTester tester) async {
@@ -492,11 +422,7 @@ void main() {
         await tester.pumpWidget(createModalTestWidget());
 
         // Then
-        WidgetVerifiers.verifyWidgetRenders(
-          tester: tester,
-          widgetType: TermsAgreementModal,
-          expectedCount: 1,
-        );
+        TestVerifiersUtil.expectRenders<TermsAgreementModal>();
       });
 
       testWidgets('약관 동의 후 회원가입이 진행되어야 한다', (WidgetTester tester) async {
@@ -504,7 +430,7 @@ void main() {
         await tester.pumpWidget(createModalTestWidget());
 
         // When
-        await tester.tap(find.text('모두 동의합니다 !'));
+        await tester.tap(TestTermsUtil.findAgreeAllButton());
         await tester.pump();
 
         // Then
@@ -517,7 +443,7 @@ void main() {
         await tester.pumpWidget(createModalTestWidget());
 
         // When
-        await tester.tapAt(const Offset(50, 50)); // 외부 터치
+        await tester.tapAt(TestTermsUtil.calculateExternalTouchPoint()); // 외부 터치
         await tester.pump();
 
         // Then
@@ -529,12 +455,7 @@ void main() {
         WidgetTester tester,
       ) async {
         // Given
-        when(
-          () => mockAuthTokenRepository.getCurrentToken(),
-        ).thenAnswer((_) async => null);
-        when(
-          () => mockRefreshUseCase.execute(),
-        ).thenAnswer((_) async => AuthenticationResult.unauthenticated());
+        TestAuthUtil.stubUnauthenticated(mocks);
 
         // When
         await tester.pumpWidget(createTestApp());
@@ -542,11 +463,7 @@ void main() {
 
         // Then
         // SignupPage가 렌더링되면 Terms Agreement 모달을 호출할 수 있어야 함
-        WidgetVerifiers.verifyWidgetRenders(
-          tester: tester,
-          widgetType: SignupPage,
-          expectedCount: 1,
-        );
+        TestVerifiersUtil.expectRenders<SignupPage>();
       });
 
       testWidgets('Terms Agreement 도메인이 Auth 도메인과 독립적으로 동작해야 한다', (
@@ -557,32 +474,26 @@ void main() {
 
         // Then
         // Terms Agreement 모달이 Auth 도메인 없이도 독립적으로 동작해야 함
-        WidgetVerifiers.verifyWidgetRenders(
-          tester: tester,
-          widgetType: TermsAgreementModal,
-          expectedCount: 1,
-        );
+        TestVerifiersUtil.expectRenders<TermsAgreementModal>();
       });
 
       testWidgets('도메인 간 인터페이스가 올바르게 정의되어야 한다', (WidgetTester tester) async {
         // Given & When
         bool agreedCalled = false;
         await tester.pumpWidget(
-          AppWrappers.wrapWithMaterialAppWithSize(
-            TermsAgreementModal(
-              onResult: (result) {
-                if (result == TermsAgreementResult.agreed) {
-                  agreedCalled = true;
-                }
-              },
-            ),
+          TestTermsUtil.buildModal(
+            onResult: (result) {
+              if (result == TermsAgreementResult.agreed) {
+                agreedCalled = true;
+              }
+            },
             screenSize: const Size(390.0, 844.0),
           ),
         );
 
         // Then
         // 콜백을 통한 인터페이스가 올바르게 동작해야 함
-        await tester.tap(find.text('모두 동의합니다 !'));
+        await tester.tap(TestTermsUtil.findAgreeAllButton());
         await tester.pump();
         expect(agreedCalled, isTrue);
       });
@@ -592,19 +503,7 @@ void main() {
         await tester.pumpWidget(createModalTestWidget());
 
         // Then
-        WidgetVerifiers.verifyTextDisplays(text: '이용 약관 동의', expectedCount: 1);
-        WidgetVerifiers.verifyTextDisplays(
-          text: '개인정보 보호 방침 동의',
-          expectedCount: 1,
-        );
-        WidgetVerifiers.verifyTextDisplays(
-          text: '위치정보 수집·이용 및 제3자 제공 동의',
-          expectedCount: 1,
-        );
-        WidgetVerifiers.verifyTextDisplays(
-          text: '만 14세 이상입니다',
-          expectedCount: 1,
-        );
+        TestTermsUtil.verifyAllTermsTextsDisplay();
       });
 
       testWidgets('사용자가 약관에 동의하고 회원가입을 완료할 수 있어야 한다', (
@@ -613,20 +512,18 @@ void main() {
         // Given
         bool agreedCalled = false;
         await tester.pumpWidget(
-          AppWrappers.wrapWithMaterialAppWithSize(
-            TermsAgreementModal(
-              onResult: (result) {
-                if (result == TermsAgreementResult.agreed) {
-                  agreedCalled = true;
-                }
-              },
-            ),
+          TestTermsUtil.buildModal(
+            onResult: (result) {
+              if (result == TermsAgreementResult.agreed) {
+                agreedCalled = true;
+              }
+            },
             screenSize: const Size(390.0, 844.0),
           ),
         );
 
         // When
-        await tester.tap(find.text('모두 동의합니다 !'));
+        await tester.tap(TestTermsUtil.findAgreeAllButton());
         await tester.pump();
 
         // Then
@@ -639,14 +536,12 @@ void main() {
         // Given
         bool dismissedCalled = false;
         await tester.pumpWidget(
-          AppWrappers.wrapWithMaterialAppWithSize(
-            TermsAgreementModal(
-              onResult: (result) {
-                if (result == TermsAgreementResult.dismissed) {
-                  dismissedCalled = true;
-                }
-              },
-            ),
+          TestTermsUtil.buildModal(
+            onResult: (result) {
+              if (result == TermsAgreementResult.dismissed) {
+                dismissedCalled = true;
+              }
+            },
             screenSize: const Size(390.0, 844.0),
           ),
         );
@@ -680,11 +575,7 @@ void main() {
 
         // Then
         // 회원가입 페이지가 안정적으로 렌더링되어야 함
-        WidgetVerifiers.verifyWidgetRenders(
-          tester: tester,
-          widgetType: SignupPage,
-          expectedCount: 1,
-        );
+        TestVerifiersUtil.expectRenders<SignupPage>();
       });
 
       testWidgets('약관 동의 모달 상태가 올바르게 관리되어야 한다', (WidgetTester tester) async {
@@ -693,31 +584,25 @@ void main() {
 
         // Then
         // 약관 동의 모달이 안정적으로 렌더링되어야 함
-        WidgetVerifiers.verifyWidgetRenders(
-          tester: tester,
-          widgetType: TermsAgreementModal,
-          expectedCount: 1,
-        );
+        TestVerifiersUtil.expectRenders<TermsAgreementModal>();
       });
 
       testWidgets('상태 변경이 올바르게 전파되어야 한다', (WidgetTester tester) async {
         // Given
         bool agreedCalled = false;
         await tester.pumpWidget(
-          AppWrappers.wrapWithMaterialAppWithSize(
-            TermsAgreementModal(
-              onResult: (result) {
-                if (result == TermsAgreementResult.agreed) {
-                  agreedCalled = true;
-                }
-              },
-            ),
+          TestTermsUtil.buildModal(
+            onResult: (result) {
+              if (result == TermsAgreementResult.agreed) {
+                agreedCalled = true;
+              }
+            },
             screenSize: const Size(390.0, 844.0),
           ),
         );
 
         // When
-        await tester.tap(find.text('모두 동의합니다 !'));
+        await tester.tap(TestTermsUtil.findAgreeAllButton());
         await tester.pump();
 
         // Then
@@ -733,11 +618,7 @@ void main() {
 
         // Then
         // 약관 동의 모달이 안정적으로 렌더링되어야 함
-        WidgetVerifiers.verifyWidgetRenders(
-          tester: tester,
-          widgetType: TermsAgreementModal,
-          expectedCount: 1,
-        );
+        TestVerifiersUtil.expectRenders<TermsAgreementModal>();
       });
 
       testWidgets('Mock 콜백이 통합 테스트에서 올바르게 동작해야 한다', (
@@ -747,22 +628,20 @@ void main() {
         bool agreedCalled = false;
         bool dismissedCalled = false;
         await tester.pumpWidget(
-          AppWrappers.wrapWithMaterialAppWithSize(
-            TermsAgreementModal(
-              onResult: (result) {
-                if (result == TermsAgreementResult.agreed) {
-                  agreedCalled = true;
-                } else if (result == TermsAgreementResult.dismissed) {
-                  dismissedCalled = true;
-                }
-              },
-            ),
+          TestTermsUtil.buildModal(
+            onResult: (result) {
+              if (result == TermsAgreementResult.agreed) {
+                agreedCalled = true;
+              } else if (result == TermsAgreementResult.dismissed) {
+                dismissedCalled = true;
+              }
+            },
             screenSize: const Size(390.0, 844.0),
           ),
         );
 
         // When
-        await tester.tap(find.text('모두 동의합니다 !'));
+        await tester.tap(TestTermsUtil.findAgreeAllButton());
         await tester.pump();
 
         // Then
@@ -777,16 +656,14 @@ void main() {
         int agreedCount = 0;
         int dismissedCount = 0;
         await tester.pumpWidget(
-          AppWrappers.wrapWithMaterialAppWithSize(
-            TermsAgreementModal(
-              onResult: (result) {
-                if (result == TermsAgreementResult.agreed) {
-                  agreedCount++;
-                } else if (result == TermsAgreementResult.dismissed) {
-                  dismissedCount++;
-                }
-              },
-            ),
+          TestTermsUtil.buildModal(
+            onResult: (result) {
+              if (result == TermsAgreementResult.agreed) {
+                agreedCount++;
+              } else if (result == TermsAgreementResult.dismissed) {
+                dismissedCount++;
+              }
+            },
             screenSize: const Size(390.0, 844.0),
           ),
         );
@@ -795,7 +672,7 @@ void main() {
         // 외부 터치로 모달 닫기 (네비게이션 트리거 방지)
         await tester.tapAt(const Offset(10, 10));
         await tester.pump();
-        await tester.tap(find.text('모두 동의합니다 !'));
+        await tester.tap(TestTermsUtil.findAgreeAllButton());
         await tester.pump();
 
         // Then

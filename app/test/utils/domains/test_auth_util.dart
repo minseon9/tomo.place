@@ -25,13 +25,13 @@ class MockLogoutUseCase extends Mock implements LogoutUseCase {}
 class MockRefreshTokenUseCase extends Mock implements RefreshTokenUseCase {}
 
 typedef AuthMocks = ({
-  MockAuthRepository authRepo,
-  MockAuthTokenRepository tokenRepo,
-  MockBaseClient baseClient,
-  MockSignupWithSocialUseCase signup,
-  MockLogoutUseCase logout,
-  MockRefreshTokenUseCase refresh,
-);
+MockAuthRepository authRepo,
+MockAuthTokenRepository tokenRepo,
+MockBaseClient baseClient,
+MockSignupWithSocialUseCase signup,
+MockLogoutUseCase logout,
+MockRefreshTokenUseCase refresh,
+});
 
 class TestAuthUtil {
   TestAuthUtil._();
