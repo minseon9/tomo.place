@@ -1,21 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// 테스트 검증 유틸리티 - 핵심적인 검증 기능만 제공
+
 class TestVerifiersUtil {
   TestVerifiersUtil._();
 
-  /// 위젯이 렌더링되는지 검증
   static void expectRenders<T>({int count = 1}) {
     expect(find.byType(T), findsNWidgets(count));
   }
 
-  /// 텍스트가 표시되는지 검증
   static void expectText(String text, {int count = 1}) {
     expect(find.text(text), findsNWidgets(count));
   }
 
-  /// 스낵바가 표시되는지 검증
   static void expectSnackBar({String? message}) {
     expect(find.byType(SnackBar), findsWidgets);
     if (message != null) {
@@ -23,7 +20,6 @@ class TestVerifiersUtil {
     }
   }
 
-  /// 위젯 크기 검증
   static void expectWidgetSize({
     required WidgetTester tester,
     required Finder finder,
@@ -41,7 +37,6 @@ class TestVerifiersUtil {
     }
   }
 
-  /// 스크롤 가능한 콘텐츠 검증
   static void expectScrollableContent({
     required WidgetTester tester,
     required Finder finder,
@@ -66,7 +61,6 @@ class TestVerifiersUtil {
     }
   }
 
-  /// SafeArea 검증
   static void expectSafeArea({
     required WidgetTester tester,
     required Finder finder,
@@ -85,7 +79,6 @@ class TestVerifiersUtil {
     }
   }
 
-  /// Stack 레이아웃 검증
   static void expectStackLayout({
     required WidgetTester tester,
     required Finder finder,
@@ -98,7 +91,6 @@ class TestVerifiersUtil {
     expect(mainStack.children.length, equals(expectedChildrenCount));
   }
 
-  /// Positioned 위젯 검증
   static void expectPositionedWidget({
     required WidgetTester tester,
     required Finder finder,
