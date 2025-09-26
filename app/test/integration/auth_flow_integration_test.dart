@@ -1,98 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:tomo_place/app/app.dart';
 import 'package:tomo_place/domains/auth/consts/social_provider.dart';
-import 'package:tomo_place/domains/auth/core/entities/authentication_result.dart';
-import 'package:tomo_place/domains/auth/core/usecases/usecase_providers.dart';
-import 'package:tomo_place/domains/auth/data/repositories/auth_repository_impl.dart';
-import 'package:tomo_place/domains/auth/data/repositories/auth_token_repository_impl.dart';
 import 'package:tomo_place/domains/auth/presentation/controllers/auth_notifier.dart';
 import 'package:tomo_place/domains/auth/presentation/models/auth_state.dart';
 import 'package:tomo_place/domains/auth/presentation/pages/signup_page.dart';
 import 'package:tomo_place/domains/terms_agreement/presentation/widgets/organisms/terms_agreement_modal.dart';
 import 'package:tomo_place/shared/exception_handler/exception_notifier.dart';
 import 'package:tomo_place/shared/exception_handler/models/exception_interface.dart';
-import 'package:tomo_place/shared/infrastructure/network/auth_client.dart';
 
-import '../utils/fake_data/fake_auth_token_generator.dart';
-import '../utils/fake_data/fake_exception_generator.dart';
-import '../utils/mock_factory/auth_mock_factory.dart';
-import '../utils/mock_factory/shared_mock_factory.dart';
-import '../utils/widget/app_wrappers.dart';
-import '../utils/widget/verifiers.dart';
+import '../utils/test_auth_util.dart';
+import '../utils/test_terms_util.dart';
+import '../utils/test_wrappers_util.dart';
+import '../utils/test_verifiers_util.dart';
 
 void main() {
   group('Auth Flow Integration Test', () {
-    late MockAuthRepository mockAuthRepository;
-    late MockAuthTokenRepository mockAuthTokenRepository;
-    late MockBaseClient mockBaseClient;
-    late MockSignupWithSocialUseCase mockSignupUseCase;
-    late MockLogoutUseCase mockLogoutUseCase;
-    late MockRefreshTokenUseCase mockRefreshUseCase;
+    late AuthMocks mocks;
 
     setUp(() {
-      // Mock 객체들 생성
-      mockAuthRepository = AuthMockFactory.createAuthRepository();
-      mockAuthTokenRepository = AuthMockFactory.createAuthTokenRepository();
-      mockBaseClient = SharedMockFactory.createBaseClient();
-      mockSignupUseCase = AuthMockFactory.createSignupWithSocialUseCase();
-      mockLogoutUseCase = AuthMockFactory.createLogoutUseCase();
-      mockRefreshUseCase = AuthMockFactory.createRefreshTokenUseCase();
-
-      // Register fallback values
-      registerFallbackValue(true);
-      registerFallbackValue(false);
-      registerFallbackValue(0);
-      registerFallbackValue('');
-      registerFallbackValue(<String, dynamic>{});
-      registerFallbackValue(<String>[]);
-      registerFallbackValue(AuthInitial());
-      registerFallbackValue(AuthLoading());
-      registerFallbackValue(AuthSuccess(true));
-      registerFallbackValue(
-        AuthFailure(error: FakeExceptionGenerator.createAuthenticationFailed()),
-      );
-      registerFallbackValue(
-        FakeExceptionGenerator.createAuthenticationFailed(),
-      );
-      registerFallbackValue(GlobalKey<NavigatorState>());
-      registerFallbackValue(SocialProvider.google);
-      registerFallbackValue(FakeAuthTokenGenerator.createValid());
-      registerFallbackValue(
-        AuthenticationResult.authenticated(
-          FakeAuthTokenGenerator.createValid(),
-        ),
-      );
-      registerFallbackValue(AuthenticationResult.unauthenticated());
+      mocks = AuthTestUtil.createMocks();
     });
 
-    tearDown(() {
-      // 테스트 간 상태 격리를 위한 정리
-      reset(mockAuthRepository);
-      reset(mockAuthTokenRepository);
-      reset(mockBaseClient);
-      reset(mockSignupUseCase);
-      reset(mockLogoutUseCase);
-      reset(mockRefreshUseCase);
-    });
-
-    // Helper 함수들
     Widget createTestApp({List<Override> overrides = const []}) {
       return ProviderScope(
         overrides: [
-          // Mock Provider들 추가
-          authRepositoryProvider.overrideWith((ref) => mockAuthRepository),
-          authTokenRepositoryProvider.overrideWith(
-            (ref) => mockAuthTokenRepository,
-          ),
-          authClientProvider.overrideWith((ref) => mockBaseClient),
-          signupWithSocialUseCaseProvider.overrideWith(
-            (ref) => mockSignupUseCase,
-          ),
-          logoutUseCaseProvider.overrideWith((ref) => mockLogoutUseCase),
-          refreshTokenUseCaseProvider.overrideWith((ref) => mockRefreshUseCase),
+          ...AuthTestUtil.providerOverrides(mocks),
           ...overrides,
         ],
         child: const TomoPlaceApp(),
@@ -102,27 +36,17 @@ void main() {
     group('소셜 로그인 플로우', () {
       testWidgets('구글 로그인이 성공해야 한다', (WidgetTester tester) async {
         // Given - 구글 로그인 성공 시나리오
-        final validToken = FakeAuthTokenGenerator.createValid();
-
-        when(
-          () => mockAuthTokenRepository.getCurrentToken(),
-        ).thenAnswer((_) async => null);
-        when(
-          () => mockRefreshUseCase.execute(),
-        ).thenAnswer((_) async => AuthenticationResult.unauthenticated());
-        when(
-          () => mockSignupUseCase.execute(any()),
-        ).thenAnswer((_) async => validToken);
-        when(
-          () => mockAuthTokenRepository.saveToken(any()),
-        ).thenAnswer((_) async {});
+        final validToken = AuthTestUtil.makeValidToken();
+        
+        AuthTestUtil.stubUnauthenticated(mocks);
+        AuthTestUtil.stubSignupSuccess(mocks, provider: SocialProvider.google, token: validToken);
 
         // When - 앱 시작
         await tester.pumpWidget(createTestApp());
         await tester.pumpAndSettle();
 
         // 로그인 화면으로 이동했는지 확인
-        expect(find.byType(SignupPage), findsOneWidget);
+        TestVerifiersUtil.expectRenders<SignupPage>();
 
         // 구글 로그인 버튼 찾기 및 탭
         final googleButton = find.text('구글로 시작하기');
@@ -131,7 +55,6 @@ void main() {
         await tester.pumpAndSettle();
 
         // Then - 로그인 상태 변화 확인
-        // 상태 변경을 위해 추가 대기
         await tester.pump(const Duration(milliseconds: 100));
 
         final container = ProviderScope.containerOf(
@@ -139,7 +62,6 @@ void main() {
         );
         final authState = container.read(authNotifierProvider);
 
-        // Auth 상태가 변경되지 않을 수 있으므로 AuthInitial도 허용
         expect(
           authState,
           anyOf(isA<AuthSuccess>(), isA<AuthLoading>(), isA<AuthInitial>()),
@@ -148,19 +70,11 @@ void main() {
         if (authState is AuthSuccess) {
           expect(authState.isNavigateHome, isTrue);
         }
-
-        // UseCase 호출 확인은 실제 통합 테스트에서는 제외
-        // 실제 앱 동작에 집중하여 상태 변화만 확인
       });
 
       testWidgets('카카오 로그인 버튼이 비활성화되어야 한다', (WidgetTester tester) async {
         // Given - 앱 시작
-        when(
-          () => mockAuthTokenRepository.getCurrentToken(),
-        ).thenAnswer((_) async => null);
-        when(
-          () => mockRefreshUseCase.execute(),
-        ).thenAnswer((_) async => AuthenticationResult.unauthenticated());
+        AuthTestUtil.stubUnauthenticated(mocks);
 
         // When - 앱 시작
         await tester.pumpWidget(createTestApp());
@@ -184,12 +98,7 @@ void main() {
 
       testWidgets('애플 로그인 버튼이 비활성화되어야 한다', (WidgetTester tester) async {
         // Given - 앱 시작
-        when(
-          () => mockAuthTokenRepository.getCurrentToken(),
-        ).thenAnswer((_) async => null);
-        when(
-          () => mockRefreshUseCase.execute(),
-        ).thenAnswer((_) async => AuthenticationResult.unauthenticated());
+        AuthTestUtil.stubUnauthenticated(mocks);
 
         // When - 앱 시작
         await tester.pumpWidget(createTestApp());
@@ -219,21 +128,11 @@ void main() {
         final List<AuthState> stateChanges = [];
 
         // Given - 성공적인 로그인/로그아웃 시나리오
-        final validToken = FakeAuthTokenGenerator.createValid();
+        final validToken = AuthTestUtil.makeValidToken();
 
-        when(
-          () => mockAuthTokenRepository.getCurrentToken(),
-        ).thenAnswer((_) async => null);
-        when(
-          () => mockRefreshUseCase.execute(),
-        ).thenAnswer((_) async => AuthenticationResult.unauthenticated());
-        when(
-          () => mockSignupUseCase.execute(any()),
-        ).thenAnswer((_) async => validToken);
-        when(
-          () => mockAuthTokenRepository.saveToken(any()),
-        ).thenAnswer((_) async {});
-        when(() => mockLogoutUseCase.execute()).thenAnswer((_) async {});
+        AuthTestUtil.stubUnauthenticated(mocks);
+        AuthTestUtil.stubSignupSuccess(mocks, provider: SocialProvider.google, token: validToken);
+        AuthTestUtil.stubLogoutSuccess(mocks);
 
         // When - 앱 시작
         await tester.pumpWidget(createTestApp());
