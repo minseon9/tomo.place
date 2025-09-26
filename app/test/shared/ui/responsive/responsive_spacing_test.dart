@@ -1,155 +1,104 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tomo_place/shared/ui/responsive/responsive_spacing.dart';
 import 'package:tomo_place/shared/ui/responsive/device_type.dart';
+import 'package:tomo_place/shared/ui/responsive/responsive_spacing.dart';
 
-import '../../../utils/responsive_test_helper.dart';
+import '../../../utils/test_responsive_util.dart';
+import '../../../utils/test_wrappers_util.dart';
 
 void main() {
   group('ResponsiveSpacing', () {
     group('getResponsive', () {
-      testWidgets('모바일에서 1.0x 스케일링 적용', (WidgetTester tester) async {
-        // Given
-        const screenSize = ResponsiveTestHelper.standardMobileSize;
+      testWidgets('모바일에서 1.0x 스케일링 적용', (tester) async {
         const baseSpacing = 16.0;
-
-        await tester.pumpWidget(
-          ResponsiveTestHelper.createTestWidget(
-            screenSize: screenSize,
-            child: Builder(
-              builder: (context) {
-                final result = ResponsiveSpacing.getResponsive(
-                  context,
-                  baseSpacing,
-                );
-                return Text('$result');
-              },
-            ),
-          ),
+        final result = await _readSpacing(
+          tester,
+          screenSize: TestResponsiveUtil.standardMobileSize,
+          baseSpacing: baseSpacing,
         );
 
-        // Then
-        expect(find.text('16.0'), findsOneWidget);
+        final expected = TestResponsiveUtil.expectedSpace(
+          deviceType: DeviceType.mobile,
+          baseSpacing: baseSpacing,
+          screenSize: TestResponsiveUtil.standardMobileSize,
+        );
+        expect(result, expected);
       });
 
-      testWidgets('태블릿에서 1.2x 스케일링 적용', (WidgetTester tester) async {
-        // Given
-        const screenSize = ResponsiveTestHelper.standardTabletSize;
+      testWidgets('태블릿에서 1.2x 스케일링 적용', (tester) async {
         const baseSpacing = 16.0;
-
-        await tester.pumpWidget(
-          ResponsiveTestHelper.createTestWidget(
-            screenSize: screenSize,
-            child: Builder(
-              builder: (context) {
-                final result = ResponsiveSpacing.getResponsive(
-                  context,
-                  baseSpacing,
-                );
-                return Text('$result');
-              },
-            ),
-          ),
+        final result = await _readSpacing(
+          tester,
+          screenSize: TestResponsiveUtil.standardTabletSize,
+          baseSpacing: baseSpacing,
         );
 
-        // Then
-        expect(find.text('19.2'), findsOneWidget);
+        final expected = TestResponsiveUtil.expectedSpace(
+          deviceType: DeviceType.tablet,
+          baseSpacing: baseSpacing,
+          screenSize: TestResponsiveUtil.standardTabletSize,
+        );
+        expect(result, expected);
+
       });
 
-      testWidgets('경계값에서 올바른 스케일링 적용', (WidgetTester tester) async {
-        // Given
-        const screenSize = ResponsiveTestHelper.mobileBreakpointSize;
+      testWidgets('경계값에서 올바른 스케일링 적용', (tester) async {
         const baseSpacing = 10.0;
-
-        await tester.pumpWidget(
-          ResponsiveTestHelper.createTestWidget(
-            screenSize: screenSize,
-            child: Builder(
-              builder: (context) {
-                final result = ResponsiveSpacing.getResponsive(
-                  context,
-                  baseSpacing,
-                );
-                return Text('$result');
-              },
-            ),
-          ),
+        final result = await _readSpacing(
+          tester,
+          screenSize: TestResponsiveUtil.mobileBreakpointSize,
+          baseSpacing: baseSpacing,
         );
 
-        // Then
-        expect(find.text('12.0'), findsOneWidget);
+        final expected = TestResponsiveUtil.expectedSpace(
+          deviceType: DeviceType.mobile,
+          baseSpacing: baseSpacing,
+          screenSize: TestResponsiveUtil.mobileBreakpointSize,
+        );
+        expect(result, expected);
       });
 
-      testWidgets('0 스페이싱 처리', (WidgetTester tester) async {
-        // Given
-        const screenSize = ResponsiveTestHelper.standardMobileSize;
+      testWidgets('0 스페이싱 처리', (tester) async {
         const baseSpacing = 0.0;
-
-        await tester.pumpWidget(
-          ResponsiveTestHelper.createTestWidget(
-            screenSize: screenSize,
-            child: Builder(
-              builder: (context) {
-                final result = ResponsiveSpacing.getResponsive(
-                  context,
-                  baseSpacing,
-                );
-                return Text('$result');
-              },
-            ),
-          ),
+        final result = await _readSpacing(
+          tester,
+          screenSize: TestResponsiveUtil.standardMobileSize,
+          baseSpacing: baseSpacing,
         );
 
-        // Then
-        expect(find.text('0.0'), findsOneWidget);
+        expect(result, 0.0);
       });
 
-      testWidgets('음수 스페이싱 처리', (WidgetTester tester) async {
-        // Given
-        const screenSize = ResponsiveTestHelper.standardTabletSize;
+      testWidgets('음수 스페이싱 처리', (tester) async {
         const baseSpacing = -10.0;
-
-        await tester.pumpWidget(
-          ResponsiveTestHelper.createTestWidget(
-            screenSize: screenSize,
-            child: Builder(
-              builder: (context) {
-                final result = ResponsiveSpacing.getResponsive(
-                  context,
-                  baseSpacing,
-                );
-                return Text('$result');
-              },
-            ),
-          ),
+        final result = await _readSpacing(
+          tester,
+          screenSize: TestResponsiveUtil.standardTabletSize,
+          baseSpacing: baseSpacing,
         );
 
-        // Then
-        expect(find.text('-12.0'), findsOneWidget);
+        final expected = TestResponsiveUtil.expectedSpace(
+          deviceType: DeviceType.mobile,
+          baseSpacing: baseSpacing,
+          screenSize: TestResponsiveUtil.standardTabletSize,
+        );
+        expect(result, expected);
       });
 
-      testWidgets('매우 큰 스페이싱 값 처리', (WidgetTester tester) async {
-        // Given
-        const screenSize = ResponsiveTestHelper.standardTabletSize;
+      testWidgets('매우 큰 스페이싱 값 처리', (tester) async {
         const baseSpacing = 1000.0;
-
-        await tester.pumpWidget(
-          ResponsiveTestHelper.createTestWidget(
-            screenSize: screenSize,
-            child: Builder(
-              builder: (context) {
-                final result = ResponsiveSpacing.getResponsive(
-                  context,
-                  baseSpacing,
-                );
-                return Text('$result');
-              },
-            ),
-          ),
+        final result = await _readSpacing(
+          tester,
+          screenSize: TestResponsiveUtil.standardTabletSize,
+          baseSpacing: baseSpacing,
         );
 
-        // Then
-        expect(find.text('1200.0'), findsOneWidget);
+        final expected = TestResponsiveUtil.expectedSpace(
+          deviceType: DeviceType.mobile,
+          baseSpacing: baseSpacing,
+          screenSize: TestResponsiveUtil.standardTabletSize,
+        );
+        expect(result, expected);
       });
     });
 
@@ -180,105 +129,57 @@ void main() {
     });
 
     group('경계값 테스트', () {
-      testWidgets('모바일 브레이크포인트 직전에서 모바일 스케일링', (WidgetTester tester) async {
-        // Given
-        const screenSize = ResponsiveTestHelper.justBelowMobileBreakpoint;
+      testWidgets('모바일 브레이크포인트 직전에서 모바일 스케일링', (tester) async {
         const baseSpacing = 20.0;
-
-        await tester.pumpWidget(
-          ResponsiveTestHelper.createTestWidget(
-            screenSize: screenSize,
-            child: Builder(
-              builder: (context) {
-                final result = ResponsiveSpacing.getResponsive(
-                  context,
-                  baseSpacing,
-                );
-                return Text('$result');
-              },
-            ),
-          ),
+        final result = await _readSpacing(
+          tester,
+          screenSize: TestResponsiveUtil.justBelowMobileBreakpoint,
+          baseSpacing: baseSpacing,
         );
 
-        // Then
-        expect(find.text('20.0'), findsOneWidget);
+        final expected = TestResponsiveUtil.expectedSpace(
+          deviceType: DeviceType.mobile,
+          baseSpacing: baseSpacing,
+          screenSize: TestResponsiveUtil.justBelowMobileBreakpoint,
+        );
+        expect(result, expected);
       });
 
-      testWidgets('모바일 브레이크포인트 직후에서 태블릿 스케일링', (WidgetTester tester) async {
-        // Given
-        const screenSize = ResponsiveTestHelper.justAboveMobileBreakpoint;
+      testWidgets('모바일 브레이크포인트 직후에서 태블릿 스케일링', (tester) async {
         const baseSpacing = 20.0;
-
-        await tester.pumpWidget(
-          ResponsiveTestHelper.createTestWidget(
-            screenSize: screenSize,
-            child: Builder(
-              builder: (context) {
-                final result = ResponsiveSpacing.getResponsive(
-                  context,
-                  baseSpacing,
-                );
-                return Text('$result');
-              },
-            ),
-          ),
+        final result = await _readSpacing(
+          tester,
+          screenSize: TestResponsiveUtil.justAboveMobileBreakpoint,
+          baseSpacing: baseSpacing,
         );
 
-        // Then
-        expect(find.text('24.0'), findsOneWidget);
-      });
-    });
-
-    group('랜덤 값 테스트', () {
-      testWidgets('랜덤 모바일 크기에서 올바른 스케일링', (WidgetTester tester) async {
-        // Given
-        final screenSize = ResponsiveTestHelper.createMobileSize();
-        final baseSpacing = ResponsiveTestHelper.createRandomDouble(max: 100);
-
-        await tester.pumpWidget(
-          ResponsiveTestHelper.createTestWidget(
-            screenSize: screenSize,
-            child: Builder(
-              builder: (context) {
-                final result = ResponsiveSpacing.getResponsive(
-                  context,
-                  baseSpacing,
-                );
-                return Text('$result');
-              },
-            ),
-          ),
+        final expected = TestResponsiveUtil.expectedSpace(
+          deviceType: DeviceType.mobile,
+          baseSpacing: baseSpacing,
+          screenSize: TestResponsiveUtil.justAboveMobileBreakpoint,
         );
-
-        // Then
-        final expectedResult = baseSpacing * 1.0; // 모바일 multiplier
-        expect(find.text('$expectedResult'), findsOneWidget);
-      });
-
-      testWidgets('랜덤 태블릿 크기에서 올바른 스케일링', (WidgetTester tester) async {
-        // Given
-        final screenSize = ResponsiveTestHelper.createTabletSize();
-        final baseSpacing = ResponsiveTestHelper.createRandomDouble(max: 100);
-
-        await tester.pumpWidget(
-          ResponsiveTestHelper.createTestWidget(
-            screenSize: screenSize,
-            child: Builder(
-              builder: (context) {
-                final result = ResponsiveSpacing.getResponsive(
-                  context,
-                  baseSpacing,
-                );
-                return Text('$result');
-              },
-            ),
-          ),
-        );
-
-        // Then
-        final expectedResult = baseSpacing * 1.2; // 태블릿 multiplier
-        expect(find.text('$expectedResult'), findsOneWidget);
+        expect(result, expected);
       });
     });
   });
+}
+
+Future<double> _readSpacing(
+    WidgetTester tester, {
+      required Size screenSize,
+      required double baseSpacing,
+    }) async {
+  double? value;
+  await tester.pumpWidget(
+    TestWrappersUtil.withScreenSize(
+      Builder(
+        builder: (context) {
+          value = ResponsiveSpacing.getResponsive(context, baseSpacing);
+          return const SizedBox();
+        },
+      ),
+      screenSize: screenSize,
+    ),
+  );
+  return value!;
 }

@@ -13,6 +13,12 @@ class TestRenderVerifier {
     expect(find.text(text), findsNWidgets(count));
   }
 
+  static Finder findSingle<T>() {
+    final finder = find.byType(T);
+    expect(finder, findsOneWidget);
+    return finder;
+  }
+
   // moved to style verifier
 
   static void expectSnackBar({String? message}) {

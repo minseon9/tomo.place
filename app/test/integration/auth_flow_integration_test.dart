@@ -12,6 +12,9 @@ import 'package:tomo_place/shared/exception_handler/models/exception_interface.d
 
 import '../utils/domains/test_auth_util.dart';
 import '../utils/domains/test_terms_util.dart';
+import '../utils/test_actions_util.dart';
+import '../utils/test_exception_util.dart';
+import '../utils/test_wrappers_util.dart';
 import '../utils/verifiers/test_render_verifier.dart';
 
 void main() {
@@ -22,8 +25,14 @@ void main() {
       mocks = TestAuthUtil.createMocks();
     });
 
-    Widget createTestApp({List<Override> overrides = const []}) {
+    Widget createTestApp({
+      List<Override> overrides = const [],
+      Override? exceptionOverride,
+    }) {
       final providerOverrides = TestAuthUtil.providerOverrides(mocks);
+      final exceptionHandlerOverride = exceptionOverride ??
+          TestExceptionUtil.overrideProvider(TestExceptionUtil.createMockNotifier());
+
       return ProviderScope(
         overrides: [
           providerOverrides.authRepo,
@@ -32,6 +41,8 @@ void main() {
           providerOverrides.signup,
           providerOverrides.logout,
           providerOverrides.refresh,
+          TestAuthUtil.authNotifierOverride(mocks),
+          exceptionHandlerOverride,
           ...overrides,
         ],
         child: const TomoPlaceApp(),
@@ -387,22 +398,6 @@ void main() {
     });
 
     group('Auth와 Terms Agreement 도메인 통합 테스트', () {
-      Widget createModalTestWidget() {
-        return TestTermsUtil.buildModal(
-          onResult: (result) {
-            // 테스트용 콜백 - 모든 결과 타입을 처리
-            switch (result) {
-              case TermsAgreementResult.agreed:
-                // 동의 처리
-                break;
-              case TermsAgreementResult.dismissed:
-                // 거부 처리
-                break;
-            }
-          },
-          screenSize: const Size(390.0, 844.0), // iPhone 13 기준 모바일 평균 크기
-        );
-      }
 
       testWidgets('회원가입 페이지가 올바르게 렌더링되어야 한다', (WidgetTester tester) async {
         // Given
@@ -418,7 +413,7 @@ void main() {
 
       testWidgets('약관 동의 모달이 표시되어야 한다', (WidgetTester tester) async {
         // Given & When
-        await tester.pumpWidget(createModalTestWidget());
+        await tester.pumpWidget(_createModalTestWidget());
 
         // Then
         TestRenderVerifier.expectRenders<TermsAgreementModal>();
@@ -426,10 +421,13 @@ void main() {
 
       testWidgets('약관 동의 후 회원가입이 진행되어야 한다', (WidgetTester tester) async {
         // Given
-        await tester.pumpWidget(createModalTestWidget());
+        await tester.pumpWidget(_createModalTestWidget());
 
         // When
-        await tester.tap(TestTermsUtil.findAgreeAllButton());
+        await TestActionsUtil.tapFinderAndSettle(
+          tester,
+          TestTermsUtil.findAgreeAllButton(),
+        );
         await tester.pump();
 
         // Then
@@ -439,11 +437,11 @@ void main() {
 
       testWidgets('약관 동의를 거부하면 회원가입이 진행되지 않아야 한다', (WidgetTester tester) async {
         // Given
-        await tester.pumpWidget(createModalTestWidget());
+        await tester.pumpWidget(_createModalTestWidget());
 
         // When
-        await tester.tapAt(TestTermsUtil.calculateExternalTouchPoint()); // 외부 터치
-        await tester.pump();
+        await tester.tapAt(TestTermsUtil.calculateExternalTouchPoint());
+        await tester.pumpAndSettle();
 
         // Then
         // onResult 콜백이 호출되었는지 확인
@@ -469,7 +467,7 @@ void main() {
         WidgetTester tester,
       ) async {
         // Given & When
-        await tester.pumpWidget(createModalTestWidget());
+        await tester.pumpWidget(_createModalTestWidget());
 
         // Then
         // Terms Agreement 모달이 Auth 도메인 없이도 독립적으로 동작해야 함
@@ -480,26 +478,29 @@ void main() {
         // Given & When
         bool agreedCalled = false;
         await tester.pumpWidget(
-          TestTermsUtil.buildModal(
-            onResult: (result) {
-              if (result == TermsAgreementResult.agreed) {
-                agreedCalled = true;
-              }
-            },
-            screenSize: const Size(390.0, 844.0),
-          ),
+            _createModalTestWidget(
+                onResult: (result) {
+                  if (result == TermsAgreementResult.agreed) {
+                    agreedCalled = true;
+                  }
+                },
+                includeRoutes: false
+            )
         );
 
         // Then
         // 콜백을 통한 인터페이스가 올바르게 동작해야 함
-        await tester.tap(TestTermsUtil.findAgreeAllButton());
+        await TestActionsUtil.tapFinderAndSettle(
+          tester,
+          TestTermsUtil.findAgreeAllButton(),
+        );
         await tester.pump();
         expect(agreedCalled, isTrue);
       });
 
       testWidgets('사용자가 약관을 확인할 수 있어야 한다', (WidgetTester tester) async {
         // Given & When
-        await tester.pumpWidget(createModalTestWidget());
+        await tester.pumpWidget(_createModalTestWidget());
 
         // Then
         TestTermsUtil.verifyAllTermsTextsDisplay();
@@ -511,18 +512,21 @@ void main() {
         // Given
         bool agreedCalled = false;
         await tester.pumpWidget(
-          TestTermsUtil.buildModal(
-            onResult: (result) {
-              if (result == TermsAgreementResult.agreed) {
-                agreedCalled = true;
-              }
-            },
-            screenSize: const Size(390.0, 844.0),
-          ),
+            _createModalTestWidget(
+                onResult: (result) {
+                  if (result == TermsAgreementResult.agreed) {
+                    agreedCalled = true;
+                  }
+                },
+                includeRoutes: false
+            ),
         );
 
         // When
-        await tester.tap(TestTermsUtil.findAgreeAllButton());
+        await TestActionsUtil.tapFinderAndSettle(
+          tester,
+          TestTermsUtil.findAgreeAllButton(),
+        );
         await tester.pump();
 
         // Then
@@ -535,23 +539,21 @@ void main() {
         // Given
         bool dismissedCalled = false;
         await tester.pumpWidget(
-          TestTermsUtil.buildModal(
-            onResult: (result) {
-              if (result == TermsAgreementResult.dismissed) {
-                dismissedCalled = true;
-              }
-            },
-            screenSize: const Size(390.0, 844.0),
+          _createModalTestWidget(
+              onResult: (result) {
+                if (result == TermsAgreementResult.dismissed) {
+                  dismissedCalled = true;
+                }
+              },
+              includeRoutes: false
           ),
         );
 
-        // When
-        final modal = find.byType(TermsAgreementModal);
-        final modalRect = tester.getRect(modal);
-        final targetX = modalRect.center.dx;
-        final targetY = modalRect.top + 20;
-        await tester.tapAt(Offset(targetX, targetY));
-        await tester.pump();
+        final modalFinder = TestRenderVerifier.findSingle<TermsAgreementModal>();
+        final modalRect = tester.getRect(modalFinder);
+        final target = Offset(modalRect.center.dx, modalRect.top + 20);
+        await tester.tapAt(target);
+        await tester.pumpAndSettle();
 
         // Then
         expect(dismissedCalled, isTrue);
@@ -574,7 +576,7 @@ void main() {
 
       testWidgets('약관 동의 모달 상태가 올바르게 관리되어야 한다', (WidgetTester tester) async {
         // Given & When
-        await tester.pumpWidget(createModalTestWidget());
+        await tester.pumpWidget(_createModalTestWidget());
 
         // Then
         // 약관 동의 모달이 안정적으로 렌더링되어야 함
@@ -585,18 +587,21 @@ void main() {
         // Given
         bool agreedCalled = false;
         await tester.pumpWidget(
-          TestTermsUtil.buildModal(
-            onResult: (result) {
-              if (result == TermsAgreementResult.agreed) {
-                agreedCalled = true;
-              }
-            },
-            screenSize: const Size(390.0, 844.0),
+          _createModalTestWidget(
+              onResult: (result) {
+                if (result == TermsAgreementResult.agreed) {
+                  agreedCalled = true;
+                }
+              },
+              includeRoutes: false
           ),
         );
 
         // When
-        await tester.tap(TestTermsUtil.findAgreeAllButton());
+        await TestActionsUtil.tapFinderAndSettle(
+          tester,
+          TestTermsUtil.findAgreeAllButton(),
+        );
         await tester.pump();
 
         // Then
@@ -608,7 +613,7 @@ void main() {
         WidgetTester tester,
       ) async {
         // Given & When
-        await tester.pumpWidget(createModalTestWidget());
+        await tester.pumpWidget(_createModalTestWidget());
 
         // Then
         // 약관 동의 모달이 안정적으로 렌더링되어야 함
@@ -622,20 +627,23 @@ void main() {
         bool agreedCalled = false;
         bool dismissedCalled = false;
         await tester.pumpWidget(
-          TestTermsUtil.buildModal(
-            onResult: (result) {
-              if (result == TermsAgreementResult.agreed) {
-                agreedCalled = true;
-              } else if (result == TermsAgreementResult.dismissed) {
-                dismissedCalled = true;
-              }
-            },
-            screenSize: const Size(390.0, 844.0),
+          _createModalTestWidget(
+              onResult: (result) {
+                if (result == TermsAgreementResult.agreed) {
+                  agreedCalled = true;
+                } else if (result == TermsAgreementResult.dismissed) {
+                  dismissedCalled = true;
+                }
+              },
+              includeRoutes: false
           ),
         );
 
         // When
-        await tester.tap(TestTermsUtil.findAgreeAllButton());
+        await TestActionsUtil.tapFinderAndSettle(
+          tester,
+          TestTermsUtil.findAgreeAllButton(),
+        );
         await tester.pump();
 
         // Then
@@ -646,33 +654,52 @@ void main() {
       testWidgets('Mock 콜백이 여러 시나리오에서 올바르게 동작해야 한다', (
         WidgetTester tester,
       ) async {
-        // Given
         int agreedCount = 0;
         int dismissedCount = 0;
         await tester.pumpWidget(
-          TestTermsUtil.buildModal(
-            onResult: (result) {
-              if (result == TermsAgreementResult.agreed) {
-                agreedCount++;
-              } else if (result == TermsAgreementResult.dismissed) {
-                dismissedCount++;
-              }
-            },
-            screenSize: const Size(390.0, 844.0),
+          _createModalTestWidget(
+              onResult: (result) {
+                if (result == TermsAgreementResult.agreed) {
+                  agreedCount++;
+                } else if (result == TermsAgreementResult.dismissed) {
+                  dismissedCount++;
+                }
+              },
+              includeRoutes: false
           ),
         );
 
-        // When
-        // 외부 터치로 모달 닫기 (네비게이션 트리거 방지)
         await tester.tapAt(const Offset(10, 10));
         await tester.pump();
-        await tester.tap(TestTermsUtil.findAgreeAllButton());
+        await TestActionsUtil.tapFinderAndSettle(
+          tester,
+          TestTermsUtil.findAgreeAllButton(),
+        );
         await tester.pump();
 
-        // Then
         expect(dismissedCount, equals(1));
         expect(agreedCount, equals(1));
       });
     });
   });
+}
+
+Widget _createModalTestWidget({
+  void Function(TermsAgreementResult)? onResult,
+  bool includeRoutes = false,
+}) {
+
+  final handler = onResult ?? (_) {};
+  final modal = TermsAgreementModal(onResult: handler);
+
+  if (includeRoutes) {
+    return TestWrappersUtil.createTestAppWithRouting(
+      child: modal,
+      routes: {
+        ...TestTermsUtil.routes(),
+      },
+    );
+  }
+
+  return TestTermsUtil.buildModal(onResult: handler);
 }

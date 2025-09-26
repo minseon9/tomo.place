@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tomo_place/domains/auth/consts/social_provider.dart';
 import 'package:tomo_place/domains/auth/presentation/pages/signup_page.dart';
 import 'package:tomo_place/domains/auth/presentation/widgets/social_login_section.dart';
 import 'package:tomo_place/domains/terms_agreement/presentation/widgets/organisms/terms_agreement_modal.dart';
@@ -8,222 +9,109 @@ import 'package:tomo_place/domains/terms_agreement/presentation/widgets/molecule
 import 'package:tomo_place/domains/terms_agreement/presentation/widgets/atoms/terms_agree_button.dart';
 import 'package:tomo_place/shared/ui/design_system/tokens/colors.dart';
 
+import '../../../../utils/domains/test_auth_util.dart';
+import '../../../../utils/domains/test_terms_util.dart';
+import '../../../../utils/test_actions_util.dart';
+import '../../../../utils/test_wrappers_util.dart';
+import '../../../../utils/verifiers/test_render_verifier.dart';
+import '../../../../utils/test_exception_util.dart';
+
 void main() {
   group('SignupPage', () {
-    Widget createWidget() {
+    late AuthMocks authMocks;
+    late MockExceptionNotifier exceptionNotifier;
+
+    setUp(() {
+      authMocks = TestAuthUtil.createMocks();
+      exceptionNotifier = TestExceptionUtil.createMockNotifier();
+      TestAuthUtil.stubSignupSuccess(
+        authMocks,
+        provider: SocialProvider.google,
+        token: TestAuthUtil.makeValidToken(),
+      );
+    });
+
+    Widget createWidget({Map<String, WidgetBuilder>? extraRoutes}) {
+      final overrides = TestAuthUtil.providerOverrides(
+        authMocks,
+        exceptionNotifier: exceptionNotifier,
+      );
       return ProviderScope(
-        child: MaterialApp(
-          home: const SignupPage(),
+        overrides: [
+          overrides.authRepo,
+          overrides.tokenRepo,
+          overrides.baseClient,
+          overrides.signup,
+          overrides.logout,
+          overrides.refresh,
+          overrides.exceptionNotifier,
+        ],
+        child: TestWrappersUtil.createTestAppWithRouting(
+          child: const SignupPage(),
+          routes: extraRoutes,
         ),
       );
     }
 
-    group('레이아웃 구조', () {
-      testWidgets('Padding 위젯이 존재해야 한다', (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
+    testWidgets('기본 레이아웃 렌더링', (tester) async {
+      await tester.pumpWidget(createWidget());
 
-        // Padding 위젯이 존재하는지 확인
-        expect(find.byType(Padding), findsAtLeastNWidgets(1));
-      });
-
-      testWidgets('SizedBox 위젯들이 존재해야 한다', (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-
-        // SizedBox 위젯들이 존재하는지 확인 (SocialLoginSection 내부의 SizedBox들도 포함)
-        expect(find.byType(SizedBox), findsAtLeastNWidgets(2));
-      });
+      TestRenderVerifier.expectRenders<SignupPage>();
+      TestRenderVerifier.expectRenders<Scaffold>();
+      TestRenderVerifier.expectRenders<SafeArea>();
+      TestRenderVerifier.expectRenders<SocialLoginSection>();
+      expect(find.byType(Padding), findsWidgets);
+      expect(find.byType(Column), findsWidgets);
     });
 
-    group('기존 로직 보존', () {
-      testWidgets('올바른 배경색 설정', (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
+    testWidgets('배경색은 AppColors.background', (tester) async {
+      await tester.pumpWidget(createWidget());
 
-        final scaffold = tester.widget<Scaffold>(
-          find.descendant(
-            of: find.byType(SignupPage),
-            matching: find.byType(Scaffold),
-          ),
+      final scaffold = tester.widgetList<Scaffold>(find.byType(Scaffold)).last;
+      expect(scaffold.backgroundColor, equals(AppColors.background));
+    });
+
+    group('이용약관 모달', () {
+      Future<void> openModal(WidgetTester tester) async {
+        await TestActionsUtil.tapTextAndSettle(tester, '구글로 시작하기');
+        await tester.pumpAndSettle();
+        TestRenderVerifier.expectRenders<TermsAgreementModal>();
+      }
+
+      testWidgets('모두 동의 버튼으로 모달 닫힘', (tester) async {
+        await tester.pumpWidget(
+          createWidget(extraRoutes: TestTermsUtil.routes()),
         );
+        await openModal(tester);
 
-        expect(scaffold.backgroundColor, equals(AppColors.background));
-      });
-
-      testWidgets('SafeArea 적용', (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-
-        expect(find.byType(SafeArea), findsOneWidget);
-      });
-
-      testWidgets('Spacer 위젯 존재', (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-
-        expect(find.byType(Spacer), findsOneWidget);
-      });
-
-      testWidgets('Center 위젯 존재', (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-
-        expect(find.byType(Center), findsOneWidget);
-      });
-
-      testWidgets('SocialLoginSection 존재', (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-
-        expect(find.byType(SocialLoginSection), findsOneWidget);
-      });
-
-      testWidgets('Column의 mainAxisSize가 기본값', (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-
-        final column = find.byType(Column);
-        expect(column, findsAtLeastNWidgets(1));
-      });
-    });
-
-    group('위젯 트리 구조 검증', () {
-      testWidgets('올바른 위젯 계층 구조', (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-
-        // SignupPage -> Scaffold -> SafeArea -> _SignupPageContent -> Padding -> Column
-        expect(find.byType(SignupPage), findsOneWidget);
-        expect(find.byType(Scaffold), findsOneWidget);
-        expect(find.byType(SafeArea), findsOneWidget);
-        expect(find.byType(Padding), findsAtLeastNWidgets(1));
-        expect(find.byType(Column), findsAtLeastNWidgets(1));
-        expect(find.byType(Spacer), findsOneWidget);
-        expect(find.byType(Center), findsOneWidget);
-        expect(find.byType(SocialLoginSection), findsOneWidget);
-        expect(find.byType(SizedBox), findsAtLeastNWidgets(2));
-      });
-
-      testWidgets('Column의 children 개수 확인', (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-
-        // Column 위젯이 존재하는지 확인
-        expect(find.byType(Column), findsAtLeastNWidgets(1));
-      });
-    });
-
-
-    group('ProviderScope 통합', () {
-      testWidgets('ProviderScope가 올바르게 설정됨', (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-
-        expect(find.byType(ProviderScope), findsOneWidget);
-      });
-
-      testWidgets('MaterialApp이 올바르게 설정됨', (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-
-        expect(find.byType(MaterialApp), findsOneWidget);
-      });
-    });
-
-    group('TermsAgreementModal 콜백 함수 테스트', () {
-      testWidgets('onAgreeAll 콜백이 올바르게 동작해야 한다', (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-
-        // Google 버튼을 찾아서 탭
-        final googleButton = find.text('구글로 시작하기');
-        expect(googleButton, findsOneWidget);
-
-        await tester.tap(googleButton);
+        await TestActionsUtil.tapTextAndSettle(tester, TestTermsUtil.agreeAllButton);
         await tester.pumpAndSettle();
-
-        // TermsAgreementModal이 표시되는지 확인
-        expect(find.byType(TermsAgreementModal), findsOneWidget);
-
-        // "모두 동의합니다 !" 버튼을 찾아서 탭
-        final agreeAllButton = find.text('모두 동의합니다 !');
-        expect(agreeAllButton, findsOneWidget);
-
-        await tester.tap(agreeAllButton);
-        await tester.pumpAndSettle();
-
-        // 모달이 닫혔는지 확인
         expect(find.byType(TermsAgreementModal), findsNothing);
       });
 
-      testWidgets('onDismiss 콜백이 올바르게 동작해야 한다', (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
+      testWidgets('외부 탭으로 모달 닫힘', (tester) async {
+        await tester.pumpWidget(
+          createWidget(extraRoutes: TestTermsUtil.routes()),
+        );
+        await openModal(tester);
 
-        // Google 버튼을 찾아서 탭
-        final googleButton = find.text('구글로 시작하기');
-        expect(googleButton, findsOneWidget);
-
-        await tester.tap(googleButton);
-        await tester.pumpAndSettle();
-
-        // TermsAgreementModal이 표시되는지 확인
-        expect(find.byType(TermsAgreementModal), findsOneWidget);
-
-        // TermsAgreementModal 내부의 GestureDetector를 직접 찾아서 onTap 호출
-        final gestureDetectors = find.descendant(
+        final detector = find.descendant(
           of: find.byType(TermsAgreementModal),
           matching: find.byType(GestureDetector),
-        );
-        
-        // 첫 번째 GestureDetector (외부 터치용)를 찾아서 onTap 호출
-        if (gestureDetectors.evaluate().isNotEmpty) {
-          final gestureDetector = tester.widget<GestureDetector>(gestureDetectors.first);
-          gestureDetector.onTap?.call();
-          await tester.pumpAndSettle();
-        }
+        ).first;
+        await TestActionsUtil.tapFinderAndSettle(tester, detector);
+        await tester.pumpAndSettle();
 
-        // 모달이 닫혔는지 확인
         expect(find.byType(TermsAgreementModal), findsNothing);
       });
 
-      testWidgets('SignupPage 생성자가 올바르게 동작해야 한다', (WidgetTester tester) async {
-        // SignupPage 생성자를 직접 테스트
-        const signupPage = SignupPage();
-        await tester.pumpWidget(
-          ProviderScope(
-            child: MaterialApp(home: signupPage),
-          ),
-        );
+      testWidgets('모달 항목과 버튼 렌더링', (tester) async {
+        await tester.pumpWidget(createWidget(extraRoutes: TestTermsUtil.routes()));
+        await openModal(tester);
 
-        // SignupPage가 올바르게 렌더링되는지 확인
-        expect(find.byType(SignupPage), findsOneWidget);
-      });
-
-      testWidgets('TermsAgreementModal의 텍스트 요소들이 올바르게 표시되어야 한다', (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-
-        // Google 버튼을 탭하여 모달 열기
-        final googleButton = find.text('구글로 시작하기');
-        await tester.tap(googleButton);
-        await tester.pumpAndSettle();
-
-        // TermsAgreementModal이 표시되는지 확인
-        expect(find.byType(TermsAgreementModal), findsOneWidget);
-
-        // 각 텍스트 요소들이 올바르게 표시되는지 확인
-        expect(find.text('이용 약관 동의'), findsOneWidget);
-        expect(find.text('개인정보 보호 방침 동의'), findsOneWidget);
-        expect(find.text('위치정보 수집·이용 및 제3자 제공 동의'), findsOneWidget);
-        expect(find.text('만 14세 이상입니다'), findsOneWidget);
-        expect(find.text('모두 동의합니다 !'), findsOneWidget);
-      });
-
-      testWidgets('TermsAgreementModal의 구조가 올바르게 구성되어야 한다', (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-
-        // Google 버튼을 탭하여 모달 열기
-        final googleButton = find.text('구글로 시작하기');
-        await tester.tap(googleButton);
-        await tester.pumpAndSettle();
-
-        // TermsAgreementModal이 표시되는지 확인
-        expect(find.byType(TermsAgreementModal), findsOneWidget);
-
-        // 모달 내부 구조 확인
-        expect(find.byType(Stack), findsAtLeastNWidgets(1));
-        expect(find.byType(GestureDetector), findsAtLeastNWidgets(1));
-        expect(find.byType(Container), findsAtLeastNWidgets(1));
-        expect(find.byType(Column), findsAtLeastNWidgets(1));
-        expect(find.byType(TermsAgreementItem), findsAtLeastNWidgets(4)); // 4개의 약관 항목
-        expect(find.byType(TermsAgreeButton), findsOneWidget);
+        TestTermsUtil.verifyAllTermsTextsDisplay();
+        TestRenderVerifier.expectRenders<TermsAgreementItem>(count: 4);
+        TestRenderVerifier.expectRenders<TermsAgreeButton>();
       });
     });
   });

@@ -4,9 +4,23 @@ import 'package:flutter/material.dart';
 class TestWrappersUtil {
   TestWrappersUtil._();
 
-  static Widget material(Widget child) {
+  static Widget material(
+    Widget child, {
+    Size? screenSize,
+    List<NavigatorObserver>? navigatorObservers,
+  }) {
     return MaterialApp(
       home: Scaffold(body: child),
+      navigatorObservers: navigatorObservers ?? const <NavigatorObserver>[],
+      builder: (context, childWidget) {
+        if (screenSize == null) {
+          return childWidget!;
+        }
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(size: screenSize),
+          child: childWidget!,
+        );
+      },
     );
   }
 
@@ -23,26 +37,21 @@ class TestWrappersUtil {
   }
 
   static Widget withScreenSize(Widget child, {Size? screenSize}) {
-    return MaterialApp(
-      home: Scaffold(body: child),
-      builder: (context, child) {
-        return MediaQuery(
-          data: MediaQuery.of(context).copyWith(
-            size: screenSize ?? const Size(390.0, 844.0), // iPhone 13 기준 모바일 평균 크기
-          ),
-          child: child!,
-        );
-      },
+    return material(
+      child,
+      screenSize: screenSize ?? const Size(390.0, 844.0),
     );
   }
 
   static Widget createTestApp({
     required Widget child,
     List<NavigatorObserver>? navigatorObservers,
+    Size? screenSize,
   }) {
-    return MaterialApp(
-      home: Scaffold(body: child),
-      navigatorObservers: navigatorObservers ?? [],
+    return material(
+      child,
+      navigatorObservers: navigatorObservers,
+      screenSize: screenSize,
     );
   }
 
@@ -50,11 +59,26 @@ class TestWrappersUtil {
     required Widget child,
     String initialRoute = '/',
     Map<String, WidgetBuilder>? routes,
+    Size? screenSize,
+    List<NavigatorObserver>? navigatorObservers,
   }) {
+    final routeMap = <String, WidgetBuilder>{
+      '/': (_) => child,
+      if (routes != null) ...routes,
+    };
+
     return MaterialApp(
       initialRoute: initialRoute,
-      routes: routes ?? {
-        '/': (context) => child,
+      routes: routeMap,
+      navigatorObservers: navigatorObservers ?? const <NavigatorObserver>[],
+      builder: (context, childWidget) {
+        if (screenSize == null) {
+          return childWidget!;
+        }
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(size: screenSize),
+          child: childWidget!,
+        );
       },
     );
   }

@@ -1,19 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tomo_place/domains/terms_agreement/presentation/widgets/atoms/terms_checkbox.dart';
 
-import '../../../../../utils/mock_factory/terms_mock_factory.dart';
-import '../../../../../utils/widget/app_wrappers.dart';
-import '../../../../../utils/widget/verifiers.dart';
+import '../../../../../utils/domains/test_terms_util.dart';
+import '../../../../../utils/test_actions_util.dart';
+import '../../../../../utils/test_wrappers_util.dart';
+import '../../../../../utils/verifiers/test_render_verifier.dart';
+import '../../../../../utils/verifiers/test_style_verifier.dart';
 
 void main() {
+  setUpAll(() {
+    registerFallbackValue(false);
+  });
+
   group('TermsCheckbox', () {
-    late MockValueChangedBool mockOnChanged;
+    late ValueChanged<bool?> mockOnChanged;
+    late TermsMocks mocks;
 
     setUp(() {
-      mockOnChanged = TermsMockFactory.createValueChangedBool();
+      mocks = TestTermsUtil.createMocks();
     });
 
     Widget createTestWidget({
@@ -21,7 +28,7 @@ void main() {
       bool isEnabled = false,
       ValueChanged<bool?>? onChanged,
     }) {
-      return AppWrappers.wrapWithMaterialApp(
+      return TestWrappersUtil.material(
         TermsCheckbox(
           isChecked: isChecked,
           isEnabled: isEnabled,
@@ -36,21 +43,9 @@ void main() {
         await tester.pumpWidget(createTestWidget());
 
         // Then
-        WidgetVerifiers.verifyWidgetRenders(
-          tester: tester,
-          widgetType: TermsCheckbox,
-          expectedCount: 1,
-        );
-        WidgetVerifiers.verifyWidgetRenders(
-          tester: tester,
-          widgetType: GestureDetector,
-          expectedCount: 1,
-        );
-        WidgetVerifiers.verifyWidgetRenders(
-          tester: tester,
-          widgetType: Container,
-          expectedCount: 1,
-        );
+        TestRenderVerifier.expectRenders<TermsCheckbox>();
+        TestRenderVerifier.expectRenders<GestureDetector>();
+        TestRenderVerifier.expectRenders<Container>();
       });
 
       testWidgets('체크된 상태로 표시되어야 한다', (WidgetTester tester) async {
@@ -89,9 +84,13 @@ void main() {
         await tester.pumpWidget(createTestWidget());
 
         // Then
-        final container = tester.widget<Container>(find.byType(Container));
-        final decoration = container.decoration as BoxDecoration;
-        expect(decoration.color, equals(Colors.transparent));
+        final containerFinder = find.byType(Container).first;
+        TestRenderVerifier.expectRenders<Container>();
+        TestStyleVerifier.expectContainerDecoration(
+          tester,
+          containerFinder,
+          color: Colors.transparent,
+        );
       });
 
       testWidgets('체크된 상태에서 SVG가 표시되어야 한다', (WidgetTester tester) async {
@@ -109,15 +108,17 @@ void main() {
       testWidgets('비활성화 상태에서 클릭이 무시되어야 한다', (WidgetTester tester) async {
         // Given
         await tester.pumpWidget(
-          createTestWidget(isEnabled: false, onChanged: mockOnChanged.call),
+          createTestWidget(isEnabled: false, onChanged: mocks.onChanged.call),
         );
 
         // When
-        await tester.tap(find.byType(GestureDetector));
-        await tester.pump();
+        await TestActionsUtil.tapFinderAndSettle(
+          tester,
+          find.byType(GestureDetector),
+        );
 
         // Then
-        verifyNever(() => mockOnChanged(any()));
+        verifyNever(() => mocks.onChanged(any()));
       });
 
       testWidgets('활성화 상태에서 onChanged 콜백이 호출되어야 한다', (
@@ -125,15 +126,17 @@ void main() {
       ) async {
         // Given
         await tester.pumpWidget(
-          createTestWidget(isEnabled: true, onChanged: mockOnChanged.call),
+          createTestWidget(isEnabled: true, onChanged: mocks.onChanged.call),
         );
 
         // When
-        await tester.tap(find.byType(GestureDetector));
-        await tester.pump();
+        await TestActionsUtil.tapFinderAndSettle(
+          tester,
+          find.byType(GestureDetector),
+        );
 
         // Then
-        verify(() => mockOnChanged(any())).called(1);
+        verify(() => mocks.onChanged(any())).called(1);
       });
 
       testWidgets('비활성화 상태에서 GestureDetector onTap이 null이어야 한다', (
@@ -150,7 +153,7 @@ void main() {
       testWidgets('활성화 상태에서 GestureDetector onTap이 설정되어야 한다', (WidgetTester tester) async {
         // Given & When
         await tester.pumpWidget(
-          createTestWidget(isEnabled: true, onChanged: mockOnChanged.call),
+          createTestWidget(isEnabled: true, onChanged: mocks.onChanged.call),
         );
 
         // Then
@@ -174,32 +177,34 @@ void main() {
     group('Mock 사용 테스트', () {
       testWidgets('Mock 콜백이 올바르게 호출되어야 한다', (WidgetTester tester) async {
         // Given
-        when(() => mockOnChanged(any())).thenReturn(null);
         await tester.pumpWidget(
-          createTestWidget(isEnabled: true, onChanged: mockOnChanged.call),
+          createTestWidget(isEnabled: true, onChanged: mocks.onChanged.call),
         );
 
         // When
-        await tester.tap(find.byType(GestureDetector));
-        await tester.pump();
+        await TestActionsUtil.tapFinderAndSettle(
+          tester,
+          find.byType(GestureDetector),
+        );
 
         // Then
-        verify(() => mockOnChanged(any())).called(1);
+        verify(() => mocks.onChanged(any())).called(1);
       });
 
       testWidgets('Mock 콜백이 호출되지 않아야 한다', (WidgetTester tester) async {
         // Given
-        when(() => mockOnChanged(any())).thenReturn(null);
         await tester.pumpWidget(
-          createTestWidget(isEnabled: false, onChanged: mockOnChanged.call),
+          createTestWidget(isEnabled: false, onChanged: mocks.onChanged.call),
         );
 
         // When
-        await tester.tap(find.byType(GestureDetector));
-        await tester.pump();
+        await TestActionsUtil.tapFinderAndSettle(
+          tester,
+          find.byType(GestureDetector),
+        );
 
         // Then
-        verifyNever(() => mockOnChanged(any()));
+        verifyNever(() => mocks.onChanged(any()));
       });
     });
   });

@@ -1,19 +1,20 @@
-import 'package:tomo_place/shared/config/env_config.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tomo_place/shared/config/env_config.dart';
 
-import '../../utils/test_env_config.dart';
+import '../../utils/test_env_config_util.dart';
+
 
 void main() {
   group('EnvConfig', () {
     setUp(() {
       // Reset test environment and set default platform before each test
-      TestEnvConfig.resetForTest();
-      TestEnvConfig.setTestPlatform(isAndroid: true, isIOS: false);
+      TestEnvConfigUtil.resetForTest();
+      TestEnvConfigUtil.setTestPlatform(isAndroid: true, isIOS: false);
     });
 
     tearDown(() {
       // Clean up after each test
-      TestEnvConfig.resetForTest();
+      TestEnvConfigUtil.resetForTest();
     });
 
     group('initialize', () {
@@ -28,7 +29,7 @@ GOOGLE_REDIRECT_URI=https://test.com/auth/google
 ''';
 
         // Act & Assert - should not throw
-        expect(() => TestEnvConfig.initializeForTest(envContent), returnsNormally);
+        expect(() => TestEnvConfigUtil.initializeForTest(envContent), returnsNormally);
       });
 
       test('should throw StateError for missing variables', () async {
@@ -37,7 +38,7 @@ GOOGLE_REDIRECT_URI=https://test.com/auth/google
 
         // Act & Assert
         expect(
-          () => TestEnvConfig.initializeForTest(envContent),
+          () => TestEnvConfigUtil.initializeForTest(envContent),
           throwsA(isA<StateError>()),
         );
       });
@@ -54,7 +55,7 @@ GOOGLE_REDIRECT_URI=https://test.com/auth/google
 
         // Act & Assert
         expect(
-          () => TestEnvConfig.initializeForTest(envContent),
+          () => TestEnvConfigUtil.initializeForTest(envContent),
           throwsA(isA<StateError>()),
         );
       });
@@ -70,11 +71,11 @@ GOOGLE_REDIRECT_URI=https://test.com/auth/google
 ''';
 
         // Act
-        await TestEnvConfig.initializeForTest(envContent);
-        await TestEnvConfig.initializeForTest(envContent);
+        await TestEnvConfigUtil.initializeForTest(envContent);
+        await TestEnvConfigUtil.initializeForTest(envContent);
 
         // Assert - should not throw
-        expect(() => TestEnvConfig.initializeForTest(envContent), returnsNormally);
+        expect(() => TestEnvConfigUtil.initializeForTest(envContent), returnsNormally);
       });
     });
 
@@ -138,10 +139,10 @@ IOS_GOOGLE_CLIENT_ID=ios_client_id
 GOOGLE_SERVER_CLIENT_ID=server_client_id
 GOOGLE_REDIRECT_URI=https://test.com/auth/google
 ''';
-        await TestEnvConfig.initializeForTest(envContent);
+        await TestEnvConfigUtil.initializeForTest(envContent);
 
         // Act
-        final result = TestEnvConfig.testApiUrl;
+        final result = TestEnvConfigUtil.testApiUrl;
 
         // Assert
         expect(result, equals('https://api.test.com'));
@@ -153,7 +154,7 @@ GOOGLE_REDIRECT_URI=https://test.com/auth/google
 
         // Act & Assert
         expect(
-          () => TestEnvConfig.initializeForTest(envContent),
+          () => TestEnvConfigUtil.initializeForTest(envContent),
           throwsA(isA<StateError>()),
         );
       });
@@ -162,7 +163,7 @@ GOOGLE_REDIRECT_URI=https://test.com/auth/google
     group('googleClientId', () {
       test('should return correct client ID for Android platform', () async {
         // Arrange
-        TestEnvConfig.setTestPlatform(isAndroid: true, isIOS: false);
+        TestEnvConfigUtil.setTestPlatform(isAndroid: true, isIOS: false);
         const envContent = '''
 API_URL=https://api.test.com
 ANDROID_GOOGLE_CLIENT_ID=android_client_id
@@ -170,10 +171,10 @@ IOS_GOOGLE_CLIENT_ID=ios_client_id
 GOOGLE_SERVER_CLIENT_ID=server_client_id
 GOOGLE_REDIRECT_URI=https://test.com/auth/google
 ''';
-        await TestEnvConfig.initializeForTest(envContent);
+        await TestEnvConfigUtil.initializeForTest(envContent);
 
         // Act
-        final result = TestEnvConfig.testGoogleClientId;
+        final result = TestEnvConfigUtil.testGoogleClientId;
 
         // Assert
         expect(result, equals('android_client_id'));
@@ -181,7 +182,7 @@ GOOGLE_REDIRECT_URI=https://test.com/auth/google
 
       test('should return correct client ID for iOS platform', () async {
         // Arrange
-        TestEnvConfig.setTestPlatform(isAndroid: false, isIOS: true);
+        TestEnvConfigUtil.setTestPlatform(isAndroid: false, isIOS: true);
         const envContent = '''
 API_URL=https://api.test.com
 ANDROID_GOOGLE_CLIENT_ID=android_client_id
@@ -189,10 +190,10 @@ IOS_GOOGLE_CLIENT_ID=ios_client_id
 GOOGLE_SERVER_CLIENT_ID=server_client_id
 GOOGLE_REDIRECT_URI=https://test.com/auth/google
 ''';
-        await TestEnvConfig.initializeForTest(envContent);
+        await TestEnvConfigUtil.initializeForTest(envContent);
 
         // Act
-        final result = TestEnvConfig.testGoogleClientId;
+        final result = TestEnvConfigUtil.testGoogleClientId;
 
         // Assert
         expect(result, equals('ios_client_id'));
@@ -200,23 +201,23 @@ GOOGLE_REDIRECT_URI=https://test.com/auth/google
 
       test('should throw StateError when client ID is missing', () async {
         // Arrange
-        TestEnvConfig.setTestPlatform(isAndroid: true, isIOS: false);
+        TestEnvConfigUtil.setTestPlatform(isAndroid: true, isIOS: false);
         const envContent = ''; // No client IDs
 
         // Act & Assert
         expect(
-          () => TestEnvConfig.initializeForTest(envContent),
+          () => TestEnvConfigUtil.initializeForTest(envContent),
           throwsA(isA<StateError>()),
         );
       });
 
       test('should throw ArgumentError for unsupported platform', () {
         // Arrange
-        TestEnvConfig.setTestPlatform(isAndroid: false, isIOS: false);
+        TestEnvConfigUtil.setTestPlatform(isAndroid: false, isIOS: false);
 
         // Act & Assert
         expect(
-          () => TestEnvConfig.testGoogleClientIdKey,
+          () => TestEnvConfigUtil.testGoogleClientIdKey,
           throwsA(isA<ArgumentError>()),
         );
       });
@@ -232,10 +233,10 @@ IOS_GOOGLE_CLIENT_ID=ios_client_id
 GOOGLE_SERVER_CLIENT_ID=server_client_id
 GOOGLE_REDIRECT_URI=https://test.com/auth/google
 ''';
-        await TestEnvConfig.initializeForTest(envContent);
+        await TestEnvConfigUtil.initializeForTest(envContent);
 
         // Act
-        final result = TestEnvConfig.testGoogleServerClientId;
+        final result = TestEnvConfigUtil.testGoogleServerClientId;
 
         // Assert
         expect(result, equals('server_client_id'));
@@ -252,7 +253,7 @@ GOOGLE_REDIRECT_URI=https://test.com/auth/google
 
         // Act & Assert
         expect(
-          () => TestEnvConfig.initializeForTest(envContent),
+          () => TestEnvConfigUtil.initializeForTest(envContent),
           throwsA(isA<StateError>()),
         );
       });
@@ -268,10 +269,10 @@ IOS_GOOGLE_CLIENT_ID=ios_client_id
 GOOGLE_SERVER_CLIENT_ID=server_client_id
 GOOGLE_REDIRECT_URI=https://test.com/auth/google
 ''';
-        await TestEnvConfig.initializeForTest(envContent);
+        await TestEnvConfigUtil.initializeForTest(envContent);
 
         // Act
-        final result = TestEnvConfig.testGoogleRedirectUri;
+        final result = TestEnvConfigUtil.testGoogleRedirectUri;
 
         // Assert
         expect(result, equals('https://test.com/auth/google'));
@@ -288,7 +289,7 @@ GOOGLE_SERVER_CLIENT_ID=server_client_id
 
         // Act & Assert
         expect(
-          () => TestEnvConfig.initializeForTest(envContent),
+          () => TestEnvConfigUtil.initializeForTest(envContent),
           throwsA(isA<StateError>()),
         );
       });
@@ -305,10 +306,10 @@ GOOGLE_SERVER_CLIENT_ID=server_client_id
 GOOGLE_REDIRECT_URI=https://test.com/auth/google
 APPLE_CLIENT_ID=apple_client_id
 ''';
-        await TestEnvConfig.initializeForTest(envContent);
+        await TestEnvConfigUtil.initializeForTest(envContent);
 
         // Act
-        final result = TestEnvConfig.testAppleClientId;
+        final result = TestEnvConfigUtil.testAppleClientId;
 
         // Assert
         expect(result, equals('apple_client_id'));
@@ -323,10 +324,10 @@ IOS_GOOGLE_CLIENT_ID=ios_client_id
 GOOGLE_SERVER_CLIENT_ID=server_client_id
 GOOGLE_REDIRECT_URI=https://test.com/auth/google
 '''; // No Apple client ID
-        await TestEnvConfig.initializeForTest(envContent);
+        await TestEnvConfigUtil.initializeForTest(envContent);
 
         // Act
-        final result = TestEnvConfig.testAppleClientId;
+        final result = TestEnvConfigUtil.testAppleClientId;
 
         // Assert
         expect(result, equals(''));
@@ -344,10 +345,10 @@ GOOGLE_SERVER_CLIENT_ID=server_client_id
 GOOGLE_REDIRECT_URI=https://test.com/auth/google
 KAKAO_CLIENT_ID=kakao_client_id
 ''';
-        await TestEnvConfig.initializeForTest(envContent);
+        await TestEnvConfigUtil.initializeForTest(envContent);
 
         // Act
-        final result = TestEnvConfig.testKakaoClientId;
+        final result = TestEnvConfigUtil.testKakaoClientId;
 
         // Assert
         expect(result, equals('kakao_client_id'));
@@ -362,10 +363,10 @@ IOS_GOOGLE_CLIENT_ID=ios_client_id
 GOOGLE_SERVER_CLIENT_ID=server_client_id
 GOOGLE_REDIRECT_URI=https://test.com/auth/google
 '''; // No Kakao client ID
-        await TestEnvConfig.initializeForTest(envContent);
+        await TestEnvConfigUtil.initializeForTest(envContent);
 
         // Act
-        final result = TestEnvConfig.testKakaoClientId;
+        final result = TestEnvConfigUtil.testKakaoClientId;
 
         // Assert
         expect(result, equals(''));
@@ -383,7 +384,7 @@ GOOGLE_SERVER_CLIENT_ID=server_client_id
 GOOGLE_REDIRECT_URI=https://test.com/auth/google
 TEST_KEY=test_value
 ''';
-        await TestEnvConfig.initializeForTest(envContent);
+        await TestEnvConfigUtil.initializeForTest(envContent);
 
         // Act
         final result = EnvConfig.getEnv('TEST_KEY');
@@ -401,7 +402,7 @@ IOS_GOOGLE_CLIENT_ID=ios_client_id
 GOOGLE_SERVER_CLIENT_ID=server_client_id
 GOOGLE_REDIRECT_URI=https://test.com/auth/google
 '''; // No TEST_KEY
-        await TestEnvConfig.initializeForTest(envContent);
+        await TestEnvConfigUtil.initializeForTest(envContent);
 
         // Act
         final result = EnvConfig.getEnv('TEST_KEY');
@@ -422,7 +423,7 @@ GOOGLE_SERVER_CLIENT_ID=server_client_id
 GOOGLE_REDIRECT_URI=https://test.com/auth/google
 TEST_KEY=test_value
 ''';
-        await TestEnvConfig.initializeForTest(envContent);
+        await TestEnvConfigUtil.initializeForTest(envContent);
 
         // Act
         final result = EnvConfig.getEnvOrDefault('TEST_KEY', 'default_value');
@@ -440,7 +441,7 @@ IOS_GOOGLE_CLIENT_ID=ios_client_id
 GOOGLE_SERVER_CLIENT_ID=server_client_id
 GOOGLE_REDIRECT_URI=https://test.com/auth/google
 '''; // No TEST_KEY
-        await TestEnvConfig.initializeForTest(envContent);
+        await TestEnvConfigUtil.initializeForTest(envContent);
 
         // Act
         final result = EnvConfig.getEnvOrDefault('TEST_KEY', 'default_value');
@@ -461,7 +462,7 @@ GOOGLE_SERVER_CLIENT_ID=server_client_id
 GOOGLE_REDIRECT_URI=https://test.com/auth/google
 EMPTY_KEY=
 ''';
-        await TestEnvConfig.initializeForTest(envContent);
+        await TestEnvConfigUtil.initializeForTest(envContent);
 
         // Act
         final result = EnvConfig.getEnv('EMPTY_KEY');
@@ -481,7 +482,7 @@ GOOGLE_SERVER_CLIENT_ID=server_client_id
 GOOGLE_REDIRECT_URI=https://test.com/auth/google
 SPECIAL_KEY="value with special chars: !@#\$%^&*()"
 ''';
-        await TestEnvConfig.initializeForTest(envContent);
+        await TestEnvConfigUtil.initializeForTest(envContent);
 
         // Act
         final result = EnvConfig.getEnv('SPECIAL_KEY');
@@ -501,7 +502,7 @@ GOOGLE_SERVER_CLIENT_ID=server_client_id
 GOOGLE_REDIRECT_URI=https://test.com/auth/google
 UNICODE_KEY=$unicodeValue
 ''';
-        await TestEnvConfig.initializeForTest(envContent);
+        await TestEnvConfigUtil.initializeForTest(envContent);
 
         // Act
         final result = EnvConfig.getEnv('UNICODE_KEY');
@@ -521,7 +522,7 @@ GOOGLE_SERVER_CLIENT_ID=server_client_id
 GOOGLE_REDIRECT_URI=https://test.com/auth/google
 LONG_KEY=$longValue
 ''';
-        await TestEnvConfig.initializeForTest(envContent);
+        await TestEnvConfigUtil.initializeForTest(envContent);
 
         // Act
         final result = EnvConfig.getEnv('LONG_KEY');

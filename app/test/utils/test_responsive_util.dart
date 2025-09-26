@@ -2,16 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:faker/faker.dart';
 
 import 'package:tomo_place/shared/ui/responsive/device_type.dart';
+import 'package:tomo_place/shared/ui/responsive/responsive_spacing.dart';
+import 'package:tomo_place/shared/ui/responsive/responsive_typography.dart';
 
-/// 반응형 테스트를 위한 헬퍼 클래스
-/// 
-/// 이 클래스는 반응형 기능 자체를 테스트하는 것이 아니라,
-/// 반응형 기능을 사용하는 위젯들의 테스트를 위한 유틸리티를 제공합니다.
-class ResponsiveTestHelper {
+class TestResponsiveUtil {
   static final _faker = Faker();
 
-  /// 테스트용 위젯을 생성합니다.
-  /// MediaQuery를 통해 화면 크기를 설정할 수 있습니다.
   static Widget createTestWidget({
     required Size screenSize,
     required Widget child,
@@ -24,7 +20,41 @@ class ResponsiveTestHelper {
     );
   }
 
-  /// 모바일 크기의 화면 사이즈를 생성합니다.
+  static double expectedFontSize(
+    double? baseFontSize,
+    DeviceType deviceType,
+  ) {
+    final base = baseFontSize ?? 16;
+    final multiplier = ResponsiveTypography.fontSizeMultipliers[deviceType]!;
+    return base * multiplier;
+  }
+
+  static double expectedWidth({
+    required DeviceType deviceType,
+    required Size screenSize,
+    required double mobilePercent,
+    required double tabletPercent,
+    double? minWidth,
+    double? maxWidth,
+  }) {
+    final percent = deviceType == DeviceType.mobile ? mobilePercent : tabletPercent;
+    final rawWidth = screenSize.width * percent;
+    double result = rawWidth;
+    if (minWidth != null) result = result < minWidth ? minWidth : result;
+    if (maxWidth != null) result = result > maxWidth ? maxWidth : result;
+    return result;
+  }
+
+  static double expectedSpace({
+    required DeviceType deviceType,
+    required double baseSpacing,
+    required Size screenSize
+  }) {
+    final multiplier = ResponsiveSpacing.spacingMultipliers[deviceType]!;
+
+    return baseSpacing * multiplier;
+  }
+
   static Size createMobileSize() {
     return Size(
       _faker.randomGenerator.integer(599, min: 320).toDouble(),
@@ -32,7 +62,6 @@ class ResponsiveTestHelper {
     );
   }
 
-  /// 태블릿 크기의 화면 사이즈를 생성합니다.
   static Size createTabletSize() {
     return Size(
       _faker.randomGenerator.integer(2000, min: 600).toDouble(),
@@ -40,7 +69,6 @@ class ResponsiveTestHelper {
     );
   }
 
-  /// 특정 디바이스 타입에 맞는 화면 사이즈를 생성합니다.
   static Size createSizeForDevice(DeviceType deviceType) {
     switch (deviceType) {
       case DeviceType.mobile:
@@ -50,12 +78,10 @@ class ResponsiveTestHelper {
     }
   }
 
-  /// 랜덤한 double 값을 생성합니다.
   static double createRandomDouble({double min = 0, double max = 100}) {
     return _faker.randomGenerator.decimal(scale: max - min) + min;
   }
 
-  /// 랜덤한 EdgeInsets를 생성합니다.
   static EdgeInsets createRandomEdgeInsets() {
     return EdgeInsets.fromLTRB(
       createRandomDouble(max: 50),
@@ -96,5 +122,4 @@ class ResponsiveTestHelper {
   static const Size justAboveMobileBreakpoint = Size(601, 800);
   static const Size justBelowTabletBreakpoint = Size(1023, 800);
   static const Size justAboveTabletBreakpoint = Size(1025, 800);
-
 }

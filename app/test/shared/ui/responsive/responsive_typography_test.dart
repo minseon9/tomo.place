@@ -1,379 +1,258 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:tomo_place/shared/ui/design_system/tokens/typography.dart';
+import 'package:tomo_place/shared/ui/responsive/device_type.dart';
 import 'package:tomo_place/shared/ui/responsive/responsive_typography.dart';
 
-import '../../../utils/responsive_test_helper.dart';
+import '../../../utils/test_responsive_util.dart';
+import '../../../utils/test_wrappers_util.dart';
+import '../../../utils/verifiers/test_style_verifier.dart';
+
 
 void main() {
   group('ResponsiveTypography', () {
-
     group('getResponsiveTextStyle', () {
-      testWidgets('모바일에서 1.0x 스케일링 적용', (WidgetTester tester) async {
-        // Given
-        const screenSize = Size(375, 812); // 모바일 크기
-        const baseStyle = AppTypography.button; // fontSize: 14
+      const baseStyle = TextStyle(fontSize: 20, fontWeight: FontWeight.w600);
+      const text = Text("TEST", style: baseStyle);
 
-        await tester.pumpWidget(ResponsiveTestHelper.createTestWidget(
-          screenSize: screenSize,
-          child: Builder(
-            builder: (context) {
-              final result = ResponsiveTypography.getResponsiveTextStyle(context, baseStyle);
-              return Text('${result.fontSize}');
-            },
-          ),
-        ));
+      testWidgets('applies mobile multiplier', (tester) async {
+        await tester.pumpWidget(
+            TestWrappersUtil.withScreenSize(
+              text,
+              screenSize: TestResponsiveUtil.standardMobileSize,
+            ),
+        );
 
-        // Then
-        expect(find.text('14.0'), findsOneWidget);
+        final expected = TestResponsiveUtil.expectedFontSize(baseStyle.fontSize, DeviceType.mobile);
+        TestStyleVerifier.expectTextStyle(
+          tester,
+          text.data!,
+          fontSize: expected,
+          fontWeight: FontWeight.w600,
+        );
       });
 
-      testWidgets('태블릿에서 1.1x 스케일링 적용', (WidgetTester tester) async {
-        // Given
-        const screenSize = Size(1024, 768); // 태블릿 크기
-        const baseStyle = AppTypography.button; // fontSize: 14
-
-        await tester.pumpWidget(ResponsiveTestHelper.createTestWidget(
-          screenSize: screenSize,
-          child: Builder(
-            builder: (context) {
-              final result = ResponsiveTypography.getResponsiveTextStyle(context, baseStyle);
-              return Text('${result.fontSize}');
-            },
+      testWidgets('applies tablet multiplier', (tester) async {
+        await tester.pumpWidget(
+          TestWrappersUtil.withScreenSize(
+            text,
+            screenSize: TestResponsiveUtil.standardTabletSize,
           ),
-        ));
+        );
 
-        // Then
-        expect(find.text('15.400000000000002'), findsOneWidget); // 14 * 1.1
+        final expected = TestResponsiveUtil.expectedFontSize(baseStyle.fontSize, DeviceType.tablet);
+        TestStyleVerifier.expectTextStyle(
+          tester,
+          text.data!,
+          fontSize: expected,
+          fontWeight: FontWeight.w600,
+        );
       });
 
-      testWidgets('null fontSize 처리', (WidgetTester tester) async {
-        // Given
-        const screenSize = Size(375, 812);
-        const baseStyle = TextStyle(fontWeight: FontWeight.bold); // fontSize: null
+      testWidgets('defaults to 16 when fontSize is null', (tester) async {
+        const base = TextStyle(fontWeight: FontWeight.bold);
+        const text = Text("TEST", style: base);
 
-        await tester.pumpWidget(ResponsiveTestHelper.createTestWidget(
-          screenSize: screenSize,
-          child: Builder(
-            builder: (context) {
-              final result = ResponsiveTypography.getResponsiveTextStyle(context, baseStyle);
-              return Text('${result.fontSize}');
-            },
+        await tester.pumpWidget(
+          TestWrappersUtil.withScreenSize(
+            text,
+            screenSize: TestResponsiveUtil.standardMobileSize,
           ),
-        ));
+        );
 
-        // Then
-        expect(find.text('16.0'), findsOneWidget); // 16 * 1.0 (기본값 16, 모바일)
-      });
-
-      testWidgets('기존 스타일 속성 보존', (WidgetTester tester) async {
-        // Given
-        const screenSize = Size(375, 812);
-        const baseStyle = AppTypography.button; // fontWeight: FontWeight.w500
-
-        await tester.pumpWidget(ResponsiveTestHelper.createTestWidget(
-          screenSize: screenSize,
-          child: Builder(
-            builder: (context) {
-              final result = ResponsiveTypography.getResponsiveTextStyle(context, baseStyle);
-              return Text('${result.fontWeight}');
-            },
-          ),
-        ));
-
-        // Then
-        expect(find.text('FontWeight.w500'), findsOneWidget);
+        final expected = TestResponsiveUtil.expectedFontSize(16, DeviceType.mobile);
+        TestStyleVerifier.expectTextStyle(
+          tester,
+          text.data!,
+          fontSize: expected,
+          fontWeight: FontWeight.bold,
+        );
       });
     });
 
-    group('개별 typography 메서드들', () {
-      testWidgets('getResponsiveHeader1 - 모바일', (WidgetTester tester) async {
-        // Given
-        const screenSize = Size(375, 812);
-
-        await tester.pumpWidget(ResponsiveTestHelper.createTestWidget(
+    Future<void> _expectTypographyMethod(
+      WidgetTester tester, {
+      required Size screenSize,
+      required TextStyle baseStyle,
+      required DeviceType deviceType,
+      required TextStyle Function(BuildContext) method,
+    }) async {
+      final text = Text("TEST", style: baseStyle);
+      await tester.pumpWidget(
+        TestWrappersUtil.withScreenSize(
+          text,
           screenSize: screenSize,
-          child: Builder(
-            builder: (context) {
-              final result = ResponsiveTypography.getResponsiveHeader1(context);
-              return Text('${result.fontSize}');
-            },
-          ),
-        ));
+        ),
+      );
 
-        // Then
-        expect(find.text('32.0'), findsOneWidget);
+      final expected = TestResponsiveUtil.expectedFontSize(baseStyle.fontSize, deviceType);
+      TestStyleVerifier.expectTextStyle(
+        tester,
+        text.data!,
+        fontSize: expected,
+        fontWeight: baseStyle.fontWeight,
+      );
+    }
+
+    group('typography shortcuts', () {
+      testWidgets('header1 - mobile', (tester) async {
+        await _expectTypographyMethod(
+          tester,
+          screenSize: TestResponsiveUtil.standardMobileSize,
+          baseStyle: AppTypography.header1,
+          deviceType: DeviceType.mobile,
+          method: (context) => ResponsiveTypography.getResponsiveHeader1(context),
+        );
       });
 
-      testWidgets('getResponsiveHeader1 - 태블릿', (WidgetTester tester) async {
-        // Given
-        const screenSize = Size(1024, 768);
-
-        await tester.pumpWidget(ResponsiveTestHelper.createTestWidget(
-          screenSize: screenSize,
-          child: Builder(
-            builder: (context) {
-              final result = ResponsiveTypography.getResponsiveHeader1(context);
-              return Text('${result.fontSize}');
-            },
-          ),
-        ));
-
-        // Then
-        expect(find.text('35.2'), findsOneWidget);
+      testWidgets('header1 - tablet', (tester) async {
+        await _expectTypographyMethod(
+          tester,
+          screenSize: TestResponsiveUtil.standardTabletSize,
+          baseStyle: AppTypography.header1,
+          deviceType: DeviceType.tablet,
+          method: (context) => ResponsiveTypography.getResponsiveHeader1(context),
+        );
       });
 
-      testWidgets('getResponsiveHeader2 - 모바일', (WidgetTester tester) async {
-        // Given
-        const screenSize = Size(375, 812);
-
-        await tester.pumpWidget(ResponsiveTestHelper.createTestWidget(
-          screenSize: screenSize,
-          child: Builder(
-            builder: (context) {
-              final result = ResponsiveTypography.getResponsiveHeader2(context);
-              return Text('${result.fontSize}');
-            },
-          ),
-        ));
-
-        // Then
-        expect(find.text('24.0'), findsOneWidget);
+      testWidgets('header2 - mobile', (tester) async {
+        await _expectTypographyMethod(
+          tester,
+          screenSize: TestResponsiveUtil.standardMobileSize,
+          baseStyle: AppTypography.header2,
+          deviceType: DeviceType.mobile,
+          method: (context) => ResponsiveTypography.getResponsiveHeader2(context),
+        );
       });
 
-      testWidgets('getResponsiveHeader2 - 태블릿', (WidgetTester tester) async {
-        // Given
-        const screenSize = Size(1024, 768);
-
-        await tester.pumpWidget(ResponsiveTestHelper.createTestWidget(
-          screenSize: screenSize,
-          child: Builder(
-            builder: (context) {
-              final result = ResponsiveTypography.getResponsiveHeader2(context);
-              return Text('${result.fontSize}');
-            },
-          ),
-        ));
-
-        // Then
-        expect(find.text('26.400000000000002'), findsOneWidget);
+      testWidgets('header2 - tablet', (tester) async {
+        await _expectTypographyMethod(
+          tester,
+          screenSize: TestResponsiveUtil.standardTabletSize,
+          baseStyle: AppTypography.header2,
+          deviceType: DeviceType.tablet,
+          method: (context) => ResponsiveTypography.getResponsiveHeader2(context),
+        );
       });
 
-      testWidgets('getResponsiveHeader3 - 모바일', (WidgetTester tester) async {
-        // Given
-        const screenSize = Size(375, 812);
-
-        await tester.pumpWidget(ResponsiveTestHelper.createTestWidget(
-          screenSize: screenSize,
-          child: Builder(
-            builder: (context) {
-              final result = ResponsiveTypography.getResponsiveHeader3(context);
-              return Text('${result.fontSize}');
-            },
-          ),
-        ));
-
-        // Then
-        expect(find.text('20.0'), findsOneWidget);
+      testWidgets('header3 - mobile', (tester) async {
+        await _expectTypographyMethod(
+          tester,
+          screenSize: TestResponsiveUtil.standardMobileSize,
+          baseStyle: AppTypography.header3,
+          deviceType: DeviceType.mobile,
+          method: (context) => ResponsiveTypography.getResponsiveHeader3(context),
+        );
       });
 
-      testWidgets('getResponsiveHeader3 - 태블릿', (WidgetTester tester) async {
-        // Given
-        const screenSize = Size(1024, 768);
-
-        await tester.pumpWidget(ResponsiveTestHelper.createTestWidget(
-          screenSize: screenSize,
-          child: Builder(
-            builder: (context) {
-              final result = ResponsiveTypography.getResponsiveHeader3(context);
-              return Text('${result.fontSize}');
-            },
-          ),
-        ));
-
-        // Then
-        expect(find.text('22.0'), findsOneWidget);
+      testWidgets('header3 - tablet', (tester) async {
+        await _expectTypographyMethod(
+          tester,
+          screenSize: TestResponsiveUtil.standardTabletSize,
+          baseStyle: AppTypography.header3,
+          deviceType: DeviceType.tablet,
+          method: (context) => ResponsiveTypography.getResponsiveHeader3(context),
+        );
       });
 
-      testWidgets('getResponsiveHead3 - 모바일', (WidgetTester tester) async {
-        // Given
-        const screenSize = Size(375, 812);
-
-        await tester.pumpWidget(ResponsiveTestHelper.createTestWidget(
-          screenSize: screenSize,
-          child: Builder(
-            builder: (context) {
-              final result = ResponsiveTypography.getResponsiveHead3(context);
-              return Text('${result.fontSize}');
-            },
-          ),
-        ));
-
-        // Then
-        expect(find.text('18.0'), findsOneWidget);
+      testWidgets('head3 - mobile', (tester) async {
+        await _expectTypographyMethod(
+          tester,
+          screenSize: TestResponsiveUtil.standardMobileSize,
+          baseStyle: AppTypography.head3,
+          deviceType: DeviceType.mobile,
+          method: (context) => ResponsiveTypography.getResponsiveHead3(context),
+        );
       });
 
-      testWidgets('getResponsiveHead3 - 태블릿', (WidgetTester tester) async {
-        // Given
-        const screenSize = Size(1024, 768);
-
-        await tester.pumpWidget(ResponsiveTestHelper.createTestWidget(
-          screenSize: screenSize,
-          child: Builder(
-            builder: (context) {
-              final result = ResponsiveTypography.getResponsiveHead3(context);
-              return Text('${result.fontSize}');
-            },
-          ),
-        ));
-
-        // Then
-        expect(find.text('19.8'), findsOneWidget);
+      testWidgets('head3 - tablet', (tester) async {
+        await _expectTypographyMethod(
+          tester,
+          screenSize: TestResponsiveUtil.standardTabletSize,
+          baseStyle: AppTypography.head3,
+          deviceType: DeviceType.tablet,
+          method: (context) => ResponsiveTypography.getResponsiveHead3(context),
+        );
       });
 
-      testWidgets('getResponsiveBody - 모바일', (WidgetTester tester) async {
-        // Given
-        const screenSize = Size(375, 812);
-
-        await tester.pumpWidget(ResponsiveTestHelper.createTestWidget(
-          screenSize: screenSize,
-          child: Builder(
-            builder: (context) {
-              final result = ResponsiveTypography.getResponsiveBody(context);
-              return Text('${result.fontSize}');
-            },
-          ),
-        ));
-
-        // Then
-        expect(find.text('16.0'), findsOneWidget);
+      testWidgets('body - mobile', (tester) async {
+        await _expectTypographyMethod(
+          tester,
+          screenSize: TestResponsiveUtil.standardMobileSize,
+          baseStyle: AppTypography.body,
+          deviceType: DeviceType.mobile,
+          method: (context) => ResponsiveTypography.getResponsiveBody(context),
+        );
       });
 
-      testWidgets('getResponsiveBody - 태블릿', (WidgetTester tester) async {
-        // Given
-        const screenSize = Size(1024, 768);
-
-        await tester.pumpWidget(ResponsiveTestHelper.createTestWidget(
-          screenSize: screenSize,
-          child: Builder(
-            builder: (context) {
-              final result = ResponsiveTypography.getResponsiveBody(context);
-              return Text('${result.fontSize}');
-            },
-          ),
-        ));
-
-        // Then
-        expect(find.text('17.6'), findsOneWidget);
+      testWidgets('body - tablet', (tester) async {
+        await _expectTypographyMethod(
+          tester,
+          screenSize: TestResponsiveUtil.standardTabletSize,
+          baseStyle: AppTypography.body,
+          deviceType: DeviceType.tablet,
+          method: (context) => ResponsiveTypography.getResponsiveBody(context),
+        );
       });
 
-      testWidgets('getResponsiveButton - 모바일', (WidgetTester tester) async {
-        // Given
-        const screenSize = Size(375, 812);
-
-        await tester.pumpWidget(ResponsiveTestHelper.createTestWidget(
-          screenSize: screenSize,
-          child: Builder(
-            builder: (context) {
-              final result = ResponsiveTypography.getResponsiveButton(context);
-              return Text('${result.fontSize}');
-            },
-          ),
-        ));
-
-        // Then
-        expect(find.text('14.0'), findsOneWidget);
+      testWidgets('button - mobile', (tester) async {
+        await _expectTypographyMethod(
+          tester,
+          screenSize: TestResponsiveUtil.standardMobileSize,
+          baseStyle: AppTypography.button,
+          deviceType: DeviceType.mobile,
+          method: (context) => ResponsiveTypography.getResponsiveButton(context),
+        );
       });
 
-      testWidgets('getResponsiveButton - 태블릿', (WidgetTester tester) async {
-        // Given
-        const screenSize = Size(1024, 768);
-
-        await tester.pumpWidget(ResponsiveTestHelper.createTestWidget(
-          screenSize: screenSize,
-          child: Builder(
-            builder: (context) {
-              final result = ResponsiveTypography.getResponsiveButton(context);
-              return Text('${result.fontSize}');
-            },
-          ),
-        ));
-
-        // Then
-        expect(find.text('15.400000000000002'), findsOneWidget);
+      testWidgets('button - tablet', (tester) async {
+        await _expectTypographyMethod(
+          tester,
+          screenSize: TestResponsiveUtil.standardTabletSize,
+          baseStyle: AppTypography.button,
+          deviceType: DeviceType.tablet,
+          method: (context) => ResponsiveTypography.getResponsiveButton(context),
+        );
       });
 
-      testWidgets('getResponsiveCaption - 모바일', (WidgetTester tester) async {
-        // Given
-        const screenSize = Size(375, 812);
-
-        await tester.pumpWidget(ResponsiveTestHelper.createTestWidget(
-          screenSize: screenSize,
-          child: Builder(
-            builder: (context) {
-              final result = ResponsiveTypography.getResponsiveCaption(context);
-              return Text('${result.fontSize}');
-            },
-          ),
-        ));
-
-        // Then
-        expect(find.text('12.0'), findsOneWidget);
+      testWidgets('caption - mobile', (tester) async {
+        await _expectTypographyMethod(
+          tester,
+          screenSize: TestResponsiveUtil.standardMobileSize,
+          baseStyle: AppTypography.caption,
+          deviceType: DeviceType.mobile,
+          method: (context) => ResponsiveTypography.getResponsiveCaption(context),
+        );
       });
 
-      testWidgets('getResponsiveCaption - 태블릿', (WidgetTester tester) async {
-        // Given
-        const screenSize = Size(1024, 768);
-
-        await tester.pumpWidget(ResponsiveTestHelper.createTestWidget(
-          screenSize: screenSize,
-          child: Builder(
-            builder: (context) {
-              final result = ResponsiveTypography.getResponsiveCaption(context);
-              return Text('${result.fontSize}');
-            },
-          ),
-        ));
-
-        // Then
-        expect(find.text('13.200000000000001'), findsOneWidget);
+      testWidgets('caption - tablet', (tester) async {
+        await _expectTypographyMethod(
+          tester,
+          screenSize: TestResponsiveUtil.standardTabletSize,
+          baseStyle: AppTypography.caption,
+          deviceType: DeviceType.tablet,
+          method: (context) => ResponsiveTypography.getResponsiveCaption(context),
+        );
       });
 
-      testWidgets('getResponsiveBold - 모바일', (WidgetTester tester) async {
-        // Given
-        const screenSize = Size(375, 812);
-
-        await tester.pumpWidget(ResponsiveTestHelper.createTestWidget(
-          screenSize: screenSize,
-          child: Builder(
-            builder: (context) {
-              final result = ResponsiveTypography.getResponsiveBold(context);
-              return Text('${result.fontSize}');
-            },
-          ),
-        ));
-
-        // Then
-        expect(find.text('12.0'), findsOneWidget);
+      testWidgets('bold - mobile', (tester) async {
+        await _expectTypographyMethod(
+          tester,
+          screenSize: TestResponsiveUtil.standardMobileSize,
+          baseStyle: AppTypography.bold,
+          deviceType: DeviceType.mobile,
+          method: (context) => ResponsiveTypography.getResponsiveBold(context),
+        );
       });
 
-      testWidgets('getResponsiveBold - 태블릿', (WidgetTester tester) async {
-        // Given
-        const screenSize = Size(1024, 768);
-
-        await tester.pumpWidget(ResponsiveTestHelper.createTestWidget(
-          screenSize: screenSize,
-          child: Builder(
-            builder: (context) {
-              final result = ResponsiveTypography.getResponsiveBold(context);
-              return Text('${result.fontSize}');
-            },
-          ),
-        ));
-
-        // Then
-        expect(find.text('13.200000000000001'), findsOneWidget);
+      testWidgets('bold - tablet', (tester) async {
+        await _expectTypographyMethod(
+          tester,
+          screenSize: TestResponsiveUtil.standardTabletSize,
+          baseStyle: AppTypography.bold,
+          deviceType: DeviceType.tablet,
+          method: (context) => ResponsiveTypography.getResponsiveBold(context),
+        );
       });
     });
   });

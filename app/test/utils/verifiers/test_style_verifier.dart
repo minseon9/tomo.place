@@ -41,15 +41,19 @@ class TestStyleVerifier {
     double? fontSize,
     FontWeight? fontWeight,
     TextAlign? align,
+    double? letterSpacing,
+    double? height,
   }) {
     final finder = find.text(text);
-    expect(finder, findsAtLeastNWidgets(1));
     final actual = tester.widget<Text>(finder);
+
     final style = actual.style;
     if (color != null) expect(style?.color, equals(color));
     if (fontSize != null) expect(style?.fontSize, equals(fontSize));
     if (fontWeight != null) expect(style?.fontWeight, equals(fontWeight));
     if (align != null) expect(actual.textAlign, equals(align));
+    if (letterSpacing != null) expect(style?.letterSpacing, equals(letterSpacing));
+    if (height != null) expect(style?.height, equals(height));
   }
 }
 

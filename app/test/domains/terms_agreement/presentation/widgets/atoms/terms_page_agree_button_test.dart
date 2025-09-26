@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:tomo_place/domains/terms_agreement/presentation/widgets/atoms/terms_page_agree_button.dart';
-
-import '../../../../../utils/mock_factory/terms_mock_factory.dart';
-import '../../../../../utils/widget/app_wrappers.dart';
-import '../../../../../utils/widget/verifiers.dart';
+import '../../../../../utils/domains/test_terms_util.dart';
+import '../../../../../utils/test_actions_util.dart';
+import '../../../../../utils/test_wrappers_util.dart';
+import '../../../../../utils/verifiers/test_render_verifier.dart';
+import '../../../../../utils/verifiers/test_style_verifier.dart';
+import 'package:mocktail/mocktail.dart';
 
 void main() {
   group('TermsPageAgreeButton', () {
-    late MockVoidCallback mockOnPressed;
+    late TermsMocks mocks;
 
     setUp(() {
-      mockOnPressed = TermsMockFactory.createVoidCallback();
+      mocks = TestTermsUtil.createMocks();
     });
 
     Widget createTestWidget({VoidCallback? onPressed}) {
-      return AppWrappers.wrapWithMaterialApp(
+      return TestWrappersUtil.material(
         TermsPageAgreeButton(onPressed: onPressed ?? () {}),
       );
     }
@@ -27,27 +28,10 @@ void main() {
         await tester.pumpWidget(createTestWidget());
 
         // Then
-        WidgetVerifiers.verifyWidgetRenders(
-          tester: tester,
-          widgetType: TermsPageAgreeButton,
-          expectedCount: 1,
-        );
-        WidgetVerifiers.verifyWidgetRenders(
-          tester: tester,
-          widgetType: Container,
-          expectedCount: 1,
-        );
-        WidgetVerifiers.verifyWidgetRenders(
-          tester: tester,
-          widgetType: Material,
-          expectedCount:
-              2, // AppWrappers의 Material + TermsPageAgreeButton의 Material
-        );
-        WidgetVerifiers.verifyWidgetRenders(
-          tester: tester,
-          widgetType: InkWell,
-          expectedCount: 1,
-        );
+        TestRenderVerifier.expectRenders<TermsPageAgreeButton>();
+        TestRenderVerifier.expectRenders<Container>();
+        TestRenderVerifier.expectRenders<Material>(count: 2);
+        TestRenderVerifier.expectRenders<InkWell>();
       });
 
       testWidgets('올바른 텍스트를 표시해야 한다', (WidgetTester tester) async {
@@ -55,10 +39,7 @@ void main() {
         await tester.pumpWidget(createTestWidget());
 
         // Then
-        WidgetVerifiers.verifyTextDisplays(
-          text: '동의',
-          expectedCount: 1,
-        );
+        TestRenderVerifier.expectText('동의');
       });
     });
 
@@ -68,8 +49,7 @@ void main() {
         await tester.pumpWidget(createTestWidget());
 
         // Then
-        final container = find.byType(Container);
-        expect(container, findsOneWidget);
+        TestRenderVerifier.expectRenders<Container>();
       });
     });
 
@@ -79,11 +59,13 @@ void main() {
         await tester.pumpWidget(createTestWidget());
 
         // Then
-        final container = tester.widget<Container>(find.byType(Container));
-        final decoration = container.decoration as BoxDecoration;
-        expect(decoration.color, isNotNull);
-        // DesignTokens.tomoPrimary300
+        final containerFinder = find.byType(Container);
+        TestStyleVerifier.expectContainerDecoration(
+          tester,
+          containerFinder,
+        );
       });
+
 
       testWidgets('테두리 스타일이 적용되어야 한다', (WidgetTester tester) async {
         // Given & When
@@ -102,7 +84,6 @@ void main() {
         // Then
         final container = tester.widget<Container>(find.byType(Container));
         final decoration = container.decoration as BoxDecoration;
-        expect(decoration.borderRadius, isNotNull);
         expect(decoration.borderRadius, equals(BorderRadius.circular(20.0)));
       });
 
@@ -120,17 +101,19 @@ void main() {
     group('상호작용 테스트', () {
       testWidgets('클릭 시 onPressed 콜백이 호출되어야 한다', (WidgetTester tester) async {
         // Given
-        when(() => mockOnPressed()).thenReturn(null);
+        when(() => mocks.onPressed()).thenReturn(null);
         await tester.pumpWidget(
-          createTestWidget(onPressed: mockOnPressed.call),
+          createTestWidget(onPressed: mocks.onPressed.call),
         );
 
         // When
-        await tester.tap(find.byType(InkWell));
-        await tester.pump();
+        await TestActionsUtil.tapFinderAndSettle(
+          tester,
+          find.byType(InkWell),
+        );
 
         // Then
-        verify(() => mockOnPressed()).called(1);
+        verify(() => mocks.onPressed()).called(1);
       });
 
       testWidgets('터치 피드백이 제공되어야 한다', (WidgetTester tester) async {
@@ -140,7 +123,6 @@ void main() {
         // Then
         final inkWell = tester.widget<InkWell>(find.byType(InkWell));
         expect(inkWell, isNotNull);
-        expect(inkWell.borderRadius, isNotNull);
         expect(inkWell.borderRadius, equals(BorderRadius.circular(20.0)));
       });
     });
@@ -169,55 +151,63 @@ void main() {
     group('Mock 사용 테스트', () {
       testWidgets('Mock 콜백이 올바르게 호출되어야 한다', (WidgetTester tester) async {
         // Given
-        when(() => mockOnPressed()).thenReturn(null);
+        when(() => mocks.onPressed()).thenReturn(null);
         await tester.pumpWidget(
-          createTestWidget(onPressed: mockOnPressed.call),
+          createTestWidget(onPressed: mocks.onPressed.call),
         );
 
         // When
-        await tester.tap(find.byType(InkWell));
+        await TestActionsUtil.tapFinderAndSettle(
+          tester,
+          find.byType(InkWell),
+        );
         await tester.pump();
 
         // Then
-        verify(() => mockOnPressed()).called(1);
+        verify(() => mocks.onPressed()).called(1);
       });
 
       testWidgets('Mock 콜백이 여러 번 호출되어야 한다', (WidgetTester tester) async {
         // Given
-        when(() => mockOnPressed()).thenReturn(null);
+        when(() => mocks.onPressed()).thenReturn(null);
         await tester.pumpWidget(
-          createTestWidget(onPressed: mockOnPressed.call),
+          createTestWidget(onPressed: mocks.onPressed.call),
         );
 
         // When
-        await tester.tap(find.byType(InkWell));
-        await tester.pump();
-        await tester.tap(find.byType(InkWell));
-        await tester.pump();
+        await TestActionsUtil.tapFinderAndSettle(
+          tester,
+          find.byType(InkWell),
+        );
+        await TestActionsUtil.tapFinderAndSettle(
+          tester,
+          find.byType(InkWell),
+        );
 
         // Then
-        verify(() => mockOnPressed()).called(2);
+        verify(() => mocks.onPressed()).called(2);
       });
 
       testWidgets('Mock 콜백이 호출되지 않아야 한다', (WidgetTester tester) async {
         // Given
-        when(() => mockOnPressed()).thenReturn(null);
+        when(() => mocks.onPressed()).thenReturn(null);
         await tester.pumpWidget(
-          createTestWidget(onPressed: mockOnPressed.call),
+          createTestWidget(onPressed: mocks.onPressed.call),
         );
 
         // When
         // 탭하지 않음
 
         // Then
-        verifyNever(() => mockOnPressed());
+        verifyNever(() => mocks.onPressed());
       });
     });
 
     group('접근성 테스트', () {
       testWidgets('접근성 속성이 설정되어야 한다', (WidgetTester tester) async {
         // Given & When
-        await tester.pumpWidget(createTestWidget());
+        when(() => mocks.onPressed()).thenReturn(null);
+        await tester.pumpWidget(createTestWidget(onPressed: mocks.onPressed.call));
 
         // Then
         final inkWell = tester.widget<InkWell>(find.byType(InkWell));
@@ -242,17 +232,20 @@ void main() {
 
       testWidgets('onPressed 콜백이 호출되어야 한다', (WidgetTester tester) async {
         // Given
-        when(() => mockOnPressed()).thenReturn(null);
+        when(() => mocks.onPressed()).thenReturn(null);
         await tester.pumpWidget(
-          createTestWidget(onPressed: mockOnPressed.call),
+          createTestWidget(onPressed: mocks.onPressed.call),
         );
 
         // When
-        await tester.tap(find.byType(InkWell));
+        await TestActionsUtil.tapFinderAndSettle(
+          tester,
+          find.byType(InkWell),
+        );
         await tester.pump();
 
         // Then
-        verify(() => mockOnPressed()).called(1);
+        verify(() => mocks.onPressed()).called(1);
       });
 
       testWidgets('InkWell의 onTap이 올바르게 설정되어야 한다', (WidgetTester tester) async {

@@ -9,48 +9,13 @@ import 'package:tomo_place/domains/terms_agreement/presentation/widgets/organism
 import '../utils/domains/test_terms_util.dart';
 import '../utils/verifiers/test_render_verifier.dart';
 import '../utils/test_wrappers_util.dart';
+import '../utils/test_actions_util.dart';
 
 void main() {
   group('Terms Agreement Flow Integration Tests', () {
-    Widget createModalTestWidget({
-      void Function(TermsAgreementResult)? onResult,
-      Size? screenSize,
-      bool includeRoutes = false,
-    }) {
-      if (includeRoutes) {
-        return TestTermsUtil.buildModalWithRoutes(
-          onResult: onResult ?? (result) {
-            switch (result) {
-              case TermsAgreementResult.agreed:
-                break;
-              case TermsAgreementResult.dismissed:
-                break;
-            }
-          },
-          screenSize: screenSize ?? const Size(390.0, 844.0),
-        );
-      }
-
-      return TestTermsUtil.buildModal(
-        onResult: onResult ?? (result) {
-          switch (result) {
-            case TermsAgreementResult.agreed:
-              break;
-            case TermsAgreementResult.dismissed:
-              break;
-          }
-        },
-        screenSize: screenSize ?? const Size(390.0, 844.0),
-      );
-    }
-
-    Widget createTermsPageTestWidget(Widget page) {
-      return TestWrappersUtil.material(page);
-    }
-
     group('모달 표시 및 닫기 플로우', () {
       testWidgets('모달이 올바르게 표시되어야 한다', (WidgetTester tester) async {
-        await tester.pumpWidget(createModalTestWidget());
+        await tester.pumpWidget(_createModalTestWidget());
 
         // When & Then
         TestRenderVerifier.expectRenders<TermsAgreementModal>();
@@ -61,7 +26,7 @@ void main() {
         // Given
         bool agreedCalled = false;
         await tester.pumpWidget(
-          createModalTestWidget(
+          _createModalTestWidget(
             onResult: (result) {
               if (result == TermsAgreementResult.agreed) {
                 agreedCalled = true;
@@ -71,8 +36,11 @@ void main() {
         );
 
         // When
-        await tester.tap(find.text('모두 동의합니다 !'));
-        await tester.pump();
+        await TestActionsUtil.tapFinderAndSettle(
+          tester,
+          find.text(TestTermsUtil.agreeAllButton),
+        );
+        await tester.pumpAndSettle();
 
         // Then
         expect(agreedCalled, isTrue);
@@ -82,7 +50,7 @@ void main() {
         // Given
         bool dismissedCalled = false;
         await tester.pumpWidget(
-          createModalTestWidget(
+          _createModalTestWidget(
             onResult: (result) {
               if (result == TermsAgreementResult.dismissed) {
                 dismissedCalled = true;
@@ -92,19 +60,17 @@ void main() {
         );
 
         // When
-        final externalPoint = TestTermsUtil.calculateExternalTouchPoint();
-        await tester.tapAt(externalPoint);
-        await tester.pump();
+        await tester.tapAt(TestTermsUtil.calculateExternalTouchPoint());
+        await tester.pumpAndSettle();
 
         // Then
         expect(dismissedCalled, isTrue);
       });
 
       testWidgets('아래로 드래그 시 모달이 닫혀야 한다', (WidgetTester tester) async {
-        // Given
         bool dismissedCalled = false;
         await tester.pumpWidget(
-          createModalTestWidget(
+          _createModalTestWidget(
             onResult: (result) {
               if (result == TermsAgreementResult.dismissed) {
                 dismissedCalled = true;
@@ -113,18 +79,14 @@ void main() {
           ),
         );
 
-        // When
-        final gestureDetector = find
-            .byType(GestureDetector)
-            .at(1); // 모달 컨테이너 GestureDetector
+        final modalFinder = TestRenderVerifier.findSingle<TermsAgreementModal>();
         await tester.drag(
-          gestureDetector,
+          modalFinder,
           const Offset(0, 50),
           warnIfMissed: false,
         );
-        await tester.pump();
+        await tester.pumpAndSettle();
 
-        // Then
         expect(dismissedCalled, isTrue);
       });
     });
@@ -137,7 +99,7 @@ void main() {
 
       testWidgets('모든 약관 텍스트가 표시되어야 한다', (WidgetTester tester) async {
         // Given
-        await tester.pumpWidget(createModalTestWidget());
+        await tester.pumpWidget(_createModalTestWidget());
 
         // When & Then
         TestTermsUtil.verifyAllTermsTextsDisplay();
@@ -149,7 +111,7 @@ void main() {
         // Given
         bool dismissedCalled = false;
         await tester.pumpWidget(
-          createModalTestWidget(
+          _createModalTestWidget(
             onResult: (result) {
               if (result == TermsAgreementResult.dismissed) {
                 dismissedCalled = true;
@@ -161,7 +123,7 @@ void main() {
         // When
         final internalPoint = TestTermsUtil.calculateInternalTouchPoint(tester);
         await tester.tapAt(internalPoint);
-        await tester.pump();
+        await tester.pumpAndSettle();
 
         // Then
         expect(dismissedCalled, isFalse);
@@ -169,7 +131,10 @@ void main() {
 
       testWidgets('모달이 안정적으로 렌더링되어야 한다', (WidgetTester tester) async {
         // Given & When & Then
-        await TestTermsUtil.measureRenderingTime(tester, createModalTestWidget());
+        await TestTermsUtil.measureRenderingTime(
+          tester,
+          _createModalTestWidget(),
+        );
       });
     });
 
@@ -178,7 +143,7 @@ void main() {
         // Given
         bool agreedCalled = false;
         await tester.pumpWidget(
-          createModalTestWidget(
+          _createModalTestWidget(
             onResult: (result) {
               if (result == TermsAgreementResult.agreed) {
                 agreedCalled = true;
@@ -192,8 +157,11 @@ void main() {
         TestTermsUtil.verifyAllTermsTextsDisplay();
 
         // 2. 모든 동의 버튼 클릭
-        await tester.tap(TestTermsUtil.findAgreeAllButton());
-        await tester.pump();
+        await TestActionsUtil.tapFinderAndSettle(
+          tester,
+          TestTermsUtil.findAgreeAllButton(),
+        );
+        await tester.pumpAndSettle();
 
         // Then
         expect(agreedCalled, isTrue);
@@ -224,7 +192,7 @@ void main() {
         ];
 
         for (int i = 0; i < termsPages.length; i++) {
-          await tester.pumpWidget(createTermsPageTestWidget(termsPages[i]));
+          await tester.pumpWidget(TestWrappersUtil.material(termsPages[i]));
 
           TestRenderVerifier.expectText(termsPageTitles[i]);
         }
@@ -237,7 +205,7 @@ void main() {
         int agreedCount = 0;
         int dismissedCount = 0;
         await tester.pumpWidget(
-          createModalTestWidget(
+          _createModalTestWidget(
             onResult: (result) {
               if (result == TermsAgreementResult.agreed) {
                 agreedCount++;
@@ -252,13 +220,15 @@ void main() {
         // 여러 번 상호작용
         for (int i = 0; i < 3; i++) {
           // 동의 버튼 클릭
-          await tester.tap(TestTermsUtil.findAgreeAllButton());
-          await tester.pump();
+          await TestActionsUtil.tapFinderAndSettle(
+            tester,
+            TestTermsUtil.findAgreeAllButton(),
+          );
+          await tester.pumpAndSettle();
 
           // 모달 외부 터치로 닫기
-          final externalPoint = TestTermsUtil.calculateExternalTouchPoint();
-          await tester.tapAt(externalPoint);
-          await tester.pump();
+          await tester.tapAt(TestTermsUtil.calculateExternalTouchPoint());
+          await tester.pumpAndSettle();
         }
 
         // Then
@@ -267,4 +237,24 @@ void main() {
       });
     });
   });
+}
+
+Widget _createModalTestWidget({
+  void Function(TermsAgreementResult)? onResult,
+  bool includeRoutes = false,
+}) {
+
+  final handler = onResult ?? (_) {};
+  final modal = TermsAgreementModal(onResult: handler);
+
+  if (includeRoutes) {
+    return TestWrappersUtil.createTestAppWithRouting(
+      child: modal,
+      routes: {
+        ...TestTermsUtil.routes(),
+      },
+    );
+  }
+
+  return TestTermsUtil.buildModal(onResult: handler);
 }

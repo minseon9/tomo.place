@@ -1,20 +1,25 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:faker/faker.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:tomo_place/domains/auth/consts/social_provider.dart';
 import 'package:tomo_place/domains/auth/core/entities/authentication_result.dart';
 import 'package:tomo_place/domains/auth/core/entities/auth_token.dart';
+import 'package:tomo_place/domains/auth/core/exceptions/auth_exception.dart';
+import 'package:tomo_place/domains/auth/core/exceptions/oauth_exception.dart';
 import 'package:tomo_place/domains/auth/core/repositories/auth_repository.dart';
 import 'package:tomo_place/domains/auth/core/repositories/auth_token_repository.dart';
 import 'package:tomo_place/domains/auth/core/usecases/logout_usecase.dart';
 import 'package:tomo_place/domains/auth/core/usecases/refresh_token_usecase.dart';
 import 'package:tomo_place/domains/auth/core/usecases/signup_with_social_usecase.dart';
 import 'package:tomo_place/domains/auth/core/usecases/usecase_providers.dart';
-import 'package:tomo_place/domains/auth/core/exceptions/auth_exception.dart';
-import 'package:tomo_place/domains/auth/core/exceptions/oauth_exception.dart';
 import 'package:tomo_place/domains/auth/data/repositories/auth_repository_impl.dart';
 import 'package:tomo_place/domains/auth/data/repositories/auth_token_repository_impl.dart';
+import 'package:tomo_place/domains/auth/presentation/controllers/auth_notifier.dart';
+import 'package:tomo_place/domains/auth/presentation/models/auth_state.dart';
+import 'package:tomo_place/shared/exception_handler/exception_notifier.dart';
+import '../test_exception_util.dart';
 import 'package:tomo_place/shared/infrastructure/network/auth_client.dart';
-import 'package:faker/faker.dart';
 import 'package:tomo_place/shared/infrastructure/network/base_client.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}
@@ -23,27 +28,86 @@ class MockBaseClient extends Mock implements BaseClient {}
 class MockSignupWithSocialUseCase extends Mock implements SignupWithSocialUseCase {}
 class MockLogoutUseCase extends Mock implements LogoutUseCase {}
 class MockRefreshTokenUseCase extends Mock implements RefreshTokenUseCase {}
+class MockAuthNotifier extends Mock implements AuthNotifier {}
 
-typedef AuthMocks = ({
-MockAuthRepository authRepo,
-MockAuthTokenRepository tokenRepo,
-MockBaseClient baseClient,
-MockSignupWithSocialUseCase signup,
-MockLogoutUseCase logout,
-MockRefreshTokenUseCase refresh,
-});
+class AuthMocks {
+  MockAuthRepository? _authRepo;
+  MockAuthTokenRepository? _tokenRepo;
+  MockBaseClient? _baseClient;
+  MockSignupWithSocialUseCase? _signup;
+  MockLogoutUseCase? _logout;
+  MockRefreshTokenUseCase? _refresh;
+  MockAuthNotifier? _authNotifier;
+
+  MockAuthRepository get authRepo => _authRepo ??= MockAuthRepository();
+  MockAuthTokenRepository get tokenRepo => _tokenRepo ??= MockAuthTokenRepository();
+  MockBaseClient get baseClient => _baseClient ??= MockBaseClient();
+  MockSignupWithSocialUseCase get signup => _signup ??= MockSignupWithSocialUseCase();
+  MockLogoutUseCase get logout => _logout ??= MockLogoutUseCase();
+  MockRefreshTokenUseCase get refresh => _refresh ??= MockRefreshTokenUseCase();
+  MockAuthNotifier get authNotifier => _authNotifier ??= MockAuthNotifier();
+
+  void resetAll() {
+    if (_authRepo != null) reset(_authRepo);
+    if (_tokenRepo != null) reset(_tokenRepo);
+    if (_baseClient != null) reset(_baseClient);
+    if (_signup != null) reset(_signup);
+    if (_logout != null) reset(_logout);
+    if (_refresh != null) reset(_refresh);
+    if (_authNotifier != null) reset(_authNotifier);
+  }
+}
 
 class TestAuthUtil {
   TestAuthUtil._();
 
-  static AuthMocks createMocks() => (
-    authRepo: MockAuthRepository(),
-    tokenRepo: MockAuthTokenRepository(),
-    baseClient: MockBaseClient(),
-    signup: MockSignupWithSocialUseCase(),
-    logout: MockLogoutUseCase(),
-    refresh: MockRefreshTokenUseCase(),
-  );
+  static AuthMocks createMocks() => AuthMocks();
+
+  static void registerFallbackValues() {
+    registerFallbackValue(true);
+    registerFallbackValue(const AuthInitial());
+    registerFallbackValue(const AuthSuccess(false));
+    registerFallbackValue(AuthFailure(error: makeAuthError(message: 'fallback')));
+  }
+
+  static void stubAuthNotifierLifecycle(AuthMocks m) {
+    when(
+      () => m.authNotifier.addListener(
+        any(),
+        fireImmediately: any(named: 'fireImmediately'),
+      ),
+    ).thenReturn(() {});
+  }
+
+  static void stubAuthState(AuthMocks m, AuthState state) {
+    when(() => m.authNotifier.state).thenReturn(state);
+  }
+
+  static void stubAuthRefreshInitial(AuthMocks m) {
+    when(() => m.authNotifier.refreshToken(any())).thenAnswer((_) async => null);
+    stubAuthState(m, const AuthInitial());
+  }
+
+  static void stubAuthRefreshSuccess(
+    AuthMocks m, {
+    AuthenticationResult? result,
+    bool isLogin = true,
+  }) {
+    final authenticationResult = result ?? makeAuthenticatedResult();
+    when(() => m.authNotifier.refreshToken(any())).thenAnswer((_) async => authenticationResult);
+    stubAuthState(m, AuthSuccess(isLogin));
+  }
+
+  static void stubAuthRefreshFailure(
+    AuthMocks m, {
+    required Exception exception,
+    AuthState? nextState,
+  }) {
+    when(() => m.authNotifier.refreshToken(any())).thenThrow(exception);
+    if (nextState != null) {
+      stubAuthState(m, nextState);
+    }
+  }
 
   static AuthToken makeValidToken({
     String? accessToken,
@@ -173,12 +237,22 @@ class TestAuthUtil {
     Override signup,
     Override logout,
     Override refresh,
-  }) providerOverrides(AuthMocks m) => (
-    authRepo: authRepositoryProvider.overrideWith((_) => m.authRepo),
-    tokenRepo: authTokenRepositoryProvider.overrideWith((_) => m.tokenRepo),
-    baseClient: authClientProvider.overrideWith((_) => m.baseClient),
-    signup: signupWithSocialUseCaseProvider.overrideWith((_) => m.signup),
-    logout: logoutUseCaseProvider.overrideWith((_) => m.logout),
-    refresh: refreshTokenUseCaseProvider.overrideWith((_) => m.refresh),
-  );
+    Override exceptionNotifier,
+  }) providerOverrides(
+    AuthMocks m, {
+    MockExceptionNotifier? exceptionNotifier,
+  }) => (
+        authRepo: authRepositoryProvider.overrideWith((_) => m.authRepo),
+        tokenRepo: authTokenRepositoryProvider.overrideWith((_) => m.tokenRepo),
+        baseClient: authClientProvider.overrideWith((_) => m.baseClient),
+        signup: signupWithSocialUseCaseProvider.overrideWith((_) => m.signup),
+        logout: logoutUseCaseProvider.overrideWith((_) => m.logout),
+        refresh: refreshTokenUseCaseProvider.overrideWith((_) => m.refresh),
+        exceptionNotifier: TestExceptionUtil.overrideProvider(
+          exceptionNotifier ?? TestExceptionUtil.createMockNotifier(),
+        ),
+      );
+
+  static Override authNotifierOverride(AuthMocks m) =>
+      authNotifierProvider.overrideWith((_) => m.authNotifier);
 }

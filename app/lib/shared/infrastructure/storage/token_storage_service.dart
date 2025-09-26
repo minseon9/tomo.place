@@ -17,12 +17,21 @@ class TokenStorageService implements TokenStorageInterface {
   static const String _refreshTokenKey = 'refresh_token';
   static const String _refreshTokenExpiryKey = 'refresh_token_expiry';
 
-  final FlutterSecureStorage _storage = const FlutterSecureStorage(
-    aOptions: AndroidOptions(encryptedSharedPreferences: true),
-    iOptions: IOSOptions(
-      accessibility: KeychainAccessibility.first_unlock_this_device,
-    ),
-  );
+  TokenStorageService({
+    FlutterSecureStorage? storage,
+    AndroidOptions? androidOptions,
+    IOSOptions? iosOptions,
+  }) : _storage = storage ??
+            FlutterSecureStorage(
+              aOptions:
+                  androidOptions ?? const AndroidOptions(encryptedSharedPreferences: true),
+              iOptions: iosOptions ??
+                  const IOSOptions(
+                    accessibility: KeychainAccessibility.first_unlock_this_device,
+                  ),
+            );
+
+  final FlutterSecureStorage _storage;
 
   @override
   Future<void> saveRefreshToken({
