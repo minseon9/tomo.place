@@ -5,15 +5,17 @@ import 'package:tomo_place/domains/auth/core/entities/authentication_result.dart
 import 'package:tomo_place/domains/auth/core/entities/auth_token.dart';
 import 'package:tomo_place/domains/auth/core/repositories/auth_repository.dart';
 import 'package:tomo_place/domains/auth/core/repositories/auth_token_repository.dart';
-import 'package:tomo_place/domains/auth/core/usecases/check_auth_status_usecase.dart';
 import 'package:tomo_place/domains/auth/core/usecases/logout_usecase.dart';
 import 'package:tomo_place/domains/auth/core/usecases/refresh_token_usecase.dart';
 import 'package:tomo_place/domains/auth/core/usecases/signup_with_social_usecase.dart';
 import 'package:tomo_place/domains/auth/core/usecases/usecase_providers.dart';
 import 'package:tomo_place/domains/auth/core/exceptions/auth_exception.dart';
 import 'package:tomo_place/domains/auth/core/exceptions/oauth_exception.dart';
+import 'package:tomo_place/domains/auth/data/repositories/auth_repository_impl.dart';
+import 'package:tomo_place/domains/auth/data/repositories/auth_token_repository_impl.dart';
 import 'package:tomo_place/shared/infrastructure/network/auth_client.dart';
 import 'package:faker/faker.dart';
+import 'package:tomo_place/shared/infrastructure/network/base_client.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 class MockAuthTokenRepository extends Mock implements AuthTokenRepository {}
@@ -21,7 +23,6 @@ class MockBaseClient extends Mock implements BaseClient {}
 class MockSignupWithSocialUseCase extends Mock implements SignupWithSocialUseCase {}
 class MockLogoutUseCase extends Mock implements LogoutUseCase {}
 class MockRefreshTokenUseCase extends Mock implements RefreshTokenUseCase {}
-class MockCheckAuthStatusUseCase extends Mock implements CheckAuthStatusUseCase {}
 
 typedef AuthMocks = ({
   MockAuthRepository authRepo,
@@ -30,7 +31,6 @@ typedef AuthMocks = ({
   MockSignupWithSocialUseCase signup,
   MockLogoutUseCase logout,
   MockRefreshTokenUseCase refresh,
-  MockCheckAuthStatusUseCase checkAuth,
 );
 
 class TestAuthUtil {
@@ -43,7 +43,6 @@ class TestAuthUtil {
     signup: MockSignupWithSocialUseCase(),
     logout: MockLogoutUseCase(),
     refresh: MockRefreshTokenUseCase(),
-    checkAuth: MockCheckAuthStatusUseCase(),
   );
 
   static AuthToken makeValidToken({
@@ -174,7 +173,6 @@ class TestAuthUtil {
     Override signup,
     Override logout,
     Override refresh,
-    Override checkAuth,
   }) providerOverrides(AuthMocks m) => (
     authRepo: authRepositoryProvider.overrideWith((_) => m.authRepo),
     tokenRepo: authTokenRepositoryProvider.overrideWith((_) => m.tokenRepo),
@@ -182,6 +180,5 @@ class TestAuthUtil {
     signup: signupWithSocialUseCaseProvider.overrideWith((_) => m.signup),
     logout: logoutUseCaseProvider.overrideWith((_) => m.logout),
     refresh: refreshTokenUseCaseProvider.overrideWith((_) => m.refresh),
-    checkAuth: checkAuthStatusUseCaseProvider.overrideWith((_) => m.checkAuth),
   );
 }

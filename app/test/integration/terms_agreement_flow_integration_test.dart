@@ -5,23 +5,10 @@ import 'package:tomo_place/domains/terms_agreement/presentation/pages/location_t
 import 'package:tomo_place/domains/terms_agreement/presentation/pages/privacy_policy_page.dart';
 import 'package:tomo_place/domains/terms_agreement/presentation/pages/terms_of_service_page.dart';
 import 'package:tomo_place/domains/terms_agreement/presentation/widgets/organisms/terms_agreement_modal.dart';
-import 'package:tomo_place/shared/application/routes/routes.dart';
 
-import '../utils/mock_factory/terms_mock_factory.dart';
-import '../utils/widget/app_wrappers.dart';
-import '../utils/widget/verifiers.dart';
-
-class TestNavigatorObserver extends NavigatorObserver {
-  final List<String> pushedRoutes = [];
-
-  @override
-  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    pushedRoutes.add(route.settings.name ?? '');
-    super.didPush(route, previousRoute);
-  }
-}
-
-class FakeRoute extends Fake implements Route<dynamic> {}
+import '../utils/domains/test_terms_util.dart';
+import '../utils/test_wrappers_util.dart';
+import '../utils/test_verifiers_util.dart';
 
 void main() {
   group('Terms Agreement Flow Integration Tests', () {
@@ -29,159 +16,48 @@ void main() {
     late MockNavigatorObserver mockNavigatorObserver;
 
     setUpAll(() {
-      // Route<dynamic> 타입에 대한 fallback 값 등록
       registerFallbackValue(FakeRoute());
     });
 
     setUp(() {
-      mockOnDismiss = TermsMockFactory.createVoidCallback();
-      mockNavigatorObserver = TermsMockFactory.createNavigatorObserver();
+      mockOnDismiss = TestTermsUtil.createVoidCallback();
+      mockNavigatorObserver = TestTermsUtil.createNavigatorObserver();
     });
 
-    // 통합 테스트 전용 Helper 함수들
-    const Size defaultScreenSize = Size(390.0, 844.0);
-
-    /// 약관 페이지들을 위한 라우트 맵
-    Map<String, WidgetBuilder> getTermsRoutes() {
-      return {
-        Routes.termsOfService: (context) => const TermsOfServicePage(),
-        Routes.privacyPolicy: (context) => const PrivacyPolicyPage(),
-        Routes.locationTerms: (context) => const LocationTermsPage(),
-      };
-    }
-
-    /// 모달 테스트 위젯 생성
     Widget createModalTestWidget({
       void Function(TermsAgreementResult)? onResult,
       Size? screenSize,
       bool includeRoutes = false,
     }) {
-      final modal = TermsAgreementModal(
-        onResult:
-            onResult ??
-            (result) {
-              // 기본 콜백 - 테스트에서 필요시 오버라이드
-              // 모든 결과 타입을 처리하여 커버리지 확보
-              switch (result) {
-                case TermsAgreementResult.agreed:
-                  // 동의 처리
-                  break;
-                case TermsAgreementResult.dismissed:
-                  // 거부 처리
-                  break;
-              }
-            },
-      );
-
       if (includeRoutes) {
-        return AppWrappers.wrapWithMaterialAppWithSize(
-          MaterialApp(home: modal, routes: getTermsRoutes()),
-          screenSize: screenSize ?? defaultScreenSize,
+        return TestTermsUtil.buildModalWithRoutes(
+          onResult: onResult ?? (result) {
+            switch (result) {
+              case TermsAgreementResult.agreed:
+                break;
+              case TermsAgreementResult.dismissed:
+                break;
+            }
+          },
+          screenSize: screenSize,
         );
       }
 
-      return AppWrappers.wrapWithMaterialAppWithSize(
-        modal,
-        screenSize: screenSize ?? defaultScreenSize,
+      return TestTermsUtil.buildModal(
+        onResult: onResult ?? (result) {
+          switch (result) {
+            case TermsAgreementResult.agreed:
+              break;
+            case TermsAgreementResult.dismissed:
+              break;
+          }
+        },
+        screenSize: screenSize,
       );
     }
 
-    /// 약관 페이지 테스트 위젯 생성
     Widget createTermsPageTestWidget(Widget page) {
-      return AppWrappers.wrapWithMaterialApp(page);
-    }
-
-    /// 모달 외부 터치를 위한 좌표 계산
-    Offset calculateExternalTouchPoint() {
-      // 화면 상단 모서리 (확실히 모달 외부)
-      return const Offset(10, 10);
-    }
-
-    /// 모달 내부 터치를 위한 좌표 계산 (이벤트 전파 방지 테스트용)
-    Offset calculateInternalTouchPoint(WidgetTester tester) {
-      // "모두 동의합니다 !" 버튼과 x=0의 중간 지점 계산
-      final agreeButton = find.text('모두 동의합니다 !');
-      final agreeButtonRect = tester.getRect(agreeButton);
-
-      // 버튼의 중앙 x 좌표와 화면 왼쪽 끝의 중간점
-      final targetX = agreeButtonRect.center.dx / 2;
-      final targetY = agreeButtonRect.center.dy;
-
-      return Offset(targetX, targetY);
-    }
-
-    /// 모든 약관 텍스트가 표시되는지 검증
-    void verifyAllTermsTextsDisplay() {
-      const termsTexts = [
-        '이용 약관 동의',
-        '개인정보 보호 방침 동의',
-        '위치정보 수집·이용 및 제3자 제공 동의',
-        '만 14세 이상입니다',
-      ];
-
-      for (final text in termsTexts) {
-        expect(find.text(text), findsOneWidget);
-      }
-    }
-
-    /// 약관 라우트가 올바르게 정의되어 있는지 검증
-    void verifyTermsRoutesDefined() {
-      expect(Routes.termsOfService, equals('/terms/terms-of-service'));
-      expect(Routes.privacyPolicy, equals('/terms/privacy-policy'));
-      expect(Routes.locationTerms, equals('/terms/location-terms'));
-    }
-
-    /// 약관 라우트가 /terms/ 접두사를 가지는지 검증
-    void verifyTermsRoutesPrefix() {
-      const termsRoutes = [
-        Routes.termsOfService,
-        Routes.privacyPolicy,
-        Routes.locationTerms,
-      ];
-
-      for (final route in termsRoutes) {
-        expect(route, startsWith('/terms/'));
-      }
-    }
-
-    /// 약관 라우트가 유효한 형식인지 검증
-    void verifyTermsRoutesFormat() {
-      const termsRoutes = [
-        Routes.termsOfService,
-        Routes.privacyPolicy,
-        Routes.locationTerms,
-      ];
-
-      for (final route in termsRoutes) {
-        expect(route, startsWith('/'));
-        expect(route, matches(r'^/[a-zA-Z0-9\-/]*$'));
-      }
-    }
-
-    /// 약관 라우트가 중복되지 않는지 검증
-    void verifyTermsRoutesUnique() {
-      const termsRoutes = [
-        Routes.termsOfService,
-        Routes.privacyPolicy,
-        Routes.locationTerms,
-      ];
-
-      final uniqueRoutes = termsRoutes.toSet();
-      expect(uniqueRoutes.length, equals(termsRoutes.length));
-    }
-
-    /// 성능 테스트를 위한 렌더링 시간 측정
-    Future<void> measureRenderingTime(
-      WidgetTester tester,
-      Widget widget, {
-      int maxMilliseconds = 1000,
-    }) async {
-      final stopwatch = Stopwatch()..start();
-      await tester.pumpWidget(widget);
-      await tester.pumpAndSettle();
-      stopwatch.stop();
-
-      expect(stopwatch.elapsedMilliseconds, lessThan(maxMilliseconds));
+      return TestWrappersUtil.material(page);
     }
 
     group('모달 표시 및 닫기 플로우', () {
@@ -191,15 +67,8 @@ void main() {
         await tester.pumpWidget(createModalTestWidget());
 
         // When & Then
-        WidgetVerifiers.verifyWidgetRenders(
-          tester: tester,
-          widgetType: TermsAgreementModal,
-          expectedCount: 1,
-        );
-        WidgetVerifiers.verifyTextDisplays(
-          text: '모두 동의합니다 !',
-          expectedCount: 1,
-        );
+        TestVerifiersUtil.expectRenders<TermsAgreementModal>();
+        TestVerifiersUtil.expectText('모두 동의합니다 !');
       });
 
       testWidgets('모든 동의 버튼 클릭 시 모달이 닫혀야 한다', (WidgetTester tester) async {
@@ -237,7 +106,7 @@ void main() {
         );
 
         // When
-        final externalPoint = calculateExternalTouchPoint();
+        final externalPoint = TestTermsUtil.calculateExternalTouchPoint();
         await tester.tapAt(externalPoint);
         await tester.pump();
 
@@ -304,7 +173,7 @@ void main() {
         );
 
         // When
-        final internalPoint = calculateInternalTouchPoint(tester);
+        final internalPoint = TestTermsUtil.calculateInternalTouchPoint(tester);
         await tester.tapAt(internalPoint);
         await tester.pump();
 
@@ -314,7 +183,7 @@ void main() {
 
       testWidgets('모달이 안정적으로 렌더링되어야 한다', (WidgetTester tester) async {
         // Given & When & Then
-        await measureRenderingTime(tester, createModalTestWidget());
+        await TestTermsUtil.measureRenderingTime(tester, createModalTestWidget());
       });
     });
 
@@ -334,10 +203,10 @@ void main() {
 
         // When
         // 1. 모든 약관 항목 확인
-        verifyAllTermsTextsDisplay();
+        TestTermsUtil.verifyAllTermsTextsDisplay();
 
         // 2. 모든 동의 버튼 클릭
-        await tester.tap(find.text('모두 동의합니다 !'));
+        await tester.tap(TestTermsUtil.findAgreeAllButton());
         await tester.pump();
 
         // Then
@@ -348,10 +217,10 @@ void main() {
     group('라우트 및 페이지 테스트', () {
       testWidgets('라우트 일관성이 유지되어야 한다', (WidgetTester tester) async {
         // Given & When & Then
-        verifyTermsRoutesDefined();
-        verifyTermsRoutesPrefix();
-        verifyTermsRoutesFormat();
-        verifyTermsRoutesUnique();
+        TestTermsUtil.verifyTermsRoutesDefined();
+        TestTermsUtil.verifyTermsRoutesPrefix();
+        TestTermsUtil.verifyTermsRoutesFormat();
+        TestTermsUtil.verifyTermsRoutesUnique();
       });
 
       testWidgets('약관 페이지들이 올바르게 렌더링되어야 한다', (WidgetTester tester) async {
@@ -371,10 +240,7 @@ void main() {
         for (int i = 0; i < termsPages.length; i++) {
           await tester.pumpWidget(createTermsPageTestWidget(termsPages[i]));
 
-          WidgetVerifiers.verifyTextDisplays(
-            text: termsPageTitles[i],
-            expectedCount: 1,
-          );
+          TestVerifiersUtil.expectText(termsPageTitles[i]);
         }
       });
     });
@@ -400,11 +266,11 @@ void main() {
         // 여러 번 상호작용
         for (int i = 0; i < 3; i++) {
           // 동의 버튼 클릭
-          await tester.tap(find.text('모두 동의합니다 !'));
+          await tester.tap(TestTermsUtil.findAgreeAllButton());
           await tester.pump();
 
           // 모달 외부 터치로 닫기
-          final externalPoint = calculateExternalTouchPoint();
+          final externalPoint = TestTermsUtil.calculateExternalTouchPoint();
           await tester.tapAt(externalPoint);
           await tester.pump();
         }
