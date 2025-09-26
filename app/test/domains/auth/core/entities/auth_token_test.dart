@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tomo_place/domains/auth/core/entities/auth_token.dart';
 
 import '../../../../utils/fake_data/fake_data_generator.dart';
-import '../../../../utils/time_test_utils.dart';
+import '../../../../utils/test_time_util.dart';
 
 void main() {
   group('AuthToken', () {
@@ -12,8 +12,8 @@ void main() {
         // Given
         final accessToken = faker.guid.guid();
         final refreshToken = faker.guid.guid();
-        final accessTokenExpiresAt = TimeTestUtils.hoursFromNow(1);
-        final refreshTokenExpiresAt = TimeTestUtils.daysFromNow(7);
+        final accessTokenExpiresAt = TestTimeUtils.hoursFromNow(1);
+        final refreshTokenExpiresAt = TestTimeUtils.daysFromNow(7);
 
         // When
         final token = AuthToken(
@@ -50,9 +50,9 @@ void main() {
         // When
         final token = AuthToken(
           accessToken: faker.guid.guid(),
-          accessTokenExpiresAt: TimeTestUtils.hoursFromNow(1),
+          accessTokenExpiresAt: TestTimeUtils.hoursFromNow(1),
           refreshToken: faker.guid.guid(),
-          refreshTokenExpiresAt: TimeTestUtils.daysFromNow(7),
+          refreshTokenExpiresAt: TestTimeUtils.daysFromNow(7),
           tokenType: customTokenType,
         );
 
@@ -63,7 +63,7 @@ void main() {
 
     group('토큰 만료 검증', () {
       test('만료되지 않은 액세스 토큰은 유효해야 한다', () async {
-        await TimeTestUtils.withTokenExpiryScenario(() async {
+        await TestTimeUtils.withTokenExpiryScenario(() async {
           // Given
           final token = FakeDataGenerator.createValidAuthToken();
 
@@ -117,9 +117,9 @@ void main() {
         final accessToken = faker.guid.guid();
         final token = AuthToken(
           accessToken: accessToken,
-          accessTokenExpiresAt: TimeTestUtils.hoursFromNow(1),
+          accessTokenExpiresAt: TestTimeUtils.hoursFromNow(1),
           refreshToken: faker.guid.guid(),
-          refreshTokenExpiresAt: TimeTestUtils.daysFromNow(7),
+          refreshTokenExpiresAt: TestTimeUtils.daysFromNow(7),
         );
 
         // When
@@ -139,9 +139,9 @@ void main() {
         ]);
         final token = AuthToken(
           accessToken: accessToken,
-          accessTokenExpiresAt: TimeTestUtils.hoursFromNow(1),
+          accessTokenExpiresAt: TestTimeUtils.hoursFromNow(1),
           refreshToken: faker.guid.guid(),
-          refreshTokenExpiresAt: TimeTestUtils.daysFromNow(7),
+          refreshTokenExpiresAt: TestTimeUtils.daysFromNow(7),
           tokenType: customTokenType,
         );
 
@@ -181,8 +181,8 @@ void main() {
         // Given
         final accessToken = faker.guid.guid();
         final refreshToken = faker.guid.guid();
-        final accessTokenExpiresAt = TimeTestUtils.hoursFromNow(1);
-        final refreshTokenExpiresAt = TimeTestUtils.daysFromNow(7);
+        final accessTokenExpiresAt = TestTimeUtils.hoursFromNow(1);
+        final refreshTokenExpiresAt = TestTimeUtils.daysFromNow(7);
 
         // When
         final token1 = AuthToken(
@@ -218,8 +218,8 @@ void main() {
         final accessToken1 = faker.guid.guid();
         final accessToken2 = faker.guid.guid();
         final refreshToken = faker.guid.guid();
-        final accessTokenExpiresAt = TimeTestUtils.hoursFromNow(1);
-        final refreshTokenExpiresAt = TimeTestUtils.daysFromNow(7);
+        final accessTokenExpiresAt = TestTimeUtils.hoursFromNow(1);
+        final refreshTokenExpiresAt = TestTimeUtils.daysFromNow(7);
 
         // When
         final token1 = AuthToken(

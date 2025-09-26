@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:tomo_place/domains/terms_agreement/presentation/widgets/organisms/terms_agreement_modal.dart';
 
-class TermsTestUtil {
-  TermsTestUtil._();
+class MockTermsAgreementModal extends Mock implements TermsAgreementModal {}
+
+class TestTermsUtil {
+  TestTermsUtil._();
 
   static Widget buildModal({
     required void Function(TermsAgreementResult) onResult,
@@ -29,4 +33,12 @@ class TermsTestUtil {
   static Finder findLocationTitle() => find.text(locationTitle);
   static Finder findAgeTitle() => find.text(ageTitle);
   static Finder findAgreeAllButton() => find.text(agreeAllButton);
+
+  static void stubModalSuccess(MockTermsAgreementModal mock) {
+    when(() => mock.onResult).thenReturn((_) {});
+  }
+
+  static void stubModalFailure(MockTermsAgreementModal mock) {
+    when(() => mock.onResult).thenReturn((_) {});
+  }
 }

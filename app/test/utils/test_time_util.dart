@@ -3,8 +3,8 @@ import 'package:faker/faker.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// 시간 관련 테스트 유틸리티
-class TimeTestUtils {
-  TimeTestUtils._();
+class TestTimeUtils {
+  TestTimeUtils._();
 
   /// 특정 시간으로 고정하여 테스트 실행
   static Future<T> withFrozenTime<T>(

@@ -10,8 +10,8 @@ import 'package:tomo_place/domains/terms_agreement/presentation/widgets/organism
 import 'package:tomo_place/shared/exception_handler/exception_notifier.dart';
 import 'package:tomo_place/shared/exception_handler/models/exception_interface.dart';
 
-import '../utils/test_auth_util.dart';
-import '../utils/test_terms_util.dart';
+import '../utils/domains/test_auth_util.dart';
+import '../utils/domains/test_terms_util.dart';
 import '../utils/test_wrappers_util.dart';
 import '../utils/test_verifiers_util.dart';
 
@@ -20,13 +20,13 @@ void main() {
     late AuthMocks mocks;
 
     setUp(() {
-      mocks = AuthTestUtil.createMocks();
+      mocks = TestAuthUtil.createMocks();
     });
 
     Widget createTestApp({List<Override> overrides = const []}) {
       return ProviderScope(
         overrides: [
-          ...AuthTestUtil.providerOverrides(mocks),
+          ...TestAuthUtil.providerOverrides(mocks),
           ...overrides,
         ],
         child: const TomoPlaceApp(),
@@ -36,10 +36,10 @@ void main() {
     group('소셜 로그인 플로우', () {
       testWidgets('구글 로그인이 성공해야 한다', (WidgetTester tester) async {
         // Given - 구글 로그인 성공 시나리오
-        final validToken = AuthTestUtil.makeValidToken();
+        final validToken = TestAuthUtil.makeValidToken();
         
-        AuthTestUtil.stubUnauthenticated(mocks);
-        AuthTestUtil.stubSignupSuccess(mocks, provider: SocialProvider.google, token: validToken);
+        TestAuthUtil.stubUnauthenticated(mocks);
+        TestAuthUtil.stubSignupSuccess(mocks, provider: SocialProvider.google, token: validToken);
 
         // When - 앱 시작
         await tester.pumpWidget(createTestApp());
@@ -74,7 +74,7 @@ void main() {
 
       testWidgets('카카오 로그인 버튼이 비활성화되어야 한다', (WidgetTester tester) async {
         // Given - 앱 시작
-        AuthTestUtil.stubUnauthenticated(mocks);
+        TestAuthUtil.stubUnauthenticated(mocks);
 
         // When - 앱 시작
         await tester.pumpWidget(createTestApp());
@@ -98,7 +98,7 @@ void main() {
 
       testWidgets('애플 로그인 버튼이 비활성화되어야 한다', (WidgetTester tester) async {
         // Given - 앱 시작
-        AuthTestUtil.stubUnauthenticated(mocks);
+        TestAuthUtil.stubUnauthenticated(mocks);
 
         // When - 앱 시작
         await tester.pumpWidget(createTestApp());
@@ -128,11 +128,11 @@ void main() {
         final List<AuthState> stateChanges = [];
 
         // Given - 성공적인 로그인/로그아웃 시나리오
-        final validToken = AuthTestUtil.makeValidToken();
+        final validToken = TestAuthUtil.makeValidToken();
 
-        AuthTestUtil.stubUnauthenticated(mocks);
-        AuthTestUtil.stubSignupSuccess(mocks, provider: SocialProvider.google, token: validToken);
-        AuthTestUtil.stubLogoutSuccess(mocks);
+        TestAuthUtil.stubUnauthenticated(mocks);
+        TestAuthUtil.stubSignupSuccess(mocks, provider: SocialProvider.google, token: validToken);
+        TestAuthUtil.stubLogoutSuccess(mocks);
 
         // When - 앱 시작
         await tester.pumpWidget(createTestApp());

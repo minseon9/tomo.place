@@ -8,7 +8,7 @@ import 'package:tomo_place/domains/auth/presentation/pages/signup_page.dart';
 import 'package:tomo_place/shared/application/navigation/navigation_key.dart';
 import 'package:tomo_place/shared/exception_handler/exception_notifier.dart';
 
-import '../utils/test_auth_util.dart';
+import '../utils/domains/test_auth_util.dart';
 import '../utils/test_verifiers_util.dart';
 
 void main() {
@@ -16,13 +16,13 @@ void main() {
     late AuthMocks mocks;
 
     setUp(() {
-      mocks = AuthTestUtil.createMocks();
+      mocks = TestAuthUtil.createMocks();
     });
 
     Widget createTestApp({List<Override> overrides = const []}) {
       return ProviderScope(
         overrides: [
-          ...AuthTestUtil.providerOverrides(mocks),
+          ...TestAuthUtil.providerOverrides(mocks),
           ...overrides,
         ],
         child: const TomoPlaceApp(),
@@ -32,9 +32,9 @@ void main() {
     group('앱 시작 플로우', () {
       testWidgets('유효한 토큰이 있을 때 홈 화면으로 네비게이션되어야 한다', (WidgetTester tester) async {
         // Given - 유효한 토큰이 있는 상황
-        final validToken = AuthTestUtil.makeValidToken();
+        final validToken = TestAuthUtil.makeValidToken();
         
-        AuthTestUtil.stubAuthenticated(mocks, validToken);
+        TestAuthUtil.stubAuthenticated(mocks, validToken);
 
         // When - 앱 시작
         await tester.pumpWidget(createTestApp());
@@ -59,7 +59,7 @@ void main() {
 
       testWidgets('토큰이 없을 때 로그인 화면으로 네비게이션되어야 한다', (WidgetTester tester) async {
         // Given - 토큰이 없는 상황
-        AuthTestUtil.stubUnauthenticated(mocks);
+        TestAuthUtil.stubUnauthenticated(mocks);
 
         // When - 앱 시작
         await tester.pumpWidget(createTestApp());
@@ -80,8 +80,8 @@ void main() {
 
       testWidgets('네트워크 오류 시 에러 처리와 스낵바가 표시되어야 한다', (WidgetTester tester) async {
         // Given - 네트워크 오류 상황
-        final exception = AuthTestUtil.makeNetworkError();
-        AuthTestUtil.stubRefreshFailure(mocks, exception: exception);
+        final exception = TestAuthUtil.makeNetworkError();
+        TestAuthUtil.stubRefreshFailure(mocks, exception: exception);
 
         // When - 앱 시작
         await tester.pumpWidget(createTestApp());

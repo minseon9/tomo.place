@@ -1,7 +1,7 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:tomo_place/shared/config/env_config.dart';
 
-class TestEnvConfig extends EnvConfig {
+class TestEnvConfigUtil extends EnvConfig {
   static bool _testIsAndroid = false;
   static bool _testIsIOS = false;
   static bool _testInitialized = false;

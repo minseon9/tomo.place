@@ -33,8 +33,8 @@ typedef AuthMocks = ({
   MockCheckAuthStatusUseCase checkAuth,
 );
 
-class AuthTestUtil {
-  AuthTestUtil._();
+class TestAuthUtil {
+  TestAuthUtil._();
 
   static AuthMocks createMocks() => (
     authRepo: MockAuthRepository(),
