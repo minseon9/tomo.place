@@ -16,11 +16,10 @@ void main() {
       TestVerifiersUtil.expectText('hello');
       TestVerifiersUtil.expectTextStyle(tester, 'hello', color: AppColors.tomoWhite);
 
-      final containerFinder = find.byType(Container);
-      expect(containerFinder, findsOneWidget);
+      TestVerifiersUtil.expectRenders<Container>();
       StyleVerifiers.expectContainerDecoration(
         tester,
-        containerFinder,
+        find.byType(Container),
         color: AppColors.tomoBlack.withAlpha(128),
         borderRadius: 5,
       );
