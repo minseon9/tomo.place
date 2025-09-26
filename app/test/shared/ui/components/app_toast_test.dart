@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tomo_place/shared/ui/components/toast_widget.dart';
 import 'package:tomo_place/shared/ui/design_system/tokens/colors.dart';
+import '../../../utils/test_verifiers_util.dart';
 import '../../../utils/test_wrappers_util.dart';
 
 void main() {
@@ -11,7 +12,7 @@ void main() {
         TestWrappersUtil.material(const AppToast(message: 'hello')),
       );
 
-      expect(find.text('hello'), findsOneWidget);
+      TestVerifiersUtil.expectText('hello');
       final text = tester.widget<Text>(find.text('hello'));
       expect((text.style?.color), AppColors.tomoWhite);
     });
@@ -33,16 +34,8 @@ void main() {
       AppToast.show(captured, 'snack');
       await tester.pump();
 
-      final snackBarFinder = find.byType(SnackBar);
-      expect(snackBarFinder, findsOneWidget);
-
-      final snackBar = tester.widget<SnackBar>(snackBarFinder);
-      expect(snackBar.backgroundColor, Colors.transparent);
-      expect(snackBar.behavior, SnackBarBehavior.floating);
-      expect(snackBar.duration, const Duration(seconds: 2));
-
-      final content = snackBar.content as Center;
-      expect(find.descendant(of: find.byWidget(content), matching: find.byType(AppToast)), findsOneWidget);
+      TestVerifiersUtil.expectSnackBar(message: 'snack');
+      TestVerifiersUtil.expectRenders<AppToast>();
     });
   });
 }
