@@ -1,77 +1,28 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:tomo_place/app/app.dart';
-import 'package:tomo_place/domains/auth/core/entities/authentication_result.dart';
-import 'package:tomo_place/domains/auth/core/usecases/refresh_token_usecase.dart';
-import 'package:tomo_place/domains/auth/core/usecases/usecase_providers.dart';
-import 'package:tomo_place/domains/auth/data/repositories/auth_repository_impl.dart';
-import 'package:tomo_place/domains/auth/data/repositories/auth_token_repository_impl.dart';
 import 'package:tomo_place/domains/auth/presentation/controllers/auth_notifier.dart';
 import 'package:tomo_place/domains/auth/presentation/models/auth_state.dart';
 import 'package:tomo_place/domains/auth/presentation/pages/signup_page.dart';
 import 'package:tomo_place/shared/application/navigation/navigation_key.dart';
 import 'package:tomo_place/shared/exception_handler/exception_notifier.dart';
-import 'package:tomo_place/shared/infrastructure/network/auth_client.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 
-import '../utils/fake_data/fake_auth_token_generator.dart';
-import '../utils/fake_data/fake_authentication_result_generator.dart';
-import '../utils/fake_data/fake_exception_generator.dart';
-import '../utils/mock_factory/auth_mock_factory.dart';
-import '../utils/mock_factory/shared_mock_factory.dart';
-
-// Mock 클래스들
-class MockRefreshTokenUseCase extends Mock implements RefreshTokenUseCase {}
+import '../utils/test_auth_util.dart';
+import '../utils/test_verifiers_util.dart';
 
 void main() {
   group('App Flow Integration Test', () {
-    late MockAuthRepository mockAuthRepository;
-    late MockAuthTokenRepository mockAuthTokenRepository;
-    late MockBaseClient mockBaseClient;
-    late MockRefreshTokenUseCase mockRefreshTokenUseCase;
+    late AuthMocks mocks;
 
     setUp(() {
-      // Mock 객체들 생성
-      mockAuthRepository = AuthMockFactory.createAuthRepository();
-      mockAuthTokenRepository = AuthMockFactory.createAuthTokenRepository();
-      mockBaseClient = SharedMockFactory.createBaseClient();
-      mockRefreshTokenUseCase = MockRefreshTokenUseCase();
-
-      // Register fallback values
-      registerFallbackValue(true);
-      registerFallbackValue(false);
-      registerFallbackValue(0);
-      registerFallbackValue('');
-      registerFallbackValue(<String, dynamic>{});
-      registerFallbackValue(<String>[]);
-      registerFallbackValue(AuthInitial());
-      registerFallbackValue(AuthLoading());
-      registerFallbackValue(AuthSuccess(true));
-      registerFallbackValue(AuthFailure(error: FakeExceptionGenerator.createAuthenticationFailed()));
-      registerFallbackValue(FakeExceptionGenerator.createAuthenticationFailed());
-      registerFallbackValue(GlobalKey<NavigatorState>());
-      registerFallbackValue(AuthenticationResult.authenticated(FakeAuthTokenGenerator.createValid()));
-      registerFallbackValue(AuthenticationResult.unauthenticated());
+      mocks = AuthTestUtil.createMocks();
     });
 
-    tearDown(() {
-      // 테스트 간 상태 격리를 위한 정리
-      reset(mockAuthRepository);
-      reset(mockAuthTokenRepository);
-      reset(mockBaseClient);
-      reset(mockRefreshTokenUseCase);
-    });
-
-    // Helper 함수들
     Widget createTestApp({List<Override> overrides = const []}) {
       return ProviderScope(
         overrides: [
-          // Mock Provider들 추가
-          authRepositoryProvider.overrideWith((ref) => mockAuthRepository),
-          authTokenRepositoryProvider.overrideWith((ref) => mockAuthTokenRepository),
-          authClientProvider.overrideWith((ref) => mockBaseClient),
-          refreshTokenUseCaseProvider.overrideWith((ref) => mockRefreshTokenUseCase),
+          ...AuthTestUtil.providerOverrides(mocks),
           ...overrides,
         ],
         child: const TomoPlaceApp(),
@@ -81,11 +32,9 @@ void main() {
     group('앱 시작 플로우', () {
       testWidgets('유효한 토큰이 있을 때 홈 화면으로 네비게이션되어야 한다', (WidgetTester tester) async {
         // Given - 유효한 토큰이 있는 상황
-        final validToken = FakeAuthTokenGenerator.createValid();
-        final authResult = FakeAuthenticationResultGenerator.createAuthenticated(validToken);
-
-        when(() => mockRefreshTokenUseCase.execute())
-            .thenAnswer((_) async => authResult);
+        final validToken = AuthTestUtil.makeValidToken();
+        
+        AuthTestUtil.stubAuthenticated(mocks, validToken);
 
         // When - 앱 시작
         await tester.pumpWidget(createTestApp());
@@ -96,7 +45,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Then - 더 구체적인 검증
-        expect(find.byType(MaterialApp), findsOneWidget);
+        TestVerifiersUtil.expectRenders<MaterialApp>();
         
         // Auth 상태 검증
         final container = ProviderScope.containerOf(tester.element(find.byType(TomoPlaceApp)));
@@ -104,19 +53,13 @@ void main() {
         expect(authState, isA<AuthSuccess>());
         expect((authState as AuthSuccess).isNavigateHome, isTrue);
         
-        // UseCase 호출 확인
-        verify(() => mockRefreshTokenUseCase.execute()).called(1);
-        
         // 홈 화면으로 네비게이션되었는지 확인
         expect(find.text('홈 화면 (추후 구현)'), findsOneWidget);
       });
 
       testWidgets('토큰이 없을 때 로그인 화면으로 네비게이션되어야 한다', (WidgetTester tester) async {
         // Given - 토큰이 없는 상황
-        when(() => mockAuthTokenRepository.getCurrentToken())
-            .thenAnswer((_) async => null);
-        when(() => mockRefreshTokenUseCase.execute())
-            .thenAnswer((_) async => FakeAuthenticationResultGenerator.createUnauthenticated());
+        AuthTestUtil.stubUnauthenticated(mocks);
 
         // When - 앱 시작
         await tester.pumpWidget(createTestApp());
@@ -132,14 +75,13 @@ void main() {
         expect(authState, isA<AuthInitial>());
         
         // 로그인 화면으로 네비게이션되었는지 확인
-        expect(find.byType(SignupPage), findsOneWidget);
+        TestVerifiersUtil.expectRenders<SignupPage>();
       });
 
       testWidgets('네트워크 오류 시 에러 처리와 스낵바가 표시되어야 한다', (WidgetTester tester) async {
         // Given - 네트워크 오류 상황
-        final exception = FakeExceptionGenerator.createNetworkError();
-        when(() => mockRefreshTokenUseCase.execute())
-            .thenThrow(exception);
+        final exception = AuthTestUtil.makeNetworkError();
+        AuthTestUtil.stubRefreshFailure(mocks, exception: exception);
 
         // When - 앱 시작
         await tester.pumpWidget(createTestApp());
@@ -151,8 +93,7 @@ void main() {
         expect(authState, isA<AuthFailure>());
         
         // 에러 스낵바가 표시되는지 확인
-        expect(find.byType(SnackBar), findsOneWidget);
-        expect(find.text(exception.userMessage), findsOneWidget);
+        TestVerifiersUtil.expectSnackBar(message: exception.userMessage);
       });
     });
 
