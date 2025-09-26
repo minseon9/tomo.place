@@ -1,28 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
+ 
 import 'package:tomo_place/domains/terms_agreement/presentation/pages/location_terms_page.dart';
 import 'package:tomo_place/domains/terms_agreement/presentation/pages/privacy_policy_page.dart';
 import 'package:tomo_place/domains/terms_agreement/presentation/pages/terms_of_service_page.dart';
 import 'package:tomo_place/domains/terms_agreement/presentation/widgets/organisms/terms_agreement_modal.dart';
 
 import '../utils/domains/test_terms_util.dart';
-import '../utils/test_wrappers_util.dart';
 import '../utils/test_verifiers_util.dart';
+import '../utils/test_wrappers_util.dart';
 
 void main() {
   group('Terms Agreement Flow Integration Tests', () {
-    late MockVoidCallback mockOnDismiss;
-    late MockNavigatorObserver mockNavigatorObserver;
-
-    setUpAll(() {
-      registerFallbackValue(FakeRoute());
-    });
-
-    setUp(() {
-      mockOnDismiss = TestTermsUtil.createVoidCallback();
-      mockNavigatorObserver = TestTermsUtil.createNavigatorObserver();
-    });
+    
 
     Widget createModalTestWidget({
       void Function(TermsAgreementResult)? onResult,
@@ -62,8 +52,6 @@ void main() {
 
     group('모달 표시 및 닫기 플로우', () {
       testWidgets('모달이 올바르게 표시되어야 한다', (WidgetTester tester) async {
-        // Given
-        when(() => mockOnDismiss()).thenReturn(null);
         await tester.pumpWidget(createModalTestWidget());
 
         // When & Then

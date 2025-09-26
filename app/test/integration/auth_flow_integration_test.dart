@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:tomo_place/app/app.dart';
 import 'package:tomo_place/domains/auth/consts/social_provider.dart';
 import 'package:tomo_place/domains/auth/presentation/controllers/auth_notifier.dart';
@@ -13,7 +12,6 @@ import 'package:tomo_place/shared/exception_handler/models/exception_interface.d
 
 import '../utils/domains/test_auth_util.dart';
 import '../utils/domains/test_terms_util.dart';
-import '../utils/test_wrappers_util.dart';
 import '../utils/test_verifiers_util.dart';
 
 void main() {
