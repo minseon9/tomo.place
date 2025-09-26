@@ -51,7 +51,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Then - 더 구체적인 검증
-        TestVerifiersUtil.expectRenders<MaterialApp>();
+        TestRenderVerifier.expectRenders<MaterialApp>();
         
         // Auth 상태 검증
         final container = ProviderScope.containerOf(tester.element(find.byType(TomoPlaceApp)));
@@ -81,7 +81,7 @@ void main() {
         expect(authState, isA<AuthInitial>());
         
         // 로그인 화면으로 네비게이션되었는지 확인
-        TestVerifiersUtil.expectRenders<SignupPage>();
+        TestRenderVerifier.expectRenders<SignupPage>();
       });
 
       testWidgets('네트워크 오류 시 에러 처리와 스낵바가 표시되어야 한다', (WidgetTester tester) async {
@@ -99,7 +99,7 @@ void main() {
         expect(authState, isA<AuthFailure>());
         
         // 에러 스낵바가 표시되는지 확인
-        TestVerifiersUtil.expectSnackBar(message: exception.userMessage);
+        TestRenderVerifier.expectSnackBar(message: exception.userMessage);
       });
     });
 
@@ -117,7 +117,7 @@ void main() {
         expect(navigator, isNotNull);
         
         // 현재 루트 확인 - 로그인 화면이 표시되어야 함
-        TestVerifiersUtil.expectRenders<SignupPage>();
+        TestRenderVerifier.expectRenders<SignupPage>();
         
         // 네비게이션이 올바르게 설정되었는지 확인
         final materialApp = tester.widget<MaterialApp>(find.byType(MaterialApp));
@@ -135,7 +135,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Then - 홈 화면으로 네비게이션되었는지 확인
-        TestVerifiersUtil.expectText('홈 화면 (추후 구현)');
+        TestRenderVerifier.expectText('홈 화면 (추후 구현)');
         expect(find.byType(SignupPage), findsNothing);
       });
 
@@ -242,7 +242,7 @@ void main() {
         expect(authState, isA<AuthFailure>());
         
         // 에러 스낵바가 표시되는지 확인
-        TestVerifiersUtil.expectSnackBar(message: exception.userMessage);
+        TestRenderVerifier.expectSnackBar(message: exception.userMessage);
       });
 
       testWidgets('다양한 에러 타입이 올바르게 처리되어야 한다', (WidgetTester tester) async {
@@ -260,7 +260,7 @@ void main() {
         expect(authState, isA<AuthFailure>());
         
         // 에러 스낵바가 표시되는지 확인
-        TestVerifiersUtil.expectSnackBar(message: networkException.userMessage);
+        TestRenderVerifier.expectSnackBar(message: networkException.userMessage);
       });
     });
 
@@ -290,7 +290,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Then - 로그인 화면으로 이동했는지 확인
-        TestVerifiersUtil.expectRenders<SignupPage>();
+        TestRenderVerifier.expectRenders<SignupPage>();
         
         // 에러 상태 확인
         final container = ProviderScope.containerOf(tester.element(find.byType(TomoPlaceApp)));
@@ -313,7 +313,7 @@ void main() {
         expect(authState, isA<AuthFailure>());
         
         // 에러 메시지가 표시되는지 확인
-        TestVerifiersUtil.expectSnackBar(message: networkException.userMessage);
+        TestRenderVerifier.expectSnackBar(message: networkException.userMessage);
       });
     });
   });

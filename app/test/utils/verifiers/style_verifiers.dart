@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-class StyleVerifiers {
+class TestStyleVerifier {
   static void expectContainerPadding(
     WidgetTester tester,
     Finder finder,
@@ -32,6 +32,24 @@ class StyleVerifiers {
       expect(br?.bottomLeft, equals(Radius.circular(borderRadius)));
       expect(br?.bottomRight, equals(Radius.circular(borderRadius)));
     }
+  }
+
+  static void expectTextStyle(
+    WidgetTester tester,
+    String text, {
+    Color? color,
+    double? fontSize,
+    FontWeight? fontWeight,
+    TextAlign? align,
+  }) {
+    final finder = find.text(text);
+    expect(finder, findsAtLeastNWidgets(1));
+    final actual = tester.widget<Text>(finder);
+    final style = actual.style;
+    if (color != null) expect(style?.color, equals(color));
+    if (fontSize != null) expect(style?.fontSize, equals(fontSize));
+    if (fontWeight != null) expect(style?.fontWeight, equals(fontWeight));
+    if (align != null) expect(actual.textAlign, equals(align));
   }
 }
 

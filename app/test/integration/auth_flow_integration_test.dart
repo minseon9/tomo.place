@@ -51,7 +51,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // 로그인 화면으로 이동했는지 확인
-        TestVerifiersUtil.expectRenders<SignupPage>();
+        TestRenderVerifier.expectRenders<SignupPage>();
 
         // 구글 로그인 버튼 찾기 및 탭
         final googleButton = find.text('구글로 시작하기');
@@ -322,7 +322,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Then - 로그인 화면으로 이동했는지 확인
-        TestVerifiersUtil.expectRenders<SignupPage>();
+        TestRenderVerifier.expectRenders<SignupPage>();
 
         // 에러 상태 확인
         final container = ProviderScope.containerOf(
@@ -346,9 +346,9 @@ void main() {
         await tester.pumpAndSettle();
 
         // Then - 소셜 로그인 버튼들 확인
-        TestVerifiersUtil.expectText('구글로 시작하기');
-        TestVerifiersUtil.expectText('애플로 시작하기 (준비 중)');
-        TestVerifiersUtil.expectText('카카오로 시작하기 (준비 중)');
+        TestRenderVerifier.expectText('구글로 시작하기');
+        TestRenderVerifier.expectText('애플로 시작하기 (준비 중)');
+        TestRenderVerifier.expectText('카카오로 시작하기 (준비 중)');
 
         // 구글 버튼만 활성화되어 있는지 확인
         final googleButton = find.text('구글로 시작하기');
@@ -413,7 +413,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Then
-        TestVerifiersUtil.expectRenders<SignupPage>();
+        TestRenderVerifier.expectRenders<SignupPage>();
       });
 
       testWidgets('약관 동의 모달이 표시되어야 한다', (WidgetTester tester) async {
@@ -421,7 +421,7 @@ void main() {
         await tester.pumpWidget(createModalTestWidget());
 
         // Then
-        TestVerifiersUtil.expectRenders<TermsAgreementModal>();
+        TestRenderVerifier.expectRenders<TermsAgreementModal>();
       });
 
       testWidgets('약관 동의 후 회원가입이 진행되어야 한다', (WidgetTester tester) async {
@@ -462,7 +462,7 @@ void main() {
 
         // Then
         // SignupPage가 렌더링되면 Terms Agreement 모달을 호출할 수 있어야 함
-        TestVerifiersUtil.expectRenders<SignupPage>();
+        TestRenderVerifier.expectRenders<SignupPage>();
       });
 
       testWidgets('Terms Agreement 도메인이 Auth 도메인과 독립적으로 동작해야 한다', (
@@ -473,7 +473,7 @@ void main() {
 
         // Then
         // Terms Agreement 모달이 Auth 도메인 없이도 독립적으로 동작해야 함
-        TestVerifiersUtil.expectRenders<TermsAgreementModal>();
+        TestRenderVerifier.expectRenders<TermsAgreementModal>();
       });
 
       testWidgets('도메인 간 인터페이스가 올바르게 정의되어야 한다', (WidgetTester tester) async {
@@ -569,7 +569,7 @@ void main() {
 
         // Then
         // 회원가입 페이지가 안정적으로 렌더링되어야 함
-        TestVerifiersUtil.expectRenders<SignupPage>();
+        TestRenderVerifier.expectRenders<SignupPage>();
       });
 
       testWidgets('약관 동의 모달 상태가 올바르게 관리되어야 한다', (WidgetTester tester) async {
@@ -578,7 +578,7 @@ void main() {
 
         // Then
         // 약관 동의 모달이 안정적으로 렌더링되어야 함
-        TestVerifiersUtil.expectRenders<TermsAgreementModal>();
+        TestRenderVerifier.expectRenders<TermsAgreementModal>();
       });
 
       testWidgets('상태 변경이 올바르게 전파되어야 한다', (WidgetTester tester) async {

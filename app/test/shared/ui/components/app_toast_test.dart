@@ -13,11 +13,11 @@ void main() {
         TestWrappersUtil.material(const AppToast(message: 'hello')),
       );
 
-      TestVerifiersUtil.expectText('hello');
-      TestVerifiersUtil.expectTextStyle(tester, 'hello', color: AppColors.tomoWhite);
+      TestRenderVerifier.expectText('hello');
+      TestStyleVerifier.expectTextStyle(tester, 'hello', color: AppColors.tomoWhite);
 
-      TestVerifiersUtil.expectRenders<Container>();
-      StyleVerifiers.expectContainerDecoration(
+      TestRenderVerifier.expectRenders<Container>();
+      TestStyleVerifier.expectContainerDecoration(
         tester,
         find.byType(Container),
         color: AppColors.tomoBlack.withAlpha(128),
@@ -42,8 +42,8 @@ void main() {
       AppToast.show(captured, 'snack');
       await tester.pump();
 
-      TestVerifiersUtil.expectSnackBar(message: 'snack');
-      TestVerifiersUtil.expectRenders<AppToast>();
+      TestRenderVerifier.expectSnackBar(message: 'snack');
+      TestRenderVerifier.expectRenders<AppToast>();
     });
   });
 }

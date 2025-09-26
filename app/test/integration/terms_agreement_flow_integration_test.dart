@@ -53,8 +53,8 @@ void main() {
         await tester.pumpWidget(createModalTestWidget());
 
         // When & Then
-        TestVerifiersUtil.expectRenders<TermsAgreementModal>();
-        TestVerifiersUtil.expectText('모두 동의합니다 !');
+        TestRenderVerifier.expectRenders<TermsAgreementModal>();
+        TestRenderVerifier.expectText('모두 동의합니다 !');
       });
 
       testWidgets('모든 동의 버튼 클릭 시 모달이 닫혀야 한다', (WidgetTester tester) async {
@@ -226,7 +226,7 @@ void main() {
         for (int i = 0; i < termsPages.length; i++) {
           await tester.pumpWidget(createTermsPageTestWidget(termsPages[i]));
 
-          TestVerifiersUtil.expectText(termsPageTitles[i]);
+          TestRenderVerifier.expectText(termsPageTitles[i]);
         }
       });
     });
